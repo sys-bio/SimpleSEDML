@@ -1,3 +1,6 @@
+import phrasedml # type: ignore
+import tellurium as te  # type: ignore
+
 class Model:
     def __init__(self, id, source):
         self.id = id
@@ -105,7 +108,8 @@ class Experiment:
 
 
 
-#from phrasedml_api import Model, Simulation, Task, RepeatedTask, Plot2D, Experiment
+#from phrasedml_api import Model, Simulation, Task, RepeatedTask, Plot2D, Experiment # type: ignore
+import tellurium as te
 
 # Define the model
 model1 = Model("model1", source="BIOMD0000000012")
@@ -148,4 +152,10 @@ exp.add_repeated_task(outer_scan)
 exp.add_plot(plot)
 
 # Print phraSED-ML
+import pdb; pdb.set_trace()
+rr = te.loadSBMLModel("BIOMD0000000012")
+phrasedml.setReferencedSBML("myModel", sbml_str)
+
+# Convert phrasedml to SED-ML
+sedml_str = phrasedml.convertString(phrasedml_str)
 print(exp.to_string())
