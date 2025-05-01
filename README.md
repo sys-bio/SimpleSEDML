@@ -66,9 +66,7 @@ The following ``Python`` code executes the ``phraSEDML`` directives:
 The output is
 <img src="docs/images/phrasedml_example.png" alt="Girl in a jacket" style="width:300px;height:300px;">
 
-# Futures
-``SimpleSEDML`` new features are described below. (Items in *italics* parentheses require modifications to ``phraSEDML``).
-* Model: describes the model to simulate with simplifications such as avoiding the conversion of Antimony into SBML.
-* Simulate: reports errors detectable from the model representation
-* Task: *uses an optional ``callback`` object to return results for each iteration in ``repeated_tasks`` as well as indicate when repeated tasks should stop*
-* Plot, Report: Indicate the data structure to populate (e.g., dictionary, dataframe)
+# Plans
+1. Replicate the functions of the text-based ``phraSEDML`` in ``SimpleSEDML``. The implementation should allow for the concurrent construction of multiple ``SimpleSEDML`` objects, something that is not possible the ``phrasedml``.
+2. Extend Model by allowing descriptions: (a) automatically convert Antimony into SBML, (b) can reference arbitrary paths to local files, (c) allow URL access.
+3. Extend Simulate to report model errors that are detectable without running a simulation.

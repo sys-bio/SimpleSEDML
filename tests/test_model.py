@@ -1,0 +1,92 @@
+import src.constants as cn
+from src.model import Model
+
+import os
+import phrasedml # type: ignore
+import unittest
+import tellurium as te # type: ignore
+
+
+IGNORE_TEST = False
+IS_PLOT = False
+MODEL_ID = "model1"
+MODEL_ANT = """
+model %s
+    S1 -> S2; k1*S1
+    S2 -> S3; k2*S2
+    S3 -> S4; k3*S3
+
+    k1 = 0.1
+    k2 = 0.2
+    k3 = 0.3
+    S1 = 10
+    S2 = 0
+    S3 = 0
+    S4 = 0
+end
+""" % MODEL_ID
+MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
+SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID + ".xml")
+WOLF_FILE = "Wolf2000_Glycolytic_Oscillations.xml"
+REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+
+#############################
+# Tests
+#############################
+class TestModel(unittest.TestCase):
+
+    def setUp(self):
+        self.remove()
+
+    def tearDown(self):
+        self.remove()
+    
+    def remove(self):
+        """Remove the files created during the test"""
+        for file in REMOVE_FILES:
+            if os.path.exists(file):
+                os.remove(file)
+
+    def testUsage1(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        phrasedml_str = str(model)
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+
+    def testUsage1NoOverwrite(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        with self.assertWarns(UserWarning):
+            _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=False)
+
+    def testUsage2(self):
+        # model = model model1 URL
+        if IGNORE_TEST:
+            return
+        url = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
+        model_id = "Wolf2000_Glycolytic_Oscillations"
+        model = Model(model_id, url, ref_type="sbml_url", is_overwrite=True)
+        phrasedml_str = str(model)
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
+
+    def evaluate(self, phrasedml_str:str):
+        """Evaluate the sedml_str and sbml_str
+
+        Args:
+            phrasedml_str (str): phraSED-ML string
+        """
+        sedml_str = phrasedml.convertString(phrasedml_str)
+        try:
+            te.executeSEDML(sedml_str)
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+
+
+if __name__ == '__main__':
+    unittest.main()

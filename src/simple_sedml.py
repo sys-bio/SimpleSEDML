@@ -1,161 +1,128 @@
+from src.model import Model
+from src.simulation import Simulation
+from src.task import Task, RepeatedTask
+from plot2d import Plot2D
+from src.report import Report
+
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
+from typing import Optional, List, Tuple, Union
 
-class Model:
-    def __init__(self, id, source):
-        self.id = id
-        self.source = source
-        self.param_changes = []
+"""
+PhraSED-ML is strctured as a series of sections, each of which specifies a Model, Simulation, Task or repeated task.
 
-    def set_parameter(self, param_id, value):
-        self.param_changes.append((param_id, value))
-
-    def to_string(self):
-        if not self.param_changes:
-            return f'{self.id} = model "{self.source}"'
-        params = ", ".join(f"{param} = {val}" for param, val in self.param_changes)
-        return f'{self.id} = model "{self.source}" with {params}'
+A model section contains one or more references to models. Some of these may be indirect in that they reference a reference.
+A model section may contain changes to parameters, initial conditions or other model components.
 
 
-class Simulation:
-    def __init__(self, id, start, end, steps, algorithm=None):
-        self.id = id
-        self.start = start
-        self.end = end
-        self.steps = steps
-        self.algorithm = algorithm
-
-    def to_string(self):
-        lines = [f'{self.id} = simulate uniform({self.start}, {self.end}, {self.steps})']
-        if self.algorithm:
-            lines.append(f'{self.id}.algorithm = "{self.algorithm}"')
-        return "\n".join(lines)
+Restrictions:
+  - No local variables (because this is an API)
+  - No formulas (because this is an API)
+"""
 
 
-class Task:
-    def __init__(self, id, model, simulation):
-        self.id = id
-        self.model = model
-        self.simulation = simulation
+class SimpleSBML(object):
+    """A directive can consist of many sections each of which species a Model, Simulation, Task or repeated task,
+    and an action (plot or report).
 
-    def to_string(self):
-        return f'{self.id} = run {self.simulation} on {self.model}'
+    Args:
+        object (_type_): _description_
+    """
+    def __init__(self)->None:
+        # Dictionary of script elements, indexed by their section ID
+        self.models:List[Model] = []
+        self.simulations:List[Simulation] = []
+        self.tasks:List[Task] = []
+        self.repeated_tasks:List[RepeatedTask] = []
+        self.reports:List[Report] = []
+        self.plot2ds:List[Plot2D] = []
 
-
-class RepeatedTask:
-    def __init__(self, id, changes, subtask, reset=True, nested_repeats=None):
-        self.id = id
-        self.changes = changes  # list of (target, range_expr)
-        self.subtask = subtask  # can be a Task or another RepeatedTask
-        self.reset = reset
-        self.nested_repeats = nested_repeats or []  # list of RepeatedTask
-
-    def to_string(self):
-        lines = []
-        for nested in self.nested_repeats:
-            lines.append(nested.to_string())
-        assignments = ", ".join(f"{target} in {expr}" for target, expr in self.changes)
-        reset_str = ", reset=true" if self.reset else ""
-        lines.append(f'{self.id} = repeat {self.subtask.id} for {assignments}{reset_str}')
-        return "\n".join(lines)
-
-
-class Plot2D:
-    def __init__(self, title):
-        self.title = title
-        self.curves = []
-
-    def add_curve(self, x, y):
-        self.curves.append((x, y))
-
-    def to_string(self):
-        return "\n".join([f'plot "{self.title}" {x} vs {y}' for x, y in self.curves])
-
-
-class Experiment:
-    def __init__(self):
-        self.models = []
-        self.simulations = []
-        self.tasks = []
-        self.repeated_tasks = []
-        self.plots = []
-
-    def add_model(self, model):
-        self.models.append(model)
-
-    def add_simulation(self, simulation):
-        self.simulations.append(simulation)
-
-    def add_task(self, task):
-        self.tasks.append(task)
-
-    def add_repeated_task(self, rtask):
-        self.repeated_tasks.append(rtask)
-
-    def add_plot(self, plot):
-        self.plots.append(plot)
-
-    def to_string(self):
+    def __str__(self)->str:
         sections = [
-            *[m.to_string() for m in self.models],
-            *[s.to_string() for s in self.simulations],
-            *[t.to_string() for t in self.tasks],
-            *[rt.to_string() for rt in self.repeated_tasks],
-            *[p.to_string() for p in self.plots],
+            *[str(m) for m in self.models],
+            *[str(s) for s in self.simulations],
+            *[str(t) for t in self.tasks],
+            *[str(rt) for rt in self.repeated_tasks],
+            *[str(r) for r in self.reports],
+            *[str(p) for p in self.plot2ds],
         ]
         return "\n".join(sections)
+    
+    def toSEDML(self)->str:
+        """Converts the script to a SED-ML string
 
+        Returns:
+            str: SED-ML string
+        """
+        result = phrasedml.convertString(str(self))
+        if result is None:
+            #import pdb; pdb.set_trace()
+            print(phrasedml.getLastPhrasedError())
+            return ""
+        else:
+            return result
 
+    @property 
+    def sedml_str(self)->str:
+        """Converts the script to a SED-ML string
 
+        Returns:
+            str: SED-ML string
+        """
+        return phrasedml.convertString(str(self))
 
-#from phrasedml_api import Model, Simulation, Task, RepeatedTask, Plot2D, Experiment # type: ignore
-import tellurium as te
+    def addModel(self, id:str, model_ref:str, ref_type:str=None, model_source_path:str=None, is_overwrite:bool=False):
+        """Adds a model to the script
 
-# Define the model
-model1 = Model("model1", source="BIOMD0000000012")
-model1.set_parameter("ps_b", 0.02)
+        Args:
+            id: ID of the model
+            model_ref: reference to the model
+            ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
+            model_source_path: path to the model source file
+            is_overwrite: if True, overwrite the model if it already exists
+        """
+        model = Model(id, model_ref, ref_type=ref_type,
+              model_source_path=model_source_path, is_overwrite=is_overwrite)
+        self.models.append(model)
 
-# Define the simulation
-sim1 = Simulation("sim1", start=0, end=1000, steps=1000, algorithm="CVODE")
+    def addSimulation(self, id:str, start:float, end:float, steps:int, algorithm:Optional[str]=None): 
+        """Adds a simulation to the script
 
-# Define the base task
-task1 = Task("task1", model="model1", simulation="sim1")
+        Args:
+            simulation: Simulation object
+        """
+        self.simulations.append(Simulation(id, start, end, steps, algorithm))
 
-# Inner repeated task (e.g., scan ps_0)
-inner_scan = RepeatedTask(
-    id="inner_scan",
-    changes=[("model1.ps_0", "uniform(0.01, 0.05, 3)")],
-    subtask=task1,
-    reset=True
-)
+    def addTask(self, id, model:Model, simulation:Simulation):
+        """Adds a task to the script
 
-# Outer repeated task (e.g., scan ps_a) nesting inner_scan
-outer_scan = RepeatedTask(
-    id="outer_scan",
-    changes=[("model1.ps_a", "uniform(0.1, 0.3, 2)")],
-    subtask=inner_scan,
-    reset=True,
-    nested_repeats=[inner_scan]
-)
+        Args:
+            id: ID of the task
+            model: Model object
+            simulation: Simulation object
+        """
+        self.tasks.append(Task(id, model, simulation))
 
-# Plotting results
-plot = Plot2D("Nested scan of ps_0 and ps_a")
-plot.add_curve(x="task1.time", y="task1.PX")
-plot.add_curve(x="outer_scan.time", y="outer_scan.PX")
+    def addRepeatedTask(self, id:str, changes:str, subtask:Task, reset=True, nested_repeats=None):
+        """Adds a repeated task to the script
 
-# Assemble everything
-exp = Experiment()
-exp.add_model(model1)
-exp.add_simulation(sim1)
-exp.add_task(task1)
-exp.add_repeated_task(outer_scan)
-exp.add_plot(plot)
+        Args:
+            repeated_task: RepeatedTask object
+        """
+        self.repeated_tasks.append(RepeatedTask(id, changes, subtask, reset, nested_repeats))
 
-# Print phraSED-ML
-import pdb; pdb.set_trace()
-rr = te.loadSBMLModel("BIOMD0000000012")
-phrasedml.setReferencedSBML("myModel", sbml_str)
+    def addPlot(self, plot2d:Plot2D):
+        """Adds a plot to the script
 
-# Convert phrasedml to SED-ML
-sedml_str = phrasedml.convertString(phrasedml_str)
-print(exp.to_string())
+        Args:
+            plot2d: Plot2D object
+        """
+        self.plot2ds.append(plot2d)
+
+    def addReport(self, report:Report):
+        """Adds a report to the script
+
+        Args:
+            report: Report object
+        """
+        self.reports.append(report)
