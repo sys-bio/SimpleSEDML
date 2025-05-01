@@ -17,7 +17,7 @@ class Task:
 
 class RepeatedTask:
     # Ex: task1 = repeat task0 for k3 in [0.05, 0.1, 0.2, 0.5], reset=true
-    def __init__(self, id:str, change_dct:dict, subtask:Task, reset=True, nested_repeats=None):
+    def __init__(self, id:str, change_dct:dict, subtask:Task, reset:bool=True, nested_repeats=None):
         """Records information for creating a repeated task
 
         Args:

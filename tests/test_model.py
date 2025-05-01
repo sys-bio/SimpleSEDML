@@ -26,8 +26,8 @@ model %s
 end
 """ % MODEL_ID
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
-SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID + ".xml")
-WOLF_FILE = "Wolf2000_Glycolytic_Oscillations.xml"
+SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
+WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
 
 #############################
@@ -47,7 +47,7 @@ class TestModel(unittest.TestCase):
             if os.path.exists(file):
                 os.remove(file)
 
-    def testUsage1(self):
+    def testUsageSBMLString(self):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
@@ -56,15 +56,45 @@ class TestModel(unittest.TestCase):
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
-    def testUsage1NoOverwrite(self):
+    def testUsageSBMLStringParameters(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
+        phrasedml_str = str(model)
+        import pdb; pdb.set_trace()
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+
+    def testUsageAntimonyString(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
+        phrasedml_str = str(model)
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+
+    def testUsageStringNoOverwrite(self):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
         _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         with self.assertWarns(UserWarning):
             _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=False)
+    
+    def testUsageFile(self):
+        # model = model model1 file-path
+        if IGNORE_TEST:
+            return
+        with open(SBML_FILE_PATH, "w") as f:
+            f.write(MODEL_SBML)
+        model = Model(MODEL_ID, SBML_FILE_PATH, ref_type="sbml_file", is_overwrite=True)
+        phrasedml_str = str(model)
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
-    def testUsage2(self):
+    def testUsageURL(self):
         # model = model model1 URL
         if IGNORE_TEST:
             return
@@ -74,6 +104,17 @@ class TestModel(unittest.TestCase):
         phrasedml_str = str(model)
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
+    
+    def testUsageModelid(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
+        phrasedml_str = str(model)
+        model = Model("model1", MODEL_ID, ref_type="model_id", is_overwrite=True)
+        phrasedml_str += "\n" + str(model)
+        self.evaluate(phrasedml_str)
+        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str

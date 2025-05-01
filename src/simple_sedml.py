@@ -71,7 +71,8 @@ class SimpleSBML(object):
         """
         return phrasedml.convertString(str(self))
 
-    def addModel(self, id:str, model_ref:str, ref_type:str=None, model_source_path:str=None, is_overwrite:bool=False):
+    def addModel(self, id:str, model_ref:str, ref_type:Optional[str]=None,
+          model_source_path:Optional[str]=None, is_overwrite:bool=False):
         """Adds a model to the script
 
         Args:
@@ -82,7 +83,7 @@ class SimpleSBML(object):
             is_overwrite: if True, overwrite the model if it already exists
         """
         model = Model(id, model_ref, ref_type=ref_type,
-              model_source_path=model_source_path, is_overwrite=is_overwrite)
+              model_source=model_source_path, is_overwrite=is_overwrite)
         self.models.append(model)
 
     def addSimulation(self, id:str, start:float, end:float, steps:int, algorithm:Optional[str]=None): 
@@ -103,13 +104,13 @@ class SimpleSBML(object):
         """
         self.tasks.append(Task(id, model, simulation))
 
-    def addRepeatedTask(self, id:str, changes:str, subtask:Task, reset=True, nested_repeats=None):
+    def addRepeatedTask(self, id:str, change_dct:dict, subtask:Task, reset:bool=True, nested_repeats=None):
         """Adds a repeated task to the script
 
         Args:
             repeated_task: RepeatedTask object
         """
-        self.repeated_tasks.append(RepeatedTask(id, changes, subtask, reset, nested_repeats))
+        self.repeated_tasks.append(RepeatedTask(id, change_dct, subtask, reset=reset, nested_repeats=nested_repeats))
 
     def addPlot(self, plot2d:Plot2D):
         """Adds a plot to the script

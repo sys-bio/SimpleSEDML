@@ -22,7 +22,7 @@ Issues
 
 class Model:
     def __init__(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None, 
-                 model_source_path:Optional[str]=None, 
+                 model_source:Optional[str]=None, 
                  is_overwrite:bool=False,
                  **kwargs):
         """Provide information about the model and a model identifier.
@@ -38,8 +38,8 @@ class Model:
                 - "sbml_url": URL to the SBML model
                 - "model_id": ID of a previously defined model
             is_overwrite (bool): if True, overwrite the model if it already exists
-            model_source_path (str): file path to where SBML model is to be stored. If None,
-                the model is stored in the current directory.
+            model_source (str): source for the SBML model. If None, the source is a file with the same name as the model ID
+                in the current directory.
         """
         # Handle defaults
         if model_ref is None:
@@ -53,66 +53,73 @@ class Model:
             ref_type = SBML_STR
         # id, model_ref, ref_type should all be assigned
         self.id = id
+        self.model_ref = model_ref
         self.ref_type = ref_type
         self.param_change_dct = kwargs
         self.is_overwrite = is_overwrite
         #
-        self.model_str = self._getSBMLFromReference(model_ref, ref_type)
-        self.model_source_path = self._makeModelSourcePath(model_source_path)
+        self.model_str = self._getSBMLFromReference()
+        self.model_source_path = self._makeModelSource(model_source)
 
-    def _makeModelSourcePath(self, model_source_path:Optional[str])->str:
-        """Saves the model to a file. The file name is the model ID with an .xml extension.
+    def _makeModelSource(self, source:Optional[str])->str:
+        """Saves the model to a file. The file name is the model ID.
         """
-        if model_source_path is None:
+        if self.ref_type == MODEL_ID:
+            # model_ref is the ID of a previously defined model
+            return self.model_ref
+        if source is None:
             # Use the current directory
-            model_source_path = os.getcwd()
-            model_source_path = os.path.join(model_source_path, self.id + ".xml")
-        model_source_path = str(model_source_path)
-        if self.is_overwrite or not os.path.exists(model_source_path):
-            with open(model_source_path, "w") as f:
+            source = os.getcwd()
+            source = os.path.join(source, self.id)
+        source = str(source)
+        if self.is_overwrite or not os.path.exists(source):
+            with open(source, "w") as f:
                 f.write(self.model_str)
-        if (not self.is_overwrite and os.path.exists(model_source_path)):
+        if (not self.is_overwrite and os.path.exists(source)):
             msg = "*** File {model_source_path} already exists and will be used as model source."
             msg += "\n  Use is_overwrite=True to overwrite."
             warnings.warn(msg)
-        return model_source_path
+        return source
 
-    def _getSBMLFromReference(self, model_ref:str, ref_type:str)->str:
+    def _getSBMLFromReference(self)->str:
         """Extracts an SBML strong from the model reference
 
         Args:
-            model_ref (str): reference to the file; reference type is specified separately
-            ref_type (str): One of MODEL_REF_TYPES
+            self.model_ref (str): reference to the file; reference type is specified separately
+            self.ref_type (str): One of self.MODEL_self.REF_TYPES
 
         Returns:
             SBML string
         """
-        if ref_type in [SBML_FILE, ANT_FILE]:
-            with open(model_ref, "r") as f:
+        if self.ref_type in [SBML_FILE, ANT_FILE]:
+            with open(self.model_ref, "r") as f:
                 lines = f.read()
-            if ref_type == SBML_FILE:
+            if self.ref_type == SBML_FILE:
                 sbml_str = lines
             else:
                 sbml_str = te.antimonyToSBML(lines)
-        elif ref_type == SBML_STR:
-            sbml_str = model_ref
-        elif ref_type == ANT_STR:
-            sbml_str = model_ref
+        elif self.ref_type == SBML_STR:
+            sbml_str = self.model_ref
+        elif self.ref_type == ANT_STR:
+            sbml_str = te.antimonyToSBML(self.model_ref)
+        elif self.ref_type == MODEL_ID:
+            # self.model_ref is the ID of a previously defined model
+            sbml_str = "" 
         else:
-            # ref_type == SBML_URL
-            response = urllib3.request("GET", model_ref)
+            # self.ref_type == SBML_URL
+            response = urllib3.request("GET", self.model_ref)
             if response.status == 200:
                 sbml_str = codecs.decode(response.data, 'utf-8')
             else:
-                raise ValueError(f"Failed to fetch SBML from URL: {model_ref}")
+                raise ValueError(f"Failed to fetch SBML from URL: {self.model_ref}")
         return sbml_str
 
     def __str__(self):
-        params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct)
+        params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct.items())
         if len(params) > 0:
             params = f" with {params}"
         if self.ref_type == MODEL_ID:
-            source = self.model_id
+            source = self.id
         else:
-            source = self.model_source_path
-        return f'{self.id} = model "{source}" {params}'
+            source = f'"{self.model_source_path}"'
+        return f'{self.id} = model {source} {params}'
