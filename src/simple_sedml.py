@@ -4,6 +4,7 @@ from src.task import Task, RepeatedTask
 from plot2d import Plot2D
 from src.report import Report
 
+import pandas as pd # type: ignore
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
 from typing import Optional, List, Tuple, Union
@@ -30,21 +31,21 @@ class SimpleSBML(object):
     """
     def __init__(self)->None:
         # Dictionary of script elements, indexed by their section ID
-        self.models:List[Model] = []
-        self.simulations:List[Simulation] = []
-        self.tasks:List[Task] = []
-        self.repeated_tasks:List[RepeatedTask] = []
-        self.reports:List[Report] = []
-        self.plot2ds:List[Plot2D] = []
+        self.model_dct:dict = {}
+        self.simulation_dct:dict = {}
+        self.task_dct:dict = {}
+        self.repeated_task_dct:dict = {}
+        self.report_dct:dict = {}
+        self.plot2d_dct:dict = {}
 
     def __str__(self)->str:
         sections = [
-            *[str(m) for m in self.models],
-            *[str(s) for s in self.simulations],
-            *[str(t) for t in self.tasks],
-            *[str(rt) for rt in self.repeated_tasks],
-            *[str(r) for r in self.reports],
-            *[str(p) for p in self.plot2ds],
+            *[str(m) for m in self.model_dct.values()],
+            *[str(s) for s in self.simulation_dct.values()],
+            *[str(t) for t in self.task_dct.values()],
+            *[str(rt) for rt in self.repeated_task_dct.values()],
+            *[str(r) for r in self.report_dct.values()],
+            *[str(p) for p in self.plot2d_dct.values()],
         ]
         return "\n".join(sections)
     
@@ -84,15 +85,16 @@ class SimpleSBML(object):
         """
         model = Model(id, model_ref, ref_type=ref_type,
               model_source=model_source_path, is_overwrite=is_overwrite)
-        self.models.append(model)
+        self.model_dct[id] = model
 
-    def addSimulation(self, id:str, start:float, end:float, steps:int, algorithm:Optional[str]=None): 
+    def addSimulation(self, id:str, simulation_type:str,
+          start:float, end:float, steps:int, algorithm:Optional[str]=None): 
         """Adds a simulation to the script
 
         Args:
             simulation: Simulation object
         """
-        self.simulations.append(Simulation(id, start, end, steps, algorithm))
+        self.simulation_dct[id] = Simulation(id, simulation_type, start, end, steps, algorithm=algorithm)
 
     def addTask(self, id, model:Model, simulation:Simulation):
         """Adds a task to the script
@@ -102,15 +104,17 @@ class SimpleSBML(object):
             model: Model object
             simulation: Simulation object
         """
-        self.tasks.append(Task(id, model, simulation))
+        task = Task(id, model, simulation)
+        self.task_dct[id] = task
 
-    def addRepeatedTask(self, id:str, change_dct:dict, subtask:Task, reset:bool=True, nested_repeats=None):
+    def addRepeatedTask(self, id:str, subtask:Task, parameter_df:pd.DataFrame, reset:bool=True):
         """Adds a repeated task to the script
 
         Args:
             repeated_task: RepeatedTask object
         """
-        self.repeated_tasks.append(RepeatedTask(id, change_dct, subtask, reset=reset, nested_repeats=nested_repeats))
+        task = RepeatedTask(id, subtask, parameter_df, reset=reset)
+        self.repeated_task_dct[id] = task
 
     def addPlot(self, plot2d:Plot2D):
         """Adds a plot to the script
@@ -118,7 +122,8 @@ class SimpleSBML(object):
         Args:
             plot2d: Plot2D object
         """
-        self.plot2ds.append(plot2d)
+        #self.plot2d_dct.append(plot2d)
+        raise NotImplementedError("Plot2D is not implemented yet.")
 
     def addReport(self, report:Report):
         """Adds a report to the script
@@ -126,7 +131,8 @@ class SimpleSBML(object):
         Args:
             report: Report object
         """
-        self.reports.append(report)
+        #self.report_dct.append(report)
+        raise NotImplementedError("Report is not implemented yet.")
 
     def getGlobalParameters(self)->List[str]:
         """Returns a list of global parameters
@@ -136,9 +142,21 @@ class SimpleSBML(object):
             List[str]: list of global parameters
         """
         parameters = []
-        for model in self.models:
+        for model in self.model_dct.values():
             if len(model.model_str) > 0:
                 rr = te.loadSBMLModel(model.model_str)
                 parameters.append(rr.getGlobalParameterIds())
         return parameters
+    
+    def validate(self):
+        """
+        Validates the script and returns a list of errors.
+        Checks for:
+        1. At least one model is defined.
+        2. At least one simulation is defined.
+        3. At least one task is defined.
+        4. At least one output is defined.
+        5. All referenced task IDs are defined.
+        """
+        raise NotImplementedError("Validation is not implemented yet.")
 

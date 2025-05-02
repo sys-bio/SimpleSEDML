@@ -3,13 +3,15 @@ from src.task import Task, RepeatedTask
 from src.model import Model
 from src.simulation import Simulation
 
+import pandas as pd; # type: ignore
 import os
 import phrasedml # type: ignore
 import unittest
 import tellurium as te # type: ignore
+from typing import Optional, List, Tuple, Union
 
 
-IGNORE_TEST = True
+IGNORE_TEST = False
 IS_PLOT = False
 MODEL_ID = "model1"
 MODEL_ANT = """
@@ -95,17 +97,34 @@ class TestRepeatedTask(unittest.TestCase):
             if os.path.exists(file):
                 os.remove(file)
 
+    def makeTask(self, **kwargs)->Tuple[Task, str]:
+        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True, **kwargs)
+        simulation = Simulation("simulation1", "uniform", 0, 10, 100)
+        task = Task("task1", model, simulation)
+        return task, assemble(model, simulation, task)
+
     def testRepeatedTask1(self):
         # task = task task1 run simulation1 on model1
         # repeated_task1 = repeat task1 for k1 in [1, 3, 5], reset=true
-        #if IGNORE_TEST:
-        #    return
-        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
-        simulation = Simulation("simulation1", "uniform", 0, 10, 100)
-        task = Task("task1", model, simulation)
-        phrasedml_str = assemble(model, simulation, task)
+        if IGNORE_TEST:
+            return
+        task, phrasedml_str = self.makeTask()
         # Create a repeated task
-        repeated_task = RepeatedTask("repeat1", task, "k1", [1, 3, 5], reset=True)
+        parameter_df = pd.DataFrame({"k1": [1, 3, 5]})
+        repeated_task = RepeatedTask("repeat1", task, parameter_df=parameter_df, reset=True)
+        phrasedml_str += "\n" + str(repeated_task)
+        result, explanation_str = evaluate(phrasedml_str)
+        self.assertTrue(result, explanation_str)
+    
+    def testRepeatedTask2(self):
+        # task = task task1 run simulation1 on model1
+        # repeated_task1 = repeat task1 for k1 in [1, 3, 5], reset=true
+        if IGNORE_TEST:
+            return
+        task, phrasedml_str = self.makeTask(k3=13)
+        # Create a repeated task
+        parameter_df = pd.DataFrame({"k1": [1, 3, 5], "k2": [0, 10, 3]})
+        repeated_task = RepeatedTask("repeat1", task, parameter_df=parameter_df, reset=True)
         phrasedml_str += "\n" + str(repeated_task)
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)
