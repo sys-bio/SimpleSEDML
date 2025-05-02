@@ -87,8 +87,6 @@ class TestModel(unittest.TestCase):
         kwargs = {k: np.random.rand() for k in options}
         kwargs["algorithm"] = "CVODE"
         simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)
-        print(str(simulation))
-        import pdb; pdb.set_trace()
         self.evaluate(str(simulation))
 
 

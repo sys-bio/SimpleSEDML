@@ -52,6 +52,4 @@ The output is
 <img src="docs/images/phrasedml_example.png" style="width:300px;height:300px;">
 
 # Plans
-1. Replicate the functions of the text-based ``phraSEDML`` in ``SimpleSEDML``. The implementation should allow for the concurrent construction of multiple ``SimpleSEDML`` objects, something that is not possible the ``phrasedml``.
-2. Extend Model by allowing descriptions: (a) automatically convert Antimony into SBML, (b) can reference arbitrary paths to local files, (c) allow URL access.
-3. Extend Simulate to report model errors that are detectable without running a simulation.
+1. First implementation of ``SimpleSEDML`` with methods for ``addModel``, ``addSimulation``, ``addTask``, ``addReport``, ``execute``, and ``to_sedml``.
