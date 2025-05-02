@@ -127,3 +127,18 @@ class SimpleSBML(object):
             report: Report object
         """
         self.reports.append(report)
+
+    def getGlobalParameters(self)->List[str]:
+        """Returns a list of global parameters
+           For the models in the SimpleSBML.
+
+        Returns:
+            List[str]: list of global parameters
+        """
+        parameters = []
+        for model in self.models:
+            if len(model.model_str) > 0:
+                rr = te.loadSBMLModel(model.model_str)
+                parameters.append(rr.getGlobalParameterIds())
+        return parameters
+

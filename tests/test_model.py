@@ -1,6 +1,7 @@
 import src.constants as cn
 from src.model import Model
 
+import numpy as np
 import os
 import phrasedml # type: ignore
 import unittest
@@ -62,7 +63,6 @@ class TestModel(unittest.TestCase):
             return
         model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
         phrasedml_str = str(model)
-        import pdb; pdb.set_trace()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
