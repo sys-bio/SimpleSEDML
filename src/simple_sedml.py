@@ -9,6 +9,8 @@ import phrasedml # type: ignore
 import tellurium as te  # type: ignore
 from typing import Optional, List, Tuple, Union
 
+REPORT = "report"
+
 """
 PhraSED-ML is strctured as a series of sections, each of which specifies a Model, Simulation, Task or repeated task.
 
@@ -18,7 +20,7 @@ A model section may contain changes to parameters, initial conditions or other m
 
 Restrictions:
   - No local variables (because this is an API)
-  - No formulas (because this is an API)
+  - No formulas (because this is an API and python can do this)
 """
 
 
@@ -37,8 +39,13 @@ class SimpleSBML(object):
         self.repeated_task_dct:dict = {}
         self.report_dct:dict = {}
         self.plot2d_dct:dict = {}
-
+    
     def __str__(self)->str:
+        """Creates phrasedml string from composition of sections
+
+        Returns:
+            str: SED-ML string
+        """
         sections = [
             *[str(m) for m in self.model_dct.values()],
             *[str(s) for s in self.simulation_dct.values()],
@@ -48,20 +55,19 @@ class SimpleSBML(object):
             *[str(p) for p in self.plot2d_dct.values()],
         ]
         return "\n".join(sections)
-    
-    def toSEDML(self)->str:
+
+    def getSEDML(self)->str:
         """Converts the script to a SED-ML string
 
         Returns:
             str: SED-ML string
+        Raises:
+            ValueError: if the conversion failsk
         """
-        result = phrasedml.convertString(str(self))
-        if result is None:
-            #import pdb; pdb.set_trace()
-            print(phrasedml.getLastPhrasedError())
-            return ""
-        else:
-            return result
+        sedml_str = phrasedml.convertString(str(self))
+        if sedml_str is None:
+            raise ValueError(phrasedml.getLastPhrasedError())
+        return sedml_str
 
     @property 
     def sedml_str(self)->str:
@@ -125,13 +131,17 @@ class SimpleSBML(object):
         #self.plot2d_dct.append(plot2d)
         raise NotImplementedError("Plot2D is not implemented yet.")
 
-    def addReport(self, report:Report):
-        """Adds a report to the script
+    def addReportVariable(self, report_variable):
+        """Adds data to the report
 
         Args:
-            report: Report object
+            data: 
         """
-        #self.report_dct.append(report)
+        if len(self.report_dct) == 0:
+            # Create a new report
+            self.report_dct[REPORT] = report
+        else:
+        self.report_dct.append(report)
         raise NotImplementedError("Report is not implemented yet.")
 
     def getGlobalParameters(self)->List[str]:
@@ -147,6 +157,15 @@ class SimpleSBML(object):
                 rr = te.loadSBMLModel(model.model_str)
                 parameters.append(rr.getGlobalParameterIds())
         return parameters
+    
+    def execute(self)->pd.DataFrame:
+        """Executes the script and returns the results as a DataFrame
+
+        Returns:
+            pd.DataFrame: DataFrame with the results
+        """
+        te.executeSEDML(self.getSEDML())
+        return te.getLastReport()
     
     def validate(self):
         """

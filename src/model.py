@@ -58,7 +58,7 @@ class Model:
         self.param_change_dct = kwargs
         self.is_overwrite = is_overwrite
         #
-        self.model_str = self._getSBMLFromReference()
+        self.sbml_str = self._getSBMLFromReference()
         self.model_source_path = self._makeModelSource(model_source)
 
     def _makeModelSource(self, source:Optional[str])->str:
@@ -73,8 +73,9 @@ class Model:
             source = os.path.join(source, self.id)
         source = str(source)
         if self.is_overwrite or not os.path.exists(source):
-            with open(source, "w") as f:
-                f.write(self.model_str)
+            with open(source, "wb") as f:
+                f.write(self.sbml_str.encode('utf-8'))
+                f.flush()
         if (not self.is_overwrite and os.path.exists(source)):
             msg = "*** File {model_source_path} already exists and will be used as model source."
             msg += "\n  Use is_overwrite=True to overwrite."

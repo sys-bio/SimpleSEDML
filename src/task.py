@@ -15,9 +15,8 @@ class Task:
         return f'{self.id} = run {self.simulation.id} on {self.model.id}'
 
 
-# FIXME: Use DataFrame as argument instead of repeated list of repeat types. Columns must be global parameters.
 class RepeatedTask:
-    # A RepeatedTask executes a single task with changes in the values of global parameters.
+    # A RepeatedTask executes a task with changes in the values of global parameters.
     # Ex: repeat1 = repeat nested_task for S1 in [1, 3, 5], S2 in [0, 10, 3], reset=true
     # Note that it is not necessary to specify functions as in the original phraSED-ML since python provides this.
 
