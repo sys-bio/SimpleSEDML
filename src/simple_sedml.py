@@ -7,9 +7,15 @@ from src.report import Report
 import pandas as pd # type: ignore
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
+import warnings
 from typing import Optional, List, Tuple, Union
 
 REPORT = "report"
+MODEL = "model"
+SIMULATION = "simulation"
+TASK = "task"
+REPEATED_TASK = "repeated_task"
+PLOT2D = "plot2d"
 
 """
 PhraSED-ML is strctured as a series of sections, each of which specifies a Model, Simulation, Task or repeated task.
@@ -66,20 +72,32 @@ class SimpleSBML(object):
         """
         sedml_str = phrasedml.convertString(str(self))
         if sedml_str is None:
-            raise ValueError(phrasedml.getLastPhrasedError())
+            raise ValueError(phrasedml.getLastError())
         return sedml_str
+    
+    def _checkDuplicate(self, id:str, dict_type:str):
+        """Checks if the ID already exists in the dictionary
 
-    @property 
-    def sedml_str(self)->str:
-        """Converts the script to a SED-ML string
+        Args:
+            id: ID of the model
+            dict_type: type of the dictionary (model, simulation, task, repeated_task)
 
-        Returns:
-            str: SED-ML string
+        Raises:
+            ValueError: if the ID already exists in the dictionary
         """
-        return phrasedml.convertString(str(self))
+        TYPE_DCT = {
+            MODEL: self.model_dct,
+            SIMULATION: self.simulation_dct,
+            TASK: self.task_dct,
+            REPEATED_TASK: self.repeated_task_dct,
+            REPORT: self.report_dct,
+            PLOT2D: self.plot2d_dct,
+        }
+        if id in TYPE_DCT[dict_type]:
+            raise ValueError(f"Duplicate {dict_type} ID: {id}")
 
     def addModel(self, id:str, model_ref:str, ref_type:Optional[str]=None,
-          model_source_path:Optional[str]=None, is_overwrite:bool=False):
+          model_source_path:Optional[str]=None, is_overwrite:bool=False, **parameters):
         """Adds a model to the script
 
         Args:
@@ -89,8 +107,9 @@ class SimpleSBML(object):
             model_source_path: path to the model source file
             is_overwrite: if True, overwrite the model if it already exists
         """
+        self._checkDuplicate(id, MODEL)
         model = Model(id, model_ref, ref_type=ref_type,
-              model_source=model_source_path, is_overwrite=is_overwrite)
+              model_source=model_source_path, is_overwrite=is_overwrite, **parameters)
         self.model_dct[id] = model
 
     def addSimulation(self, id:str, simulation_type:str,
@@ -100,9 +119,10 @@ class SimpleSBML(object):
         Args:
             simulation: Simulation object
         """
+        self._checkDuplicate(id, SIMULATION)
         self.simulation_dct[id] = Simulation(id, simulation_type, start, end, steps, algorithm=algorithm)
 
-    def addTask(self, id, model:Model, simulation:Simulation):
+    def addTask(self, id, model_id:str, simulation_id:str):
         """Adds a task to the script
 
         Args:
@@ -110,16 +130,18 @@ class SimpleSBML(object):
             model: Model object
             simulation: Simulation object
         """
-        task = Task(id, model, simulation)
+        self._checkDuplicate(id, TASK)
+        task = Task(id, model_id, simulation_id)
         self.task_dct[id] = task
 
-    def addRepeatedTask(self, id:str, subtask:Task, parameter_df:pd.DataFrame, reset:bool=True):
+    def addRepeatedTask(self, id:str, subtask_id:str, parameter_df:pd.DataFrame, reset:bool=True):
         """Adds a repeated task to the script
 
         Args:
             repeated_task: RepeatedTask object
         """
-        task = RepeatedTask(id, subtask, parameter_df, reset=reset)
+        self._checkDuplicate(id, REPEATED_TASK)
+        task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
         self.repeated_task_dct[id] = task
 
     def addPlot(self, plot2d:Plot2D):
@@ -131,18 +153,21 @@ class SimpleSBML(object):
         #self.plot2d_dct.append(plot2d)
         raise NotImplementedError("Plot2D is not implemented yet.")
 
-    def addReportVariable(self, report_variable):
+    def addReportVariables(self, *report_variables, metadata:Optional[dict]=None, title:Optional[str]=None):
         """Adds data to the report
 
         Args:
-            data: 
+            report_variable: variable to be added to the report
+            metadata: metadata for the report variable
+            title: title for the report variable
         """
-        if len(self.report_dct) == 0:
-            # Create a new report
-            self.report_dct[REPORT] = report
-        else:
-        self.report_dct.append(report)
-        raise NotImplementedError("Report is not implemented yet.")
+        if not REPORT in self.report_dct:
+            self.report_dct[REPORT] = Report()
+        if metadata is not None:
+            self.report_dct[REPORT].metadata = metadata
+        if title is not None:
+            self.report_dct[REPORT].title = title
+        self.report_dct[REPORT].addVariables(*report_variables)
 
     def getGlobalParameters(self)->List[str]:
         """Returns a list of global parameters
@@ -164,6 +189,19 @@ class SimpleSBML(object):
         Returns:
             pd.DataFrame: DataFrame with the results
         """
+        if (len(self.repeated_task_dct) > 0):
+            is_repeated_task = True
+        else:
+            is_repeated_task = False
+        if len(self.task_dct) > 1:
+            is_more_than_one_task = True
+        else:
+            is_more_than_one_task = False
+        if len(self.report_dct) > 0:
+            if is_repeated_task:
+                warnings.warn("Reports only generate data for the last repeated task.")
+            if is_more_than_one_task:
+                warnings.warn("Reports only generate data for the last task.")
         te.executeSEDML(self.getSEDML())
         return te.getLastReport()
     

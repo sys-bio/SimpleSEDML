@@ -6,13 +6,13 @@ from typing import List
 
 
 class Task:
-    def __init__(self, id:str, model:Model, simulation:Simulation):
+    def __init__(self, id:str, model_id:str, simulation_id:str):
         self.id = id
-        self.model = model
-        self.simulation = simulation
+        self.model_id = model_id
+        self.simulation_id = simulation_id
 
     def __str__(self)->str:
-        return f'{self.id} = run {self.simulation.id} on {self.model.id}'
+        return f'{self.id} = run {self.simulation_id} on {self.model_id}'
 
 
 class RepeatedTask:
@@ -20,18 +20,18 @@ class RepeatedTask:
     # Ex: repeat1 = repeat nested_task for S1 in [1, 3, 5], S2 in [0, 10, 3], reset=true
     # Note that it is not necessary to specify functions as in the original phraSED-ML since python provides this.
 
-    def __init__(self, id:str, subtask:Task, parameter_df:pd.DataFrame, reset:bool=True):
+    def __init__(self, id:str, subtask_id:str, parameter_df:pd.DataFrame, reset:bool=True):
         """Repeats a single task with changes in global parameters.
 
         Args:
             id (str): Identity of repeated task
-            subtask (Task): Task to be repeated
+            subtask_id (Task): Task to be repeated
             parameter_df (pd.DataFrame): DataFrame with the parameters to be changed. Column names must be global parameters.
             reset (bool, optional): _description_. Defaults to True.
         """
         #
         self.id = id
-        self.subtask = subtask
+        self.subtask_id = subtask_id
         self.parameter_df = parameter_df
         self.reset = reset
 
@@ -50,7 +50,7 @@ class RepeatedTask:
         return ', '.join(results)
 
     def __str__(self)->str:
-        line = f'{self.id} = repeat {self.subtask.id} for '
+        line = f'{self.id} = repeat {self.subtask_id} for '
         line += self._makeChangeValues()
         line += f', reset={self.reset}'
         return line

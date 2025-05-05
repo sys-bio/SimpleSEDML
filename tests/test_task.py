@@ -77,7 +77,7 @@ class TestTask(unittest.TestCase):
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
-        task = Task("task1", model, simulation)
+        task = Task("task1", model.id, simulation.id)
         phrasedml_str = assemble(model, simulation, task)
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)
@@ -100,7 +100,7 @@ class TestRepeatedTask(unittest.TestCase):
     def makeTask(self, **kwargs)->Tuple[Task, str]:
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True, **kwargs)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
-        task = Task("task1", model, simulation)
+        task = Task("task1", model.id, simulation.id)
         return task, assemble(model, simulation, task)
 
     def testRepeatedTask1(self):
@@ -111,7 +111,7 @@ class TestRepeatedTask(unittest.TestCase):
         task, phrasedml_str = self.makeTask()
         # Create a repeated task
         parameter_df = pd.DataFrame({"k1": [1, 3, 5]})
-        repeated_task = RepeatedTask("repeat1", task, parameter_df=parameter_df, reset=True)
+        repeated_task = RepeatedTask("repeat1", task.id, parameter_df=parameter_df, reset=True)
         phrasedml_str += "\n" + str(repeated_task)
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)
@@ -124,7 +124,7 @@ class TestRepeatedTask(unittest.TestCase):
         task, phrasedml_str = self.makeTask(k3=13)
         # Create a repeated task
         parameter_df = pd.DataFrame({"k1": [1, 3, 5], "k2": [0, 10, 3]})
-        repeated_task = RepeatedTask("repeat1", task, parameter_df=parameter_df, reset=True)
+        repeated_task = RepeatedTask("repeat1", task.id, parameter_df=parameter_df, reset=True)
         phrasedml_str += "\n" + str(repeated_task)
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)

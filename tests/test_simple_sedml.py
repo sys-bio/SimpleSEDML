@@ -1,13 +1,16 @@
+import src.constants as cn
 from src.simple_sedml import SimpleSBML
 
+import numpy as np # type: ignore
 import os
-import time
-import numpy as np
+import pandas as pd # type: ignore
+import phrasedml # type: ignore
 import unittest
+import warnings
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = False
+IGNORE_TEST = True
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -26,6 +29,9 @@ model %s
 end
 """ % MODEL_NAME
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
+SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
+WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
+REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
 
 #############################
 # Tests
@@ -33,24 +39,72 @@ MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 class TestSimpleSEDML(unittest.TestCase):
 
     def setUp(self):
+        self.remove()
         self.simple = SimpleSBML()
 
-    # Define the model
-    def testBuild(self):
-        return
-        self.simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", is_overwrite=True)
-        self.simple.addSimulation("sim1", 0, 10, 100)
+    def tearDown(self):
+        # Remove files if they exist
+        self.remove()
+
+    def remove(self):
+        # Remove files if they exist
+        for file in REMOVE_FILES:
+            if os.path.exists(file):
+                os.remove(file)
+
+    def evaluate(self, phrasedml_str:str):
+        """Evaluate the sedml_str and sbml_str
+
+        Args:
+            phrasedml_str (str): phraSED-ML string
+        """
+        sedml_str = phrasedml.convertString(phrasedml_str)
+        try:
+            te.executeSEDML(sedml_str)
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+
+    def testComposeSimple(self):
+        if IGNORE_TEST:
+            return
+        self.simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+        self.simple.addSimulation("sim1", "uniform", 0, 10, 100)
         self.simple.addTask("task1", MODEL_NAME, "sim1")
-        #self.simple.addRepeatedTask("outer_scan", "model1.ps_a", "task1")
-        self.simple.addPlot("plot1")
-
+        self.simple.addReportVariables("S1", "S2")
         # Check if the model is added correctly
-        self.assertEqual(len(self.simple.models), 1)
-        self.assertEqual(self.simple.models[0].id, MODEL_NAME)
-        self.assertEqual(self.simple.models[0].id, MODEL_NAME)
+        self.assertEqual(len(self.simple.model_dct), 1)
+        self.assertEqual(len(self.simple.simulation_dct), 1)
+        self.assertEqual(len(self.simple.task_dct), 1)
+        self.assertEqual(len(self.simple.report_dct["report"].variables), 2)
         #
-        sedml_str = self.simple.toSEDML()
+        df = self.simple.execute()
+        self.assertTrue(isinstance(df, pd.DataFrame))
+        self.assertGreater(len(df), 0)
 
+    def testComposeRepeatedTask(self):
+        #if IGNORE_TEST:
+        #    return
+        NUM_SAMPLE = 100
+        def makePHRASEDML()->SimpleSBML:
+            simple = SimpleSBML()
+            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+            simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
+            simple.addTask("task1", MODEL_NAME, "sim1")
+            return simple
+        # Works without warning
+        simple = makePHRASEDML()
+        simple.addReportVariables("task1.time", "task1.S1", "task1.S2")
+        df = simple.execute()
+        self.assertTrue(isinstance(df, pd.DataFrame))
+        self.assertLessEqual(np.abs(len(df) - NUM_SAMPLE), 2)
+        # Check for warning
+        simple = makePHRASEDML()
+        simple.addRepeatedTask("repeat1", "task1", pd.DataFrame({"k2": [1, 3, 5], "k3": [0, 10, 3]}), reset=True)
+        simple.addReportVariables("repeat1.time", "repeat1.S1", "repeat1.S2")
+        with self.assertWarns(UserWarning):
+            df = simple.execute()
+        self.assertTrue(isinstance(df, pd.DataFrame))
+        self.assertGreater(len(df), 0)
 
 
 if __name__ == '__main__':
