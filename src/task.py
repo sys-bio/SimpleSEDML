@@ -12,7 +12,8 @@ class Task:
         self.simulation_id = simulation_id
 
     def __str__(self)->str:
-        return f'{self.id} = run {self.simulation_id} on {self.model_id}'
+        result = f'{self.id} = run {self.simulation_id} on {self.model_id}'
+        return result
 
 
 class RepeatedTask:

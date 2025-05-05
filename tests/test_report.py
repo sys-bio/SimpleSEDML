@@ -51,7 +51,9 @@ def execute(phrasedml_str:str)->pd.DataFrame:
         raise RuntimeError(f"SED-ML execution failed: {e}")
 
 def assemble(*args):
-        directives = "\n".join([str(arg) for arg in args])
+        directives = ""
+        for arg in args:
+            directives += "\n" + "".join(str(arg))
         return directives
 
 
@@ -95,9 +97,9 @@ class TestReport(unittest.TestCase):
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
-        task = Task("task1", model, simulation)
+        task = Task("task1", model.id, simulation.id)
         self.report.addVariables("time", "S1", "S2", "S3", "S4")
-        phrasedml_str = assemble(model, simulation, task, self.report)
+        phrasedml_str = assemble(str(model), str(simulation), str(task), str(self.report))
         result_df = execute(phrasedml_str)
         self.assertTrue(isinstance(result_df, pd.DataFrame), "Result is not a DataFrame.")
         self.assertTrue("S1" in result_df.columns, "S1 not in result DataFrame.")
