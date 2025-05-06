@@ -1,5 +1,5 @@
 import src.constants as cn
-from src.simple_sedml import SimpleSBML
+from src.simple_sedml import SimpleSEDML
 
 import numpy as np # type: ignore
 import os
@@ -10,7 +10,7 @@ import warnings
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = True
+IGNORE_TEST = False
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -40,7 +40,7 @@ class TestSimpleSEDML(unittest.TestCase):
 
     def setUp(self):
         self.remove()
-        self.simple = SimpleSBML()
+        self.simple = SimpleSEDML()
 
     def tearDown(self):
         # Remove files if they exist
@@ -82,11 +82,11 @@ class TestSimpleSEDML(unittest.TestCase):
         self.assertGreater(len(df), 0)
 
     def testComposeRepeatedTask(self):
-        #if IGNORE_TEST:
-        #    return
+        if IGNORE_TEST:
+            return
         NUM_SAMPLE = 100
-        def makePHRASEDML()->SimpleSBML:
-            simple = SimpleSBML()
+        def makePHRASEDML()->SimpleSEDML:
+            simple = SimpleSEDML()
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
             simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
             simple.addTask("task1", MODEL_NAME, "sim1")
@@ -103,6 +103,24 @@ class TestSimpleSEDML(unittest.TestCase):
         simple.addReportVariables("repeat1.time", "repeat1.S1", "repeat1.S2")
         with self.assertWarns(UserWarning):
             df = simple.execute()
+        self.assertTrue(isinstance(df, pd.DataFrame))
+        self.assertGreater(len(df), 0)
+
+    def testComposeSimplePlot(self):
+        if IGNORE_TEST:
+            return
+        self.simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+        self.simple.addSimulation("sim1", "uniform", 0, 10, 100)
+        self.simple.addTask("task1", MODEL_NAME, "sim1")
+        self.simple.addReportVariables("S1", "S2")
+        self.simple.addPlot("time", "S2", title="test plot", is_plot=IS_PLOT)
+        # Check if the model is added correctly
+        self.assertEqual(len(self.simple.model_dct), 1)
+        self.assertEqual(len(self.simple.simulation_dct), 1)
+        self.assertEqual(len(self.simple.task_dct), 1)
+        self.assertEqual(len(self.simple.report_dct["report"].variables), 2)
+        #
+        df = self.simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
         self.assertGreater(len(df), 0)
 

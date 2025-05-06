@@ -67,6 +67,7 @@ class Model:
         if self.ref_type == MODEL_ID:
             # model_ref is the ID of a previously defined model
             return self.model_ref
+        # FIXME: Model source should be the filename in the path
         if source is None:
             # Use the current directory
             source = os.getcwd()

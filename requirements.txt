@@ -9,6 +9,7 @@ phrasedml
 pip
 pylint
 python-libsbml
+requests
 sbmlnetwork
 tabulate
 tellurium
