@@ -4,6 +4,7 @@ from src.task import Task, RepeatedTask
 from plot import Plot
 from src.report import Report
 
+from collections import namedtuple
 import pandas as pd # type: ignore
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
@@ -16,6 +17,8 @@ SIMULATION = "simulation"
 TASK = "task"
 REPEATED_TASK = "repeated_task"
 PLOT2D = "plot2d"
+
+ModelInfo = namedtuple("ModelInfo", ["model_id", "parameters", "floating_species"])
 
 """
 PhraSED-ML is strctured as a series of sections, each of which specifies a Model, Simulation, Task or repeated task.
@@ -185,19 +188,24 @@ class SimpleSEDML(object):
             self.report_dct[REPORT].title = title
         self.report_dct[REPORT].addVariables(*report_variables)
 
-    def getGlobalParameters(self)->List[str]:
-        """Returns a list of global parameters
-           For the models in the SimpleSBML.
+    def _getModelInfo(self, model_id)->ModelInfo:
+        """Returns information about model ID, parameters, floating species and fixed species.
 
-        Returns:
-            List[str]: list of global parameters
+        Args:
+            model_id (str):
+
+        Returns: ModelInfo
         """
-        parameters = []
-        for model in self.model_dct.values():
-            if len(model.sbml_str) > 0:
-                rr = te.loadSBMLModel(model.sbml_str)
-                parameters.append(rr.getGlobalParameterIds())
-        return parameters
+        if model_id not in self.model_dct:
+            raise ValueError(f"Model ID {model_id} not found.")
+        model = self.model_dct[model_id]
+        rr = te.loadSBMLModel(model.sbml_str)
+        model_info = ModelInfo(
+            model_id=model.id,
+            parameters=rr.getGlobalParameterIds(),
+            floating_species=rr.getFloatingSpeciesIds(),
+        )
+        return model_info
     
     def execute(self)->pd.DataFrame:
         """Executes the script and returns the results as a DataFrame
@@ -232,14 +240,18 @@ class SimpleSEDML(object):
             "parameters": list of parameters
             "species": list of species
         """
-        info_dct = {}
+        info_dcts:list = []
         for model in self.model_dct.values():
-            info_dct[model.id] = {
-                "model_ref": model.model_ref,
-                "ref_type": model.ref_type,
-                "param_change_dct": model.param_change_dct,
-            }
-        return info_dct
+            if (model_id is not None) and (model.id != model_id):
+                continue
+            model_info = self._getModelInfo(model.id)
+            info_dct = dict(
+                  model_id=model_info.model_id,
+                  parameters=model_info.parameters,
+                  floating_species=model_info.floating_species
+            ) 
+            info_dcts.append(info_dct)
+        return info_dcts
     
     def validate(self):
         """

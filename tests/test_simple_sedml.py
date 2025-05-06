@@ -28,6 +28,25 @@ model %s
     S4 = 0
 end
 """ % MODEL_NAME
+MODEL2_NAME = "model2"
+MODEL2_ANT = """
+model %s
+    S1 -> S2; k1*S1
+    S2 -> S3; k2*S2
+    S3 -> S4; k3*S3
+    S4 -> S5; k4*S3
+
+    k1 = 0.1
+    k2 = 0.2
+    k3 = 0.3
+    k4 = 0.3
+    S1 = 10
+    S2 = 0
+    S3 = 0
+    S4 = 0
+    S5 = 0
+end
+""" % MODEL2_NAME
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
@@ -123,6 +142,18 @@ class TestSimpleSEDML(unittest.TestCase):
         df = self.simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
         self.assertGreater(len(df), 0)
+
+    def testGetModelInfo(self):
+        if IGNORE_TEST:
+            return
+        self.simple.addModel(MODEL_NAME, MODEL_ANT, ref_type="ant_str", k1=2.5, k2= 100, is_overwrite=True)
+        self.simple.addModel(MODEL2_NAME, MODEL2_ANT, ref_type="ant_str", is_overwrite=True)
+        results = self.simple.getModelInfo(MODEL_NAME)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['model_id'], MODEL_NAME)
+        #
+        results = self.simple.getModelInfo()
+        self.assertEqual(len(results), 2)
 
 
 if __name__ == '__main__':
