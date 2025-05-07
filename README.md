@@ -13,6 +13,8 @@ and (d) output for data reports and plots.
   
 # Example
 
+See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example.
+
 Consider the model below in the Antimony language.
 
     mymodel = """

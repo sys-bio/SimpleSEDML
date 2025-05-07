@@ -2,3 +2,4 @@
 2. Tests for steadystate, stochastic_uniform
 3. addReportVariable -> addReport. Can have multiple.
 4. Notebook use cases: repeated task.
+5. validate
