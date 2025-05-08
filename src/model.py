@@ -4,7 +4,7 @@ import codecs
 import urllib3
 import os
 import tellurium as te  # type: ignore
-from typing import Optional
+from typing import Optional, List
 import warnings
 
 SBML_STR = "sbml_str"
@@ -126,3 +126,63 @@ class Model:
         else:
             source = f'"{self.model_source_path}"'
         return f'{self.id} = model {source} {params}'
+
+    @staticmethod 
+    def findReferenceType(model_ref:str, model_ids:List[str], ref_type:Optional[str]=None)->str:
+        """Infers the reference type from the model reference.
+
+        Args:
+            model_ref (str): reference to the file; reference type is specified separately
+            model_ids (List[str]): List of known model IDs
+            refer_type (str): One of self.MODEL_REF_TYPES
+
+        Returns:
+            str: reference type
+        """
+        # Use the ref_type if it is specified
+        if ref_type is not None:
+            return ref_type
+        # Check if this is a model ID
+        if model_ref in model_ids:
+            try:
+                is_file = os.path.exists(model_ref)
+            except:
+                is_file = False
+            if is_file:
+                warnings.warn(f"Model ID {model_ref} is also a file path. Using model ID.")
+            return MODEL_ID
+        # Check for Antimony string
+        try:
+            _ = te.loada(model_ref)
+            return ANT_STR
+        except:
+            pass
+        # Check for SBML string
+        try:
+            _ = te.loadSBMLModel(model_ref)
+            if "sbml" in model_ref:
+                return SBML_STR
+        except:
+            pass
+        # Check if this is a URL
+        if ("http://" in model_ref) or ("https://" in model_ref):
+            return SBML_URL
+        # Check if this is a file path
+        try:
+            is_file = os.path.exists(model_ref)
+        except:
+            is_file = False
+        if is_file:
+            try:
+                with open(model_ref, "r") as f:
+                    lines = f.read()
+                if lines.startswith("<"):
+                    return SBML_FILE
+                else:
+                    return ANT_FILE
+            except:
+                pass
+        # Report error
+        msg = f"Unidentifiable model reference: {model_ref}. "
+        msg += f"\nFix the reference and/or specify the reference type.\nMust be one of {MODEL_REF_TYPES}."
+        raise ValueError(msg)

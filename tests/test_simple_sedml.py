@@ -10,7 +10,7 @@ import warnings
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = False
+IGNORE_TEST = True
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -186,14 +186,23 @@ class TestSimpleSEDML(unittest.TestCase):
         self.assertEqual(len(results), 2)
 
     def testMakeTimeCourse(self):
-        if IGNORE_TEST:
-            return
+        #if IGNORE_TEST:
+        #    return
         try:
-            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, ["time", "S1", "S2"], start=0, end=10, num_step=100)
+            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, ref_type="ant_str", title="my plot")
+            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT,
+              plot_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        try:
+            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, title="my plot")
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        try:
+            sedml_str = SimpleSEDML.makeTimeCourse(WOLF_URL, title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:

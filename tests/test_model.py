@@ -6,6 +6,7 @@ import os
 import phrasedml # type: ignore
 import unittest
 import tellurium as te # type: ignore
+from typing import Optional
 
 
 IGNORE_TEST = False
@@ -28,8 +29,10 @@ end
 """ % MODEL_ID
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
+ANT_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -98,9 +101,8 @@ class TestModel(unittest.TestCase):
         # model = model model1 URL
         if IGNORE_TEST:
             return
-        url = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
         model_id = "Wolf2000_Glycolytic_Oscillations"
-        model = Model(model_id, url, ref_type="sbml_url", is_overwrite=True)
+        model = Model(model_id, WOLF_URL, ref_type="sbml_url", is_overwrite=True)
         phrasedml_str = str(model)
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
@@ -115,6 +117,26 @@ class TestModel(unittest.TestCase):
         phrasedml_str += "\n" + str(model)
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+
+    def testFindReferenceType(self):
+        if IGNORE_TEST:
+            return
+        model_ids = ["model1", "model2"]
+        def test(model_ref:str, expected_ref_type, ref_type:Optional[str]=None):
+            ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
+            self.assertEqual(ref_type, expected_ref_type, f"Expected {expected_ref_type}, got {ref_type}")
+        #
+        with open(ANT_FILE_PATH, "w") as f:
+            f.write(MODEL_ANT)
+        _ = Model(MODEL_ID, ANT_FILE_PATH, is_overwrite=True)  # Create file
+        test(ANT_FILE_PATH, "ant_file")
+        test(MODEL_ID, "sbml_str", ref_type="sbml_str")
+        test(MODEL_ANT, "ant_str")
+        test(MODEL_SBML, "sbml_str")
+        test(MODEL_SBML, "sbml_str")
+        test(WOLF_URL, "sbml_url")
+        _ = Model(WOLF_FILE, WOLF_URL, ref_type="sbml_url", is_overwrite=True)  # Create file
+        test(WOLF_FILE, "sbml_file")
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str

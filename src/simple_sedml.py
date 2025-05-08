@@ -18,6 +18,19 @@ TASK = "task"
 REPEATED_TASK = "repeated_task"
 PLOT2D = "plot2d"
 TIME_COURSE = "time_course"
+# Simulation parameters
+ST_UNIFORM = "uniform"
+ST_STEADY_STATE = "steady_state"
+ST_UNIFORM_STOCHASTIC = "uniform_stochastic"
+# Default values
+D_START = 0
+D_END = 5
+D_NUM_STEP = 10
+D_NUM_POINT = D_NUM_STEP + 1
+D_REF_TYPE = ANT_STR
+D_SIM_TYPE  = ST_UNIFORM
+D_SIM_UNIFORM_ALGORITHM = "CVODE"
+D_SIM_UNIFORM_STOCHASTIC_ALGORITHM = "gillespie"
 
 ModelInfo = namedtuple("ModelInfo", ["model_id", "parameters", "floating_species"])
 
@@ -127,19 +140,39 @@ class SimpleSEDML(object):
             is_overwrite: if True, overwrite the model if it already exists
         """
         self._checkDuplicate(id, MODEL)
+        model_ids = list(self.model_dct.keys())
+        ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref, ref_type=ref_type,
               model_source=model_source_path, is_overwrite=is_overwrite, **parameters)
         self.model_dct[id] = model
 
-    def addSimulation(self, id:str, simulation_type:str,
-          start:float, end:float, num_step:int, algorithm:Optional[str]=None): 
+    def addSimulation(self,
+                      id:str,
+                      simulation_type:str=ST_UNIFORM,
+                      start:float=D_START,
+                      end:float=D_END,
+                      num_step:Optional[int]=None,
+                      num_point:Optional[int]=None,
+                      algorithm:Optional[str]=None): 
         """Adds a simulation to the script
 
         Args:
-            simulation: Simulation object
+            id (str): Simulation identifier
+            start (float): start time for simulation
+            end (float): end time for simulation 
         """
+        if (num_step is None) and (num_point is None):
+            num_step = D_NUM_STEP
+        elif (num_step is None) and (num_point is not None):
+            num_step = num_point - 1
+        if algorithm is None:
+            if simulation_type == ST_UNIFORM:
+                algorithm = D_SIM_UNIFORM_ALGORITHM
+            elif simulation_type == ST_UNIFORM_STOCHASTIC:
+                algorithm = D_SIM_UNIFORM_STOCHASTIC_ALGORITHM
         self._checkDuplicate(id, SIMULATION)
-        self.simulation_dct[id] = Simulation(id, simulation_type, start, end, num_step, algorithm=algorithm)
+        self.simulation_dct[id] = Simulation(id, simulation_type, start, end,
+              num_step, algorithm=algorithm)  # type: ignore
 
     def addTask(self, id, model_id:str, simulation_id:str):
         """Adds a task to the script
@@ -273,8 +306,8 @@ class SimpleSEDML(object):
     @classmethod 
     def makeTimeCourse(cls,
          model_ref:str,
+         ref_type:Optional[str]=None,
          plot_variables:Optional[str]=None,
-         ref_type:str=ANT_STR,
          start:float=0, end:float=5, num_step:int=50,
          time_course_id:Optional[str]=None,
          title:Optional[str]=None,
@@ -284,8 +317,8 @@ class SimpleSEDML(object):
 
         Args:
             model_ref: reference to the model
-            plot_variables: variables to be plotted
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
+            plot_variables: variables to be plotted
             start: start time
             end: end time
             num_step: number of steps

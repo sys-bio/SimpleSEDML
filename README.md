@@ -10,6 +10,7 @@ and (d) output for data reports and plots.
 
 * A model source can be a file path or URL and may be in the Antimony language as well as SBML;
 * Repeated tasks are defined more simply by the use of a ``pandas`` ``DataFrame``.
+* Convenience methods are provided to simplify the API.
   
 # Example
 
@@ -28,7 +29,7 @@ We want to simulate this model and do a time course plot of all floating species
 
     from simple_sedml import SimpleSEDML
 
-    sedml_str = SimpleSEDML.makeTimeCourse(mymodel, ref_type="ant_str")
+    sedml_str = SimpleSEDML.makeTimeCourse(mymodel)
 
 We can print, save, or execute ``sedml_str``. To execute it,
 
