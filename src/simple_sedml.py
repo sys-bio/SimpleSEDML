@@ -1,4 +1,4 @@
-from src.model import Model
+from src.model import Model, ANT_STR
 from src.simulation import Simulation
 from src.task import Task, RepeatedTask
 from plot import Plot
@@ -17,6 +17,7 @@ SIMULATION = "simulation"
 TASK = "task"
 REPEATED_TASK = "repeated_task"
 PLOT2D = "plot2d"
+TIME_COURSE = "time_course"
 
 ModelInfo = namedtuple("ModelInfo", ["model_id", "parameters", "floating_species"])
 
@@ -48,6 +49,10 @@ class SimpleSEDML(object):
         self.repeated_task_dct:dict = {}
         self.report_dct:dict = {}
         self.plot_dct:dict = {}
+        #
+        self.report_id = 0
+        self.plot_id = 0
+        self.time_course_id = 0
     
     def __str__(self)->str:
         """Creates phrasedml string from composition of sections
@@ -158,35 +163,47 @@ class SimpleSEDML(object):
         task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
         self.repeated_task_dct[id] = task
 
-    def addPlot(self, x_var:str, y_var:str, z_var:Optional[str]=None, title:Optional[str]=None,
+    def addPlot(self, x_var:str, y_var:Union[str, List[str]], z_var:Optional[str]=None, title:Optional[str]=None,
+                id:Optional[str]=None,
                 is_plot:bool=True)->None:  
         """
         Plot class to represent a plot in the script.
         Args:
             x_var (str): x variable
-            y_var (str): y variable
+            y_var (str): y variable or list of y variables
             z_var (str, optional): z variable. Defaults to None.
             title (str, optional): title of the plot. Defaults to None.
+            id (str, optional): ID of the plot. Defaults to None.
             is_plot (bool, optional): if True, plot the data. Defaults to True.
         """
+        if id is None:
+            id = str(self.plot_id)
+            self.plot_id += 1
         plot = Plot(x_var, y_var, z_var=z_var, title=title, is_plot=is_plot)
-        self.plot_dct[plot.x_var] = plot
-
-    def addReportVariables(self, *report_variables, metadata:Optional[dict]=None, title:Optional[str]=None):
+        self.plot_dct[id] = plot
+    
+    def addReport(self, *report_variables, id:Optional[str]=None,
+          metadata:Optional[dict]=None, title:str=""):
         """Adds data to the report
 
         Args:
+            id: ID of the report
             report_variable: variable to be added to the report
             metadata: metadata for the report variable
             title: title for the report variable
         """
-        if not REPORT in self.report_dct:
-            self.report_dct[REPORT] = Report()
+        if id is None:
+            id = str(self.report_id)
+            self.report_id += 1
+        if not id in self.report_dct.keys():
+            if len(title) == 0:
+                title = f"Report {id}"
+            self.report_dct[id] = Report(metadata=metadata, title=title)
         if metadata is not None:
-            self.report_dct[REPORT].metadata = metadata
+            self.report_dct[id].metadata = metadata
         if title is not None:
-            self.report_dct[REPORT].title = title
-        self.report_dct[REPORT].addVariables(*report_variables)
+            self.report_dct[id].title = title
+        self.report_dct[id].addVariables(*report_variables)
 
     def _getModelInfo(self, model_id)->ModelInfo:
         """Returns information about model ID, parameters, floating species and fixed species.
@@ -252,6 +269,54 @@ class SimpleSEDML(object):
             ) 
             info_dcts.append(info_dct)
         return info_dcts
+
+    @classmethod 
+    def makeTimeCourse(cls,
+         model_ref:str,
+         plot_variables:Optional[str]=None,
+         ref_type:str=ANT_STR,
+         start:float=0, end:float=5, num_step:int=50,
+         time_course_id:Optional[str]=None,
+         title:Optional[str]=None,
+         algorithm:Optional[str]=None,
+         **parameters)->str:
+        """Creates a time course simulation
+
+        Args:
+            model_ref: reference to the model
+            plot_variables: variables to be plotted
+            ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
+            start: start time
+            end: end time
+            num_step: number of steps
+            time_course_id: ID of the time course simulation
+            algorithm: algorithm to use for the simulation
+            title: title of the plot
+            parameters: parameters to be passed to the model
+
+        Returns:
+            str: SEDML
+        """
+        if time_course_id is None:
+            time_course_id = TIME_COURSE
+        model_id = f"{time_course_id}_model"
+        sim_id = f"{time_course_id}_sim"
+        task_id = f"{time_course_id}_task"
+        if title is None:
+            title = ""
+        #
+        simple = cls()
+        simple.addModel(model_id, model_ref, ref_type=ref_type, is_overwrite=True, **parameters)
+        if plot_variables is None:
+            variable_dct = simple.getModelInfo(model_id)[0]
+            plot_variables = variable_dct['floating_species']
+            plot_variables.insert(0, "time")   # type: ignore
+        simple.addSimulation(sim_id, "uniform", start, end, num_step, algorithm=algorithm)
+        simple.addTask(task_id, model_id, sim_id)
+        x1_var = plot_variables[0]
+        y_vars = plot_variables[1:]
+        simple.addPlot(x1_var, y_vars, title=title)
+        return simple.getSEDML()
     
     def validate(self):
         """
@@ -265,3 +330,28 @@ class SimpleSEDML(object):
         """
         raise NotImplementedError("Validation is not implemented yet.")
 
+    @classmethod
+    def executeSEDML(cls, sedml_str:str)->Union[None, pd.DataFrame]:
+        """Executes the SED-ML string and returns the results as a DataFrame
+
+        Args:
+            sedml_str: SED-ML string
+
+        Returns:
+            pd.DataFrame: DataFrame with the results
+        """
+        try:
+            te.executeSEDML(sedml_str)
+        except Exception as e:
+            raise RuntimeError(f"SED-ML execution failed: {e}")
+        # Return a DataFrame if there is a report
+        num_report = sedml_str.count("<report id=")
+        if num_report > 1:
+            warnings.warn("Only generate data for the last report.")
+        if num_report >= 1:
+            df = te.getLastReport()
+            if df is None:
+                raise ValueError("No report found.")
+            return df
+        else:
+            return None

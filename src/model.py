@@ -77,6 +77,7 @@ class Model:
             with open(source, "wb") as f:
                 f.write(self.sbml_str.encode('utf-8'))
                 f.flush()
+                print(f"**Model saved to {source}")
         if (not self.is_overwrite and os.path.exists(source)):
             msg = "*** File {model_source_path} already exists and will be used as model source."
             msg += "\n  Use is_overwrite=True to overwrite."

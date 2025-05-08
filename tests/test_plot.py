@@ -81,16 +81,21 @@ class TestPlot(unittest.TestCase):
         self.assertTrue(isinstance(self.plot, Plot), "Plot object not created.")
         self.assertEqual(self.plot.title, TITLE, f"Title not set correctly. Expected {TITLE}, got {self.plot.title}")
 
-    def testExecute(self):
+    def testMultipleYvariables(self):
+        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        simulation = Simulation("simulation1", "uniform", 0, 10, 100)
+        task = Task("task1", model.id, simulation.id)
+        plot = Plot("time", ["S1", "S2"], title="2D: time vs S1, S2", is_plot=IS_PLOT)
+        phrasedml_str = assemble(str(model), str(simulation), str(task), str(plot))
+        execute(phrasedml_str)
+
+    def testXYZ(self):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
         task = Task("task1", model.id, simulation.id)
-        phrasedml_str = assemble(str(model), str(simulation), str(task), str(self.plot))
-        execute(phrasedml_str)
-        #
-        plot = Plot("time", "S1", "S2", title=TITLE, is_plot=IS_PLOT)
+        plot = Plot("time", "S1", "S2", title="3d: time, S1, S2.", is_plot=IS_PLOT)
         phrasedml_str = assemble(str(model), str(simulation), str(task), str(plot))
         execute(phrasedml_str)
 

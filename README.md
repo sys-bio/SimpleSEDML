@@ -24,33 +24,15 @@ Consider the model below in the Antimony language.
     end
     """
 
-We want to simulate this model and plot the species ``S1``, ``S2``.
+We want to simulate this model and do a time course plot of all floating species in the model.
 
     from simple_sedml import SimpleSEDML
 
-    # Compose the experiment description 
-    ssed = SimpleSEDML()
-    ssed.addModel("model1", mymodel, ref_type="ant_str")
-    ssed.AddSimulation("simulation1", "uniform", start=0, end=50, num_step=500)
-    ssed.addTask("task1", "model1", "simulation1")
-    ssed.addPlot "Conversion of S1 to S2" time vs S1, S2
+    sedml_str = SimpleSEDML.makeTimeCourse(mymodel, ref_type="ant_str")
 
-    # Validate the experiment description
-    if ssed.validate():
-        print("No errors found.")
-    else:
-        print(ssed.validate_error)
+We can print, save, or execute ``sedml_str``. To execute it,
 
-    # Execute the SEDML on Tellurium
-    ssed.execute()
-
-    # Write the sedml to a file
-    sedml = ssed.to_sedml()
-    with open("my_sedml", "w") as fd:
-        fd.write(sedml)
-
-
-The output is
+    SimpleSEDML.executeSEDML(sedml_str)
 <img src="docs/images/phrasedml_example.png" style="width:300px;height:300px;">
 
 # Restrictions

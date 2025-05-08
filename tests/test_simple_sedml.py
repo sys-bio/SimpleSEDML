@@ -49,8 +49,8 @@ end
 """ % MODEL2_NAME
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
-WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
-REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+REMOVE_FILES = [SBML_FILE_PATH]
+WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -83,20 +83,53 @@ class TestSimpleSEDML(unittest.TestCase):
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 
-    def testComposeSimple(self):
+    def makeInitialSimpleSEDML(self,
+          is_model:bool=True, 
+          is_simulation:bool=True,
+          is_task:bool=True,
+          is_report:bool=True,
+          is_plot:bool=True,
+          )->SimpleSEDML:
+        simple = SimpleSEDML()
+        if is_model:
+            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+        if is_simulation:
+            simple.addSimulation("sim1", "uniform", 0, 10, 100)
+        if is_task:
+            simple.addTask("task1", MODEL_NAME, "sim1")
+        if is_plot:
+            simple.addPlot("task1.time", ["task1.S1", "task1.S2"], title="test plot", is_plot=IS_PLOT)
+        if is_report:
+            simple.addReport("S1", "S2")
+        return simple
+
+    def testComposeSimpleReport(self):
         if IGNORE_TEST:
             return
-        self.simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
-        self.simple.addSimulation("sim1", "uniform", 0, 10, 100)
-        self.simple.addTask("task1", MODEL_NAME, "sim1")
-        self.simple.addReportVariables("S1", "S2")
+        simple = self.makeInitialSimpleSEDML(is_plot=False)
         # Check if the model is added correctly
-        self.assertEqual(len(self.simple.model_dct), 1)
-        self.assertEqual(len(self.simple.simulation_dct), 1)
-        self.assertEqual(len(self.simple.task_dct), 1)
-        self.assertEqual(len(self.simple.report_dct["report"].variables), 2)
+        self.assertEqual(len(simple.model_dct), 1)
+        self.assertEqual(len(simple.simulation_dct), 1)
+        self.assertEqual(len(simple.task_dct), 1)
+        self.assertEqual(len(simple.report_dct["0"].variables), 2)
         #
-        df = self.simple.execute()
+        df = simple.execute()
+        self.assertTrue(isinstance(df, pd.DataFrame))
+        self.assertGreater(len(df), 0)
+
+    def testComposeMultipleReports(self):
+        if IGNORE_TEST:
+            return
+        simple = self.makeInitialSimpleSEDML(is_plot=False)
+        simple.addReport("S3")
+        simple.addReport("S4")
+        # Check if the model is added correctly
+        self.assertEqual(len(simple.model_dct), 1)
+        self.assertEqual(len(simple.simulation_dct), 1)
+        self.assertEqual(len(simple.task_dct), 1)
+        self.assertEqual(len(simple.report_dct), 3)
+        #
+        df = simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
         self.assertGreater(len(df), 0)
 
@@ -112,14 +145,14 @@ class TestSimpleSEDML(unittest.TestCase):
             return simple
         # Works without warning
         simple = makePHRASEDML()
-        simple.addReportVariables("task1.time", "task1.S1", "task1.S2")
+        simple.addReport("task1.time", "task1.S1", "task1.S2")
         df = simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
         self.assertLessEqual(np.abs(len(df) - NUM_SAMPLE), 2)
         # Check for warning
         simple = makePHRASEDML()
         simple.addRepeatedTask("repeat1", "task1", pd.DataFrame({"k2": [1, 3, 5], "k3": [0, 10, 3]}), reset=True)
-        simple.addReportVariables("repeat1.time", "repeat1.S1", "repeat1.S2")
+        simple.addReport("repeat1.time", "repeat1.S1", "repeat1.S2")
         with self.assertWarns(UserWarning):
             df = simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
@@ -128,18 +161,15 @@ class TestSimpleSEDML(unittest.TestCase):
     def testComposeSimplePlot(self):
         if IGNORE_TEST:
             return
-        self.simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
-        self.simple.addSimulation("sim1", "uniform", 0, 10, 100)
-        self.simple.addTask("task1", MODEL_NAME, "sim1")
-        self.simple.addReportVariables("S1", "S2")
-        self.simple.addPlot("time", "S2", title="test plot", is_plot=IS_PLOT)
+        simple = self.makeInitialSimpleSEDML()
+        simple.addReport("S3")
         # Check if the model is added correctly
-        self.assertEqual(len(self.simple.model_dct), 1)
-        self.assertEqual(len(self.simple.simulation_dct), 1)
-        self.assertEqual(len(self.simple.task_dct), 1)
-        self.assertEqual(len(self.simple.report_dct["report"].variables), 2)
+        self.assertEqual(len(simple.model_dct), 1)
+        self.assertEqual(len(simple.simulation_dct), 1)
+        self.assertEqual(len(simple.task_dct), 1)
+        self.assertEqual(len(simple.report_dct), 2)
         #
-        df = self.simple.execute()
+        df = simple.execute()
         self.assertTrue(isinstance(df, pd.DataFrame))
         self.assertGreater(len(df), 0)
 
@@ -154,6 +184,24 @@ class TestSimpleSEDML(unittest.TestCase):
         #
         results = self.simple.getModelInfo()
         self.assertEqual(len(results), 2)
+
+    def testMakeTimeCourse(self):
+        if IGNORE_TEST:
+            return
+        try:
+            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, ["time", "S1", "S2"], start=0, end=10, num_step=100)
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        try:
+            sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, ref_type="ant_str", title="my plot")
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        try:
+            sedml_str = SimpleSEDML.makeTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        if IS_PLOT:
+            SimpleSEDML.executeSEDML(sedml_str)
 
 
 if __name__ == '__main__':
