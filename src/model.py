@@ -1,5 +1,7 @@
 '''Class that handles model definitions and their parameters.'''
 
+import constants as cn # type: ignore
+
 import codecs
 import urllib3
 import os
@@ -7,13 +9,7 @@ import tellurium as te  # type: ignore
 from typing import Optional, List
 import warnings
 
-SBML_STR = "sbml_str"
-ANT_STR = "ant_str"
-SBML_FILE = "sbml_file"
-ANT_FILE = "ant_file"
-SBML_URL = "sbml_url"
-MODEL_ID = "model_id"
-MODEL_REF_TYPES = [SBML_STR, ANT_STR, SBML_FILE, ANT_FILE, SBML_URL, MODEL_ID]
+
 
 """
 Issues
@@ -22,9 +18,9 @@ Issues
 
 class Model:
     def __init__(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None, 
-                 model_source:Optional[str]=None, 
-                 is_overwrite:bool=False,
-                 **kwargs):
+                    model_source:Optional[str]=None, 
+                    is_overwrite:bool=False,
+                    **kwargs):
         """Provide information about the model and a model identifier.
 
         Args:
@@ -48,9 +44,9 @@ class Model:
             _, filename = os.path.split(id)
             splits = filename.split(".")
             id = splits[0]
-            ref_type = SBML_FILE
+            ref_type = cn.SBML_FILE
         elif ref_type is None:
-            ref_type = SBML_STR
+            ref_type = cn.SBML_STR
         # id, model_ref, ref_type should all be assigned
         self.id = id
         self.model_ref = model_ref
@@ -64,10 +60,9 @@ class Model:
     def _makeModelSource(self, source:Optional[str])->str:
         """Saves the model to a file. The file name is the model ID.
         """
-        if self.ref_type == MODEL_ID:
+        if self.ref_type == cn.MODEL_ID:
             # model_ref is the ID of a previously defined model
             return self.model_ref
-        # FIXME: Model source should be the filename in the path
         if source is None:
             # Use the current directory
             source = os.getcwd()
@@ -89,27 +84,27 @@ class Model:
 
         Args:
             self.model_ref (str): reference to the file; reference type is specified separately
-            self.ref_type (str): One of self.MODEL_self.REF_TYPES
+            self.ref_type (str): One of self.cn.MODEL_self.REF_TYPES
 
         Returns:
             SBML string
         """
-        if self.ref_type in [SBML_FILE, ANT_FILE]:
+        if self.ref_type in [cn.SBML_FILE, cn.ANT_FILE]:
             with open(self.model_ref, "r") as f:
                 lines = f.read()
-            if self.ref_type == SBML_FILE:
+            if self.ref_type == cn.SBML_FILE:
                 sbml_str = lines
             else:
                 sbml_str = te.antimonyToSBML(lines)
-        elif self.ref_type == SBML_STR:
+        elif self.ref_type == cn.SBML_STR:
             sbml_str = self.model_ref
-        elif self.ref_type == ANT_STR:
+        elif self.ref_type == cn.ANT_STR:
             sbml_str = te.antimonyToSBML(self.model_ref)
-        elif self.ref_type == MODEL_ID:
+        elif self.ref_type == cn.MODEL_ID:
             # self.model_ref is the ID of a previously defined model
             sbml_str = "" 
         else:
-            # self.ref_type == SBML_URL
+            # self.ref_type == cn.SBML_URL
             response = urllib3.request("GET", self.model_ref)
             if response.status == 200:
                 sbml_str = codecs.decode(response.data, 'utf-8')
@@ -121,7 +116,7 @@ class Model:
         params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct.items())
         if len(params) > 0:
             params = f" with {params}"
-        if self.ref_type == MODEL_ID:
+        if self.ref_type == cn.MODEL_ID:
             source = self.id
         else:
             source = f'"{self.model_source_path}"'
@@ -134,7 +129,7 @@ class Model:
         Args:
             model_ref (str): reference to the file; reference type is specified separately
             model_ids (List[str]): List of known model IDs
-            refer_type (str): One of self.MODEL_REF_TYPES
+            refer_type (str): One of self.cn.MODEL_REF_TYPES
 
         Returns:
             str: reference type
@@ -150,23 +145,23 @@ class Model:
                 is_file = False
             if is_file:
                 warnings.warn(f"Model ID {model_ref} is also a file path. Using model ID.")
-            return MODEL_ID
+            return cn.MODEL_ID
         # Check for Antimony string
         try:
             _ = te.loada(model_ref)
-            return ANT_STR
+            return cn.ANT_STR
         except:
             pass
         # Check for SBML string
         try:
             _ = te.loadSBMLModel(model_ref)
             if "sbml" in model_ref:
-                return SBML_STR
+                return cn.SBML_STR
         except:
             pass
         # Check if this is a URL
         if ("http://" in model_ref) or ("https://" in model_ref):
-            return SBML_URL
+            return cn.SBML_URL
         # Check if this is a file path
         try:
             is_file = os.path.exists(model_ref)
@@ -177,12 +172,12 @@ class Model:
                 with open(model_ref, "r") as f:
                     lines = f.read()
                 if lines.startswith("<"):
-                    return SBML_FILE
+                    return cn.SBML_FILE
                 else:
-                    return ANT_FILE
+                    return cn.ANT_FILE
             except:
                 pass
         # Report error
         msg = f"Unidentifiable model reference: {model_ref}. "
-        msg += f"\nFix the reference and/or specify the reference type.\nMust be one of {MODEL_REF_TYPES}."
+        msg += f"\nFix the reference and/or specify the reference type.\nMust be one of {cn.MODEL_REF_TYPES}."
         raise ValueError(msg)

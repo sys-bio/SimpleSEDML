@@ -1,8 +1,6 @@
-from model import Model           # type: ignore
-from simulation import Simulation # type: ignore
+'''Abstraction for a task, the combination of a model and a simulation.'''
 
 import pandas as pd; # type: ignore
-from typing import List
 
 
 class Task:
