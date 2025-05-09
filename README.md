@@ -1,3 +1,5 @@
+[![Build](https://github.com/sys-bio/SimpleSEDML/actions/workflows/github-actions.yml/badge.svg)](https://github.com/sys-bio/SimpleSBML/actions/workflows/github-actions.yml)
+
 # SimpleSEDML
 A simple API for using the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/), a community standard for describing simulation experiments.
 
