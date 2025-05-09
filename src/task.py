@@ -45,10 +45,12 @@ class RepeatedTask:
         Returns:
             str: String with the changes in the values of global parameters.
         """
-        results = []
+        lines = []
         for col in self.parameter_df.columns:
-            results.append(f'{col} in {str(list(self.parameter_df[col].values))}')
-        return ', '.join(results)
+            values = ", ".join([str(v) for v in self.parameter_df[col].values])
+            lines.append(f'{col} in [{values}]')
+        result = ", ".join(lines)
+        return result
 
     def __str__(self)->str:
         line = f'{self.id} = repeat {self.subtask_id} for '
