@@ -8,12 +8,9 @@ pandas
 phrasedml
 pip
 pylint
-python-libsbml
 requests
-sbmlnetwork
 tabulate
 tellurium
 toml
-tqdm
 twine
 urllib3
