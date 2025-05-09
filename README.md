@@ -20,22 +20,93 @@ See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/exa
 
 Consider the model below in the Antimony language.
 
-    mymodel = """
+    MODEL_ANT = '''
     model myModel
-        J1: S1 -> S2; k1*S1;
-        k1 = 0.5;
+        J1: S1 -> S2; k1*S1
+        J2: S2 -> S3; k2*S2
+        
+        S1 = 10
+        S2 = 0
+        k1 = 1
+        k2 = 1
     end
-    """
+    '''
+
 
 We want to simulate this model and do a time course plot of all floating species in the model.
 
     from simple_sedml import SimpleSEDML
 
-    sedml_str = SimpleSEDML.makeTimeCourse(mymodel)
+    sedml_str = SimpleSEDML.makeTimeCourse(MODEL_ANT, title="My Plot")
 
 We can print, save, or execute ``sedml_str``. To execute it,
 
-    SimpleSEDML.executeSEDML(sedml_str)
+    print(sedml_str)
+
+This produces
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!-- Created by phraSED-ML version v1.3.0 with libSBML version 5.19.5. -->
+    <sedML xmlns="http://sed-ml.org/sed-ml/level1/version4" xmlns:sbml="http://www.sbml.org/sbml/level3/version2/core" level="1" version="4">
+    <listOfModels>
+        <model id="time_course_model" language="urn:sedml:language:sbml.level-3.version-2" source="/Users/jlheller/home/Technical/repos/SimpleSEDML/examples/time_course_model"/>
+    </listOfModels>
+    <listOfSimulations>
+        <uniformTimeCourse id="time_course_sim" initialTime="0" outputStartTime="0" outputEndTime="5" numberOfSteps="50">
+        <algorithm name="CVODE" kisaoID="KISAO:0000019"/>
+        </uniformTimeCourse>
+    </listOfSimulations>
+    <listOfTasks>
+        <task id="time_course_task" modelReference="time_course_model" simulationReference="time_course_sim"/>
+    </listOfTasks>
+    <listOfDataGenerators>
+        <dataGenerator id="plot_0_0_0" name="time">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> time </ci>
+        </math>
+        <listOfVariables>
+            <variable id="time" symbol="urn:sedml:symbol:time" taskReference="time_course_task" modelReference="time_course_model"/>
+        </listOfVariables>
+        </dataGenerator>
+        <dataGenerator id="plot_0_0_1" name="S1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> S1 </ci>
+        </math>
+        <listOfVariables>
+            <variable id="S1" target="/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='S1']" taskReference="time_course_task" modelReference="time_course_model"/>
+        </listOfVariables>
+        </dataGenerator>
+        <dataGenerator id="plot_0_1_1" name="S2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> S2 </ci>
+        </math>
+        <listOfVariables>
+            <variable id="S2" target="/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='S2']" taskReference="time_course_task" modelReference="time_course_model"/>
+        </listOfVariables>
+        </dataGenerator>
+        <dataGenerator id="plot_0_2_1" name="S3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> S3 </ci>
+        </math>
+        <listOfVariables>
+            <variable id="S3" target="/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='S3']" taskReference="time_course_task" modelReference="time_course_model"/>
+        </listOfVariables>
+        </dataGenerator>
+    </listOfDataGenerators>
+    <listOfOutputs>
+        <plot2D id="plot_0" name="My Plot">
+        <listOfCurves>
+            <curve id="plot_0__plot_0_0_0__plot_0_0_1" logX="false" xDataReference="plot_0_0_0" logY="false" yDataReference="plot_0_0_1"/>
+            <curve id="plot_0__plot_0_0_0__plot_0_1_1" logX="false" xDataReference="plot_0_0_0" logY="false" yDataReference="plot_0_1_1"/>
+            <curve id="plot_0__plot_0_0_0__plot_0_2_1" logX="false" xDataReference="plot_0_0_0" logY="false" yDataReference="plot_0_2_1"/>
+        </listOfCurves>
+        </plot2D>
+    </listOfOutputs>
+    </sedML>
+
+
+
+
 <img src="docs/images/phrasedml_example.png" style="width:300px;height:300px;">
 
 # Restrictions
