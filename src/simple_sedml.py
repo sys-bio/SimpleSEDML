@@ -1,8 +1,8 @@
-from src.model import Model, ANT_STR
-from src.simulation import Simulation
-from src.task import Task, RepeatedTask
-from plot import Plot
-from src.report import Report
+from model import Model, ANT_STR  # type:ignore
+from simulation import Simulation  # type:ignore
+from task import Task, RepeatedTask  # type:ignore
+from plot import Plot  # type:ignore
+from report import Report  # type:ignore
 
 from collections import namedtuple
 import pandas as pd # type: ignore

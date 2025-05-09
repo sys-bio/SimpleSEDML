@@ -1,5 +1,5 @@
-from src.model import Model
-from src.simulation import Simulation
+from model import Model           # type: ignore
+from simulation import Simulation # type: ignore
 
 import pandas as pd; # type: ignore
 from typing import List
