@@ -2,6 +2,7 @@
 
 import constants as cn # type: ignore
 
+from collections import namedtuple
 import codecs
 import urllib3
 import os
@@ -9,6 +10,40 @@ import tellurium as te  # type: ignore
 from typing import Optional, List
 import warnings
 
+
+class ModelInformation:
+    """Class that holds information about the model.
+
+    Attributes:
+        model_name (str): name of the model
+        parameters (list): list of global parameters
+        floating_species (list): list of floating species
+        boundary_species (list): list of boundary species
+        num_reaction (int): number of reactions
+        num_species (int): number of species
+        model_id (str): ID of the model
+        roadrunner (object): RoadRunner object for the model
+    """
+    def __init__(self, model_name:str, parameter_dct:dict, floating_species_dct:dict,
+            boundary_species_dct:dict, num_reaction:int, num_species:int,
+            model_id:Optional[str]=None):
+        self.model_name = model_name
+        self.parameter_dct = parameter_dct
+        self.floating_species_dct = floating_species_dct
+        self.boundary_species_dct = boundary_species_dct
+        self.num_reaction = num_reaction
+        self.num_species = num_species
+        self.model_id = model_id 
+
+    def __repr__(self):
+        """Returns a string representation of the model information"""
+        result_str = f"Model: {self.model_name}"
+        result_str += f"\nParameters: {self.parameter_dct}"
+        result_str += f"\nFloating Species: {self.floating_species_dct}"
+        result_str += f"\nBoundary Species: {self.boundary_species_dct}"
+        result_str += f"\nNumber of Reactions: {self.num_reaction}"
+        result_str += f"\nNumber of Species: {self.num_species}"
+        return result_str
 
 
 """
@@ -54,8 +89,16 @@ class Model:
         self.param_change_dct = kwargs
         self.is_overwrite = is_overwrite
         #
+        self._roadrunner = None
         self.sbml_str = self._getSBMLFromReference()
         self.model_source_path = self._makeModelSource(model_source)
+
+    @property
+    def roadrunner(self):
+        """Returns the RoadRunner object for the model"""
+        if self._roadrunner is None:
+            self._roadrunner = te.loadSBMLModel(self.sbml_str)
+        return self._roadrunner
 
     def _makeModelSource(self, source:Optional[str])->str:
         """Saves the model to a file. The file name is the model ID.
@@ -181,3 +224,42 @@ class Model:
         msg = f"Unidentifiable model reference: {model_ref}. "
         msg += f"\nFix the reference and/or specify the reference type.\nMust be one of {cn.MODEL_REF_TYPES}."
         raise ValueError(msg)
+
+    def getInformation(self)->ModelInformation:
+        """Returns information about model ID, parameters, floating species and fixed species.
+
+        Args:
+            model_id (str):
+
+        Returns: ModelInfo
+        """
+        ##
+        def makeDict(names)->dict:
+            dct = {}
+            for name in names:
+                dct[name] = self.roadrunner[name]
+            return dct
+        ##
+        # Extract the model name
+        MODEL_NAME = "modelName"
+        info_str = self.roadrunner.getInfo()
+        pos = info_str.find(MODEL_NAME)
+        info_str = info_str[pos:]
+        pos = info_str.find(":") + 2
+        info_str = info_str[pos:]
+        end_pos = info_str.find("\n")
+        model_name = info_str[:end_pos]
+        # Extract dictionary information
+        boundary_species_dct = makeDict(self.roadrunner.getBoundarySpeciesConcentrationIds())
+        floating_species_dct = makeDict(self.roadrunner.getFloatingSpeciesIds())
+        parameter_dct = makeDict(self.roadrunner.getGlobalParameterIds())
+        # Report the information
+        model_information = ModelInformation(
+            model_name=model_name,
+            parameter_dct=parameter_dct,
+            floating_species_dct=floating_species_dct,
+            boundary_species_dct=boundary_species_dct,
+            num_reaction=self.roadrunner.getNumReactions(),
+            num_species=self.roadrunner.getNumFloatingSpecies() + self.roadrunner.getNumBoundarySpecies(),
+        )
+        return model_information

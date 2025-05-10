@@ -178,12 +178,10 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             return
         self.simple.addModel(MODEL_NAME, MODEL_ANT, ref_type="ant_str", k1=2.5, k2= 100, is_overwrite=True)
         self.simple.addModel(MODEL2_NAME, MODEL2_ANT, ref_type="ant_str", is_overwrite=True)
-        results = self.simple.getModelInfo(MODEL_NAME)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['model_id'], MODEL_NAME)
-        #
-        results = self.simple.getModelInfo()
-        self.assertEqual(len(results), 2)
+        result_dct = self.simple.getAllModelInformation()
+        self.assertEqual(len(result_dct), 2)
+        model_information = result_dct[MODEL_NAME]
+        self.assertEqual(model_information.model_id, MODEL_NAME)
 
 
 if __name__ == '__main__':

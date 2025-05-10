@@ -1,11 +1,12 @@
 '''API for SimpleSEDML'''
 
 from simple_sedml_base import SimpleSEDMLBase  # type:ignore
+import model  # type:ignore
 
 import numpy as np  # type:ignore
 import pandas as pd  # type:ignore
 import tellurium as te  # type:ignore
-from typing import Optional
+from typing import Optional, List, Union
 
 TIME_COURSE = "time_course"
 
@@ -25,26 +26,32 @@ Restrictions:
 class SimpleSEDML(SimpleSEDMLBase):
 
     @classmethod
-    def getModelInformation(cls, model_ref:str, ref_type:Optional[str]=None)->dict:
+    def getModelInformation(cls, model_ref:str,
+            ref_type:Optional[str]=None)->Union[List, model.ModelInformation]:
         """Get the model global parameters and floating species.
 
         Args:
-            model_ref: reference to the model
+            model_ref: reference to the model (cannot be a model ID)
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
 
         Returns:
-            str: SEDML
+            model.ModelInformation: named tuple with the following fields:
+                - model_name: name of the model
+                - parameters: list of global parameters
+                - floating_species: list of floating species
+                - boundary_species: list of boundary species
+                - num_reaction: number of reactions
+                - num_species: number of species
         """
-        simple = cls()
-        task_id = "task1"
-        simple.addModel(task_id, model_ref, ref_type=ref_type, is_overwrite=True)
-        return simple.getModelInfo(task_id)[0]
+        ref_type = model.Model.findReferenceType(model_ref, [])
+        a_model = model.Model("dummy", model_ref, ref_type=ref_type, is_overwrite=True)
+        return a_model.getInformation()
 
     @classmethod 
     def makeSingleModelTimeCourse(cls,
             model_ref:str,
             ref_type:Optional[str]=None,
-            plot_variables:Optional[str]=None,
+            plot_variables:Optional[List[str]]=None,
             start:float=0, end:float=5, num_step:int=50,
             time_course_id:Optional[str]=None,
             title:Optional[str]=None,
@@ -77,9 +84,9 @@ class SimpleSEDML(SimpleSEDMLBase):
         #
         simple = cls()
         simple.addModel(model_id, model_ref, ref_type=ref_type, is_overwrite=True, **parameters)
+        this_model = simple.model_dct[model_id]
         if plot_variables is None:
-            variable_dct = simple.getModelInfo(model_id)[0]
-            plot_variables = variable_dct['floating_species']
+            plot_variables = list(this_model.getInformation().floating_species_dct.keys())
             plot_variables.insert(0, "time")   # type: ignore
         simple.addSimulation(sim_id, "uniform", start, end, num_step, algorithm=algorithm)
         simple.addTask(task_id, model_id, sim_id)

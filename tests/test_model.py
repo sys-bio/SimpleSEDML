@@ -1,7 +1,6 @@
 import src.constants as cn
 from src.model import Model
 
-import numpy as np
 import os
 import phrasedml # type: ignore
 import unittest
@@ -40,6 +39,7 @@ WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL335
 class TestModel(unittest.TestCase):
 
     def setUp(self):
+        self.model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
         self.remove()
 
     def tearDown(self):
@@ -149,6 +149,23 @@ class TestModel(unittest.TestCase):
             te.executeSEDML(sedml_str)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
+
+    def testGetInformation(self):
+        if IGNORE_TEST:
+            return
+        model_information = self.model.getInformation()
+        self.assertEqual(model_information.model_name, MODEL_ID)
+        self.assertTrue(model_information.parameter_dct, ["k1", "k2", "k3"])
+        self.assertEqual(list(model_information.floating_species_dct), ["S1", "S2", "S3", "S4"])
+        self.assertEqual(model_information.boundary_species_dct, {})
+        self.assertEqual(model_information.num_reaction, 3)
+
+    def testRepr(self):
+        if IGNORE_TEST:
+            return
+        self.assertTrue(MODEL_ID in str(self.model.getInformation()))
+        self.assertTrue("S1" in str(self.model.getInformation()))
+
 
 
 if __name__ == '__main__':

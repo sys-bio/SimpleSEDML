@@ -9,7 +9,7 @@ import unittest
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = True
+IGNORE_TEST = False
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -83,11 +83,10 @@ class TestSimpleSEDML(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 
     def testGetModelInformation(self):
-        #if IGNORE_TEST:
-        #    return
-        info_dct = SimpleSEDML.getModelInformation(MODEL_ANT)
-        self.assertEqual(len(info_dct), 3)
-        self.assertTrue(all([k in info_dct for k in ["parameters", "floating_species", "model_id"]]))
+        if IGNORE_TEST:
+            return
+        model_information = SimpleSEDML.getModelInformation(MODEL_ANT)
+        self.assertTrue(model_information.model_name == MODEL_NAME)
 
     def testMakeTimeCourse(self):
         if IGNORE_TEST:

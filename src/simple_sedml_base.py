@@ -220,25 +220,6 @@ class SimpleSEDMLBase(object):
         if title is not None:
             self.report_dct[id].title = title
         self.report_dct[id].addVariables(*report_variables)
-
-    def _getModelInfo(self, model_id)->ModelInfo:
-        """Returns information about model ID, parameters, floating species and fixed species.
-
-        Args:
-            model_id (str):
-
-        Returns: ModelInfo
-        """
-        if model_id not in self.model_dct:
-            raise ValueError(f"Model ID {model_id} not found.")
-        model = self.model_dct[model_id]
-        rr = te.loadSBMLModel(model.sbml_str)
-        model_info = ModelInfo(
-            model_id=model.id,
-            parameters=rr.getGlobalParameterIds(),
-            floating_species=rr.getFloatingSpeciesIds(),
-        )
-        return model_info
     
     def execute(self)->pd.DataFrame:
         """Executes the script and returns the results as a DataFrame
@@ -262,8 +243,8 @@ class SimpleSEDMLBase(object):
         te.executeSEDML(self.getSEDML())
         return te.getLastReport()
     
-    def getModelInfo(self, model_id:Optional[str]=None)->List[dict]:
-        """Returns a dictionary with the model information
+    def getAllModelInformation(self, model_id:Optional[str]=None)->dict:
+        """Returns a list of information about all models
 
         Args:
             model_id: ID of the model. If None, returns information for all models 
@@ -273,18 +254,11 @@ class SimpleSEDMLBase(object):
             "parameters": list of parameters
             "species": list of species
         """
-        info_dcts:list = []
-        for model in self.model_dct.values():
-            if (model_id is not None) and (model.id != model_id):
-                continue
-            model_info = self._getModelInfo(model.id)
-            info_dct = dict(
-                  model_id=model_info.model_id,
-                  parameters=model_info.parameters,
-                  floating_species=model_info.floating_species
-            ) 
-            info_dcts.append(info_dct)
-        return info_dcts
+        model_information_dct = {}
+        for id, model in self.model_dct.items():
+            model_information_dct[id] = model.getInformation()
+            model_information_dct[id].model_id = model.id
+        return model_information_dct
 
     def validate(self):
         """
