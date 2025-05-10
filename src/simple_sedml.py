@@ -56,7 +56,8 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id:Optional[str]=None,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
-            **parameters)->str:
+            is_return_simple_sedml:bool=False,
+            **parameters)->Union[str, 'SimpleSEDML']:
         """Creates a time course simulation
 
         Args:
@@ -69,6 +70,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             title: title of the plot
+            is_return_simple_sedml: if True, return the SimpleSEDML object instead of the SEDML string
             parameters: parameters to be passed to the model
 
         Returns:
@@ -93,4 +95,7 @@ class SimpleSEDML(SimpleSEDMLBase):
         x1_var = plot_variables[0]
         y_vars = plot_variables[1:]
         simple.addPlot(x1_var, y_vars, title=title)
-        return simple.getSEDML()
+        if is_return_simple_sedml:
+            return simple
+        else:
+            return simple.getSEDML()

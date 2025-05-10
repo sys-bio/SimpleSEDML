@@ -24,15 +24,33 @@ class ModelInformation:
         model_id (str): ID of the model
         roadrunner (object): RoadRunner object for the model
     """
-    def __init__(self, model_name:str, parameter_dct:dict, floating_species_dct:dict,
-            boundary_species_dct:dict, num_reaction:int, num_species:int,
-            model_id:Optional[str]=None):
-        self.model_name = model_name
-        self.parameter_dct = parameter_dct
-        self.floating_species_dct = floating_species_dct
-        self.boundary_species_dct = boundary_species_dct
-        self.num_reaction = num_reaction
-        self.num_species = num_species
+    def __init__(self, roadrunner, model_id:Optional[str]=None):
+        ##
+        def makeDict(names)->dict:
+            dct = {}
+            for name in names:
+                dct[name] = self.roadrunner[name]
+            return dct
+        ##
+        self.model_id = model_id
+        self.roadrunner = roadrunner
+        # Extract the model name
+        MODEL_NAME = "modelName"
+        self.roadrunner = roadrunner
+        # Get the model name
+        info_str = self.roadrunner.getInfo()
+        pos = info_str.find(MODEL_NAME)
+        info_str = info_str[pos:]
+        pos = info_str.find(":") + 2
+        info_str = info_str[pos:]
+        end_pos = info_str.find("\n")
+        self.model_name = info_str[:end_pos]
+        # Extract dictionary information
+        self.boundary_species_dct = makeDict(self.roadrunner.getBoundarySpeciesConcentrationIds())
+        self.floating_species_dct = makeDict(self.roadrunner.getFloatingSpeciesIds())
+        self.parameter_dct = makeDict(self.roadrunner.getGlobalParameterIds())
+        self.num_reaction = self.roadrunner.getNumReactions()
+        self.num_species = self.roadrunner.getNumFloatingSpecies() + self.roadrunner.getNumBoundarySpecies()
         self.model_id = model_id 
 
     def __repr__(self):
@@ -98,6 +116,7 @@ class Model:
         """Returns the RoadRunner object for the model"""
         if self._roadrunner is None:
             self._roadrunner = te.loadSBMLModel(self.sbml_str)
+        self._roadrunner.resetAll()
         return self._roadrunner
 
     def _makeModelSource(self, source:Optional[str])->str:
@@ -233,33 +252,4 @@ class Model:
 
         Returns: ModelInfo
         """
-        ##
-        def makeDict(names)->dict:
-            dct = {}
-            for name in names:
-                dct[name] = self.roadrunner[name]
-            return dct
-        ##
-        # Extract the model name
-        MODEL_NAME = "modelName"
-        info_str = self.roadrunner.getInfo()
-        pos = info_str.find(MODEL_NAME)
-        info_str = info_str[pos:]
-        pos = info_str.find(":") + 2
-        info_str = info_str[pos:]
-        end_pos = info_str.find("\n")
-        model_name = info_str[:end_pos]
-        # Extract dictionary information
-        boundary_species_dct = makeDict(self.roadrunner.getBoundarySpeciesConcentrationIds())
-        floating_species_dct = makeDict(self.roadrunner.getFloatingSpeciesIds())
-        parameter_dct = makeDict(self.roadrunner.getGlobalParameterIds())
-        # Report the information
-        model_information = ModelInformation(
-            model_name=model_name,
-            parameter_dct=parameter_dct,
-            floating_species_dct=floating_species_dct,
-            boundary_species_dct=boundary_species_dct,
-            num_reaction=self.roadrunner.getNumReactions(),
-            num_species=self.roadrunner.getNumFloatingSpecies() + self.roadrunner.getNumBoundarySpecies(),
-        )
-        return model_information
+        return ModelInformation(self.roadrunner, model_id=self.id)
