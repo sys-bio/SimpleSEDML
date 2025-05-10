@@ -1,4 +1,5 @@
 '''Simulation directives for PhraSEDML'''
+import constants as cn # type: ignore
 
 from typing import Optional
 
@@ -10,23 +11,23 @@ ST_ONESTEP = "onestep"
 
 class Simulation:
     def __init__(self, id:str, simulation_type:str,
-          start:float=0,
-          end:float=5,
-          num_step:int=50,
-          time_interval:float=0.5, # required for onestep
-          absolute_tolerance:Optional[float]=None,
-          algorithm:Optional[str]=None,
-          initial_time_step:Optional[float]=None,
-          maximum_adams_order:Optional[int]=None,
-          maximum_bdf_order:Optional[int]=None,
-          maximum_iterations:Optional[int]=None,
-          maximum_num_steps:Optional[int]=None,
-          maximum_time_step:Optional[float]=None,
-          minimum_damping:Optional[float]=None,
-          minimum_time_step:Optional[float]=None,
-          relative_tolerance:Optional[float]=None,
-          seed:Optional[int]=None,
-          variable_step_size:Optional[bool]=None):
+            start:float=0,
+            end:float=5,
+            num_step:int=50,
+            time_interval:float=0.5, # required for onestep
+            absolute_tolerance:Optional[float]=None,
+            algorithm:Optional[str]=None,
+            initial_time_step:Optional[float]=None,
+            maximum_adams_order:Optional[int]=None,
+            maximum_bdf_order:Optional[int]=None,
+            maximum_iterations:Optional[int]=None,
+            maximum_num_steps:Optional[int]=None,
+            maximum_time_step:Optional[float]=None,
+            minimum_damping:Optional[float]=None,
+            minimum_time_step:Optional[float]=None,
+            relative_tolerance:Optional[float]=None,
+            seed:Optional[int]=None,
+            variable_step_size:Optional[bool]=None):
         """Simulation class for SED-ML
         Args: 
             id (str): identifier for the simulation
@@ -50,26 +51,26 @@ class Simulation:
         self.time_interval = time_interval
         if algorithm is None:
             if simulation_type == ST_UNIFORM:
-                algorithm = "CVODE"
+                algorithm = cn.D_ALGORITHM
             elif simulation_type == ST_STOCHASTIC:
                 algorithm = "gillespie"
         self.algorithm = algorithm
         # Setup the options
         self.option_dct =  dict(
-              absolute_tolerance=absolute_tolerance,
-              algorithm=algorithm,
-              initial_time_step=initial_time_step,
-              maximum_adams_order=maximum_adams_order,
-              maximum_bdf_order=maximum_bdf_order,
-              maximum_iterations=maximum_iterations,
-              maximum_num_steps=maximum_num_steps,
-              maximum_time_step=maximum_time_step,
-              minimum_damping=minimum_damping,
-              minimum_time_step=minimum_time_step,
-              relative_tolerance=relative_tolerance,
-              seed=seed,
-              variable_step_size=variable_step_size
-        )
+                absolute_tolerance=absolute_tolerance,
+                algorithm=algorithm,
+                initial_time_step=initial_time_step,
+                maximum_adams_order=maximum_adams_order,
+                maximum_bdf_order=maximum_bdf_order,
+                maximum_iterations=maximum_iterations,
+                maximum_num_steps=maximum_num_steps,
+                maximum_time_step=maximum_time_step,
+                minimum_damping=minimum_damping,
+                minimum_time_step=minimum_time_step,
+                relative_tolerance=relative_tolerance,
+                seed=seed,
+                variable_step_size=variable_step_size
+            )
 
     def __str__(self)->str:
         if self.simulation_type == ST_UNIFORM:
