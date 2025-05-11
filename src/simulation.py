@@ -72,7 +72,7 @@ class Simulation:
                 variable_step_size=variable_step_size
             )
 
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         if self.simulation_type == ST_UNIFORM:
             simulate_arg = "simulate uniform"
         elif self.simulation_type == ST_STOCHASTIC:
@@ -83,7 +83,10 @@ class Simulation:
             line = f'{self.id} = {simulate_arg}({self.start}, {self.end}, {self.num_step})'
         # Include the options
         option_lines = [f"{self.id}.algorithm.{k} = {str(v)} " for k, v in self.option_dct.items() 
-              if (v is not None) and (k != "algorithm")]
+                if (v is not None) and (k != "algorithm")]
         option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
         section = line + "\n" + "\n".join(option_lines)
         return section
+    
+    def __str__(self)->str:
+        return self. getPhrasedml()

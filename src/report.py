@@ -22,5 +22,8 @@ class Report:
         """
         self.variables.extend(args)
 
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         return "\n".join([f'report "{self.title}" {", ".join(self.variables)}'])
+
+    def __str__(self)->str:
+        return self.getPhrasedml()

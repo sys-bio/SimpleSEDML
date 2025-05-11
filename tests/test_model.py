@@ -56,7 +56,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
@@ -65,7 +65,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
@@ -74,7 +74,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
@@ -93,7 +93,7 @@ class TestModel(unittest.TestCase):
         with open(SBML_FILE_PATH, "w") as f:
             f.write(MODEL_SBML)
         model = Model(MODEL_ID, SBML_FILE_PATH, ref_type="sbml_file", is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
@@ -103,7 +103,7 @@ class TestModel(unittest.TestCase):
             return
         model_id = "Wolf2000_Glycolytic_Oscillations"
         model = Model(model_id, WOLF_URL, ref_type="sbml_url", is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
     
@@ -112,9 +112,9 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
-        phrasedml_str = str(model)
+        phrasedml_str = model.getPhrasedml()
         model = Model("model1", MODEL_ID, ref_type="model_id", is_overwrite=True)
-        phrasedml_str += "\n" + str(model)
+        phrasedml_str += "\n" + model.getPhrasedml()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 

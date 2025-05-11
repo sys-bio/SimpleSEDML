@@ -9,9 +9,18 @@ class Task:
         self.model_id = model_id
         self.simulation_id = simulation_id
 
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         result = f'{self.id} = run {self.simulation_id} on {self.model_id}'
         return result
+    
+    def __str__(self)->str:
+        """String representation of the task object. This is used to
+        generate the SED-ML string.
+
+        Returns:
+            str: PhraSED-ML string
+        """
+        return self.getPhrasedml()
 
 
 class RepeatedTask:
@@ -50,8 +59,16 @@ class RepeatedTask:
         result = ", ".join(lines)
         return result
 
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         line = f'{self.id} = repeat {self.subtask_id} for '
         line += self._makeChangeValues()
         line += f', reset={self.reset}'
         return line
+    
+    def __str__(self)->str:
+        """PhrasedML string representation.
+
+        Returns:
+            str: PhraSED-ML string
+        """
+        return self.getPhrasedml()

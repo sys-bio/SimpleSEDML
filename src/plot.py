@@ -21,7 +21,7 @@ class Plot:
         self.title = title
         self.is_plot = is_plot
 
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         if not self.is_plot:
             return ""
         if self.z_var is None:
@@ -39,6 +39,16 @@ class Plot:
         else:
             return f"plot \"{self.title}\" {var_clause}"
         
+    def __str__(self)->str:
+        """String representation of the plot object. This is used to
+        generate the SED-ML string.
+
+        Returns:
+            str: PhraSED-ML string
+        """
+        return self.getPhrasedml()
+
+    #FIXME: test 
     def changeVariableScope(self, old_scope:str, new_scope:str)->None:
         """Change the scope of the variables in the plot. For example,
         change "model1.x" to "task1.x"
@@ -47,13 +57,13 @@ class Plot:
             old_scope (str): old scope
             new_scope (str): new scope
         """
-        if self.x_var.startswith(old_scope):
+        if self.x_var.startswith(old_scope + "."):
             self.x_var = self.x_var.replace(old_scope, new_scope)
-        if isinstance(self.y_var, str) and self.y_var.startswith(old_scope):
+        if isinstance(self.y_var, str) and self.y_var.startswith(old_scope + "."):
             self.y_var = self.y_var.replace(old_scope, new_scope)
         elif isinstance(self.y_var, list):
             for i in range(len(self.y_var)):
-                if self.y_var[i].startswith(old_scope):
+                if self.y_var[i].startswith(old_scope + "."):
                     self.y_var[i] = self.y_var[i].replace(old_scope, new_scope)
-        if self.z_var is not None and self.z_var.startswith(old_scope):
+        if self.z_var is not None and self.z_var.startswith(old_scope + "."):
             self.z_var = self.z_var.replace(old_scope, new_scope)

@@ -67,14 +67,14 @@ class SimpleSEDML(object):
         self.plot_id = 0
         self.time_course_id = 0
     
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         """Creates phrasedml string from composition of sections
 
         Returns:
             str: SED-ML string
         """
         sections = [
-            *[str(m) for m in self.model_dct.values()],
+            *[m.getPhrasedml() for m in self.model_dct.values()],
             *[str(s) for s in self.simulation_dct.values()],
             *[str(t) for t in self.task_dct.values()],
             *[str(rt) for rt in self.repeated_task_dct.values()],
@@ -82,6 +82,14 @@ class SimpleSEDML(object):
             *[str(p) for p in self.plot_dct.values()],
         ]
         return "\n".join(sections)
+    
+    def __str__(self)->str:
+        """Creates phrasedml string from composition of sections
+
+        Returns:
+            str: PhraSED-ML string
+        """
+        return self.getPhrasedml()
     
     def antimonyToSBML(antimony_str)->str:
         """Converts an Antimony string to SBML

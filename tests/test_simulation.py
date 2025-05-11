@@ -53,13 +53,13 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         simulation = Simulation(SIMULATION_ID, "uniform", 0, 10, 100)
-        self.evaluate(str(simulation))
+        self.evaluate(simulation.getPhrasedml())
 
     def testStochastic(self):
         if IGNORE_TEST:
             return
         simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100)
-        self.evaluate(str(simulation))
+        self.evaluate(simulation.getPhrasedml())
 
     # FIXME: this test is not working
     def testOnestep(self):
@@ -67,29 +67,29 @@ class TestModel(unittest.TestCase):
             return
         return
         simulation = Simulation(SIMULATION_ID, "onestep", time_interval=1)
-        self.evaluate(str(simulation))
+        self.evaluate(simulation.getPhrasedml())
 
     def testOptions(self):
         if IGNORE_TEST:
             return
         options = [
-              "absolute_tolerance",
-              "initial_time_step",
-              "maximum_adams_order",
-              "maximum_bdf_order",
-              "maximum_iterations",
-              "maximum_num_steps",
-              "maximum_time_step",
-              "minimum_damping",
-              "minimum_time_step",
-              "relative_tolerance",
-              "seed",
-              "variable_step_size",
+                "absolute_tolerance",
+                "initial_time_step",
+                "maximum_adams_order",
+                "maximum_bdf_order",
+                "maximum_iterations",
+                "maximum_num_steps",
+                "maximum_time_step",
+                "minimum_damping",
+                "minimum_time_step",
+                "relative_tolerance",
+                "seed",
+                "variable_step_size",
         ]
         kwargs = {k: np.random.rand() for k in options}
         kwargs["algorithm"] = "CVODE"
         simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)
-        self.evaluate(str(simulation))
+        self.evaluate(simulation.getPhrasedml())
 
 
     def evaluate(self, phrasedml_str:str):

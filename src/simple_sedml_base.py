@@ -50,21 +50,30 @@ class SimpleSEDMLBase(object):
         self.plot_id = 0
         self.time_course_id = 0
     
-    def __str__(self)->str:
+    def getPhrasedml(self)->str:
         """Creates phrasedml string from composition of sections
 
         Returns:
             str: SED-ML string
         """
         sections = [
-            *[str(m) for m in self.model_dct.values()],
-            *[str(s) for s in self.simulation_dct.values()],
-            *[str(t) for t in self.task_dct.values()],
-            *[str(rt) for rt in self.repeated_task_dct.values()],
-            *[str(r) for r in self.report_dct.values()],
-            *[str(p) for p in self.plot_dct.values()],
+            *[m.getPhrasedml() for m in self.model_dct.values()],
+            *[s.getPhrasedml() for s in self.simulation_dct.values()],
+            *[t.getPhrasedml() for t in self.task_dct.values()],
+            *[rt.getPhrasedml() for rt in self.repeated_task_dct.values()],
+            *[r.getPhrasedml() for r in self.report_dct.values()],
+            *[p.getPhrasedml() for p in self.plot_dct.values()],
         ]
         return "\n".join(sections)
+    
+    def __str__(self)->str:
+        """
+        Get the PhraSED-ML string representation of the script.
+
+        Returns:
+            str: PhraSED-ML string
+        """
+        return self.getPhrasedml()
     
     def antimonyToSBML(antimony_str)->str:
         """Converts an Antimony string to SBML
@@ -85,7 +94,7 @@ class SimpleSEDMLBase(object):
         Raises:
             ValueError: if the conversion failsk
         """
-        sedml_str = phrasedml.convertString(str(self))
+        sedml_str = phrasedml.convertString(self.getPhrasedml())
         if sedml_str is None:
             raise ValueError(phrasedml.getLastError())
         return sedml_str
@@ -155,7 +164,7 @@ class SimpleSEDMLBase(object):
                 algorithm = cn.D_SIM_UNIFORM_STOCHASTIC_ALGORITHM
         self._checkDuplicate(id, cn.SIMULATION)
         self.simulation_dct[id] = Simulation(id, simulation_type, start, end,
-              num_step, algorithm=algorithm)  # type: ignore
+                num_step, algorithm=algorithm)  # type: ignore
 
     def addTask(self, id, model_id:str, simulation_id:str):
         """Adds a task to the script
@@ -199,7 +208,7 @@ class SimpleSEDMLBase(object):
         self.plot_dct[id] = plot
     
     def addReport(self, *report_variables, id:Optional[str]=None,
-          metadata:Optional[dict]=None, title:str=""):
+            metadata:Optional[dict]=None, title:str=""):
         """Adds data to the report
 
         Args:

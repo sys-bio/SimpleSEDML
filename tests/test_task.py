@@ -50,7 +50,7 @@ def evaluate(phrasedml_str:str):
         return False, f"SED-ML execution failed: {e}"
 
 def assemble(*args):
-        return "\n".join([str(arg) for arg in args])
+        return "\n".join([arg.getPhrasedml() for arg in args])
 
 
 #############################
@@ -112,7 +112,7 @@ class TestRepeatedTask(unittest.TestCase):
         # Create a repeated task
         parameter_df = pd.DataFrame({"k1": [1, 3, 5]})
         repeated_task = RepeatedTask("repeat1", task.id, parameter_df=parameter_df, reset=True)
-        phrasedml_str += "\n" + str(repeated_task)
+        phrasedml_str += "\n" + repeated_task.getPhrasedml()
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)
     
@@ -125,7 +125,7 @@ class TestRepeatedTask(unittest.TestCase):
         # Create a repeated task
         parameter_df = pd.DataFrame({"k1": [1, 3, 5], "k2": [0, 10, 3]})
         repeated_task = RepeatedTask("repeat1", task.id, parameter_df=parameter_df, reset=True)
-        phrasedml_str += "\n" + str(repeated_task)
+        phrasedml_str += "\n" + repeated_task.getPhrasedml()
         result, explanation_str = evaluate(phrasedml_str)
         self.assertTrue(result, explanation_str)
 
