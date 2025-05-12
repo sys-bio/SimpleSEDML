@@ -1,6 +1,8 @@
 '''API for SimpleSEDML'''
 
+import constants as cn  # type: ignore
 from simple_sedml_base import SimpleSEDMLBase  # type:ignore
+from single_model_time_course import SingleModelTimeCourse  # type:ignore
 import model  # type:ignore
 
 import numpy as np  # type:ignore
@@ -8,7 +10,6 @@ import pandas as pd  # type:ignore
 import tellurium as te  # type:ignore
 from typing import Optional, List, Union
 
-TIME_COURSE = "time_course"
 
 
 """
@@ -52,12 +53,14 @@ class SimpleSEDML(SimpleSEDMLBase):
             model_ref:str,
             ref_type:Optional[str]=None,
             plot_variables:Optional[List[str]]=None,
-            start:float=0, end:float=5, num_step:int=50,
+            start:float=cn.D_START,
+            end:float=cn.D_END,
+            num_step:Optional[int]=None,
+            num_point:Optional[int]=None,
             time_course_id:Optional[str]=None,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
-            is_return_simple_sedml:bool=False,
-            **parameters)->Union[str, 'SimpleSEDML']:
+            **parameters)->SingleModelTimeCourse:
         """Creates a time course simulation
 
         Args:
@@ -70,32 +73,22 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             title: title of the plot
-            is_return_simple_sedml: if True, return the SimpleSEDML object instead of the SEDML string
             parameters: parameters to be passed to the model
 
         Returns:
-            str: SEDML
+            SingleModelTimeCourse: a time course simulation object
         """
-        if time_course_id is None:
-            time_course_id = TIME_COURSE
-        model_id = f"{time_course_id}_model"
-        sim_id = f"{time_course_id}_sim"
-        task_id = f"{time_course_id}_task"
-        if title is None:
-            title = ""
-        #
-        simple = cls()
-        simple.addModel(model_id, model_ref, ref_type=ref_type, is_overwrite=True, **parameters)
-        this_model = simple.model_dct[model_id]
-        if plot_variables is None:
-            plot_variables = list(this_model.getInformation().floating_species_dct.keys())
-            plot_variables.insert(0, "time")   # type: ignore
-        simple.addSimulation(sim_id, "uniform", start, end, num_step, algorithm=algorithm)
-        simple.addTask(task_id, model_id, sim_id)
-        x1_var = plot_variables[0]
-        y_vars = plot_variables[1:]
-        simple.addPlot(x1_var, y_vars, title=title)
-        if is_return_simple_sedml:
-            return simple
-        else:
-            return simple.getSEDML()
+        smtc = SingleModelTimeCourse(
+            model_ref=model_ref,
+            ref_type=ref_type,
+            display_variables=plot_variables,
+            start=start,
+            end=end,
+            num_step=num_step,
+            num_point=num_point,
+            time_course_id=time_course_id,
+            title=title,
+            algorithm=algorithm,
+            **parameters
+        )
+        return smtc

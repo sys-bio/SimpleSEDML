@@ -9,7 +9,7 @@ class Task:
         self.model_id = model_id
         self.simulation_id = simulation_id
 
-    def getPhrasedml(self)->str:
+    def getPhraSEDML(self)->str:
         result = f'{self.id} = run {self.simulation_id} on {self.model_id}'
         return result
     
@@ -20,7 +20,7 @@ class Task:
         Returns:
             str: PhraSED-ML string
         """
-        return self.getPhrasedml()
+        return self.getPhraSEDML()
 
 
 class RepeatedTask:
@@ -59,7 +59,7 @@ class RepeatedTask:
         result = ", ".join(lines)
         return result
 
-    def getPhrasedml(self)->str:
+    def getPhraSEDML(self)->str:
         line = f'{self.id} = repeat {self.subtask_id} for '
         line += self._makeChangeValues()
         line += f', reset={self.reset}'
@@ -71,4 +71,4 @@ class RepeatedTask:
         Returns:
             str: PhraSED-ML string
         """
-        return self.getPhrasedml()
+        return self.getPhraSEDML()

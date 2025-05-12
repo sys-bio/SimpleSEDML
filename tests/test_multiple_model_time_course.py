@@ -1,5 +1,6 @@
 import constants as cn # type: ignore
 from multiple_model_time_course import MultipleModelTimeCourse # type:ignore
+from simulation import Simulation # type:ignore
 
 import pandas as pd; # type: ignore
 import os
@@ -30,6 +31,8 @@ MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+DISPLAY_VARIABLES = ["S1", "S2"]
+NUM_POINT = 100
 
 
 #############################
@@ -56,7 +59,8 @@ def assemble(*args):
 class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
-        self.mmtc = MultipleModelTimeCourse(start=0, end=10, num_point=100)
+        self.mmtc = MultipleModelTimeCourse([MODEL_ANT, MODEL_SBML], start=0, end=10, num_point=NUM_POINT, k1=1.5,
+                display_variables=DISPLAY_VARIABLES)
         self.remove()
 
     def tearDown(self):
@@ -69,8 +73,24 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             if os.path.exists(file):
                 os.remove(file)
 
-    def testTimeCourse(self):
-        pass
+    def testConstructor(self):
+        """Test the constructor of MultipleModelTimeCourse"""
+        if IGNORE_TEST:
+            return
+        self.assertEqual(self.mmtc.start, 0)
+        self.assertEqual(self.mmtc.end, 10)
+        self.assertEqual(self.mmtc.num_point, 100)
+        self.assertEqual(self.mmtc.model_refs[0], MODEL_ANT)
+        self.assertEqual(self.mmtc.model_refs[1], MODEL_SBML)
+
+    def testMakeSimulationDirective(self):
+        """Test the makeSimulationDirective method"""
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeSimulationDirective()
+        simulation = list(self.mmtc.simulation_dct.values())[0]
+        self.assertTrue(isinstance(simulation, Simulation))
+        self.assertTrue(str(NUM_POINT-1) in simulation.getPhraSEDML())
 
 
 if __name__ == '__main__':

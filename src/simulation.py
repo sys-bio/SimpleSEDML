@@ -13,7 +13,8 @@ class Simulation:
     def __init__(self, id:str, simulation_type:str,
             start:float=0,
             end:float=5,
-            num_step:int=50,
+            num_step:Optional[int]=None,
+            num_point:Optional[int]=None,
             time_interval:float=0.5, # required for onestep
             absolute_tolerance:Optional[float]=None,
             algorithm:Optional[str]=None,
@@ -38,6 +39,7 @@ class Simulation:
             start (float): start time for the simulation
             end (float): end time for the simulation
             num_step (int): number of steps for the simulation
+            num_point (int): number of points for the simulation must be num_step + 1
             time_interval (float): time interval for the simulation
             algorithm (str): algorithm to use for the simulation. Defaults are:
                 - "CVODE": CVODE algorithm
@@ -47,8 +49,19 @@ class Simulation:
         self.simulation_type = simulation_type
         self.start = start
         self.end = end
-        self.num_step = num_step
         self.time_interval = time_interval
+        # Calculate the number of steps
+        if (num_step is None) and (num_point is None):
+            self.num_step = cn.D_NUM_STEP
+        elif (num_step is None) and (num_point is not None):
+            self.num_step = num_point - 1
+        elif (num_step is not None) and (num_point is None):
+            self.num_step = num_step
+        else:
+            if num_step != num_point - 1:  # type: ignore
+                raise ValueError("num_point must be num_step + 1")
+            self.num_step = num_step
+        #
         if algorithm is None:
             if simulation_type == ST_UNIFORM:
                 algorithm = cn.D_ALGORITHM
@@ -72,7 +85,7 @@ class Simulation:
                 variable_step_size=variable_step_size
             )
 
-    def getPhrasedml(self)->str:
+    def getPhraSEDML(self)->str:
         if self.simulation_type == ST_UNIFORM:
             simulate_arg = "simulate uniform"
         elif self.simulation_type == ST_STOCHASTIC:
@@ -89,4 +102,4 @@ class Simulation:
         return section
     
     def __str__(self)->str:
-        return self. getPhrasedml()
+        return self. getPhraSEDML()

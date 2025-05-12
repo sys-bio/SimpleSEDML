@@ -1,8 +1,8 @@
-import src.constants as cn
-from src.plot import Plot
-from src.task import Task
-from src.model import Model
-from src.simulation import Simulation
+import constants as cn # type: ignore
+from plot import Plot # type: ignore
+from task import Task # type: ignore
+from model import Model # type: ignore
+from simulation import Simulation # type: ignore
 
 import os
 import phrasedml # type: ignore
@@ -82,12 +82,14 @@ class TestPlot(unittest.TestCase):
         self.assertEqual(self.plot.title, TITLE, f"Title not set correctly. Expected {TITLE}, got {self.plot.title}")
 
     def testMultipleYvariables(self):
+        if IGNORE_TEST:
+            return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
         task = Task("task1", model.id, simulation.id)
         plot = Plot("time", ["S1", "S2"], title="2D: time vs S1, S2", is_plot=IS_PLOT)
-        phrasedml_str = assemble(model.getPhrasedml(), simulation.getPhrasedml(),
-                                    task.getPhrasedml(), plot.getPhrasedml())
+        phrasedml_str = assemble(model.getPhraSEDML(), simulation.getPhraSEDML(),
+                                    task.getPhraSEDML(), plot.getPhraSEDML())
         execute(phrasedml_str)
 
     def testXYZ(self):
@@ -97,8 +99,8 @@ class TestPlot(unittest.TestCase):
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
         task = Task("task1", model.id, simulation.id)
         plot = Plot("time", "S1", "S2", title="3d: time, S1, S2.", is_plot=IS_PLOT)
-        phrasedml_str = assemble(model.getPhrasedml(), simulation.getPhrasedml(),
-                                    task.getPhrasedml(), plot.getPhrasedml())
+        phrasedml_str = assemble(model.getPhraSEDML(), simulation.getPhraSEDML(),
+                                    task.getPhraSEDML(), plot.getPhraSEDML())
         execute(phrasedml_str)
 
 

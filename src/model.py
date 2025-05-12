@@ -174,7 +174,7 @@ class Model:
                 raise ValueError(f"Failed to fetch SBML from URL: {self.model_ref}")
         return sbml_str
 
-    def getPhrasedml(self):
+    def getPhraSEDML(self):
         params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct.items())
         if len(params) > 0:
             params = f" with {params}"
@@ -188,7 +188,7 @@ class Model:
         """
         Construct the PhraSED-ML string. This requires:
         """
-        return self.getPhrasedml()
+        return self.getPhraSEDML()
 
     @staticmethod 
     def findReferenceType(model_ref:str, model_ids:List[str], ref_type:Optional[str]=None)->str:

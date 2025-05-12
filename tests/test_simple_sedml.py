@@ -92,28 +92,28 @@ class TestSimpleSEDML(unittest.TestCase):
         if IGNORE_TEST:
             return
         try:
-            sedml_str = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT)
+            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            sedml_str = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT,
+            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT,
                     plot_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            sedml_str = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT, title="my plot")
+            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT, title="my plot")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            sedml_str = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, title="Wolf2000")
+            smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            sedml_str = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
+            smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if IS_PLOT:
-            SimpleSEDML.executeSEDML(sedml_str)
+            _ = smtc.execute()
 
 
 if __name__ == '__main__':

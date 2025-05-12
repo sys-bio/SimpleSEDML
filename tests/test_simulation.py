@@ -53,13 +53,13 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         simulation = Simulation(SIMULATION_ID, "uniform", 0, 10, 100)
-        self.evaluate(simulation.getPhrasedml())
+        self.evaluate(simulation.getPhraSEDML())
 
     def testStochastic(self):
         if IGNORE_TEST:
             return
         simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100)
-        self.evaluate(simulation.getPhrasedml())
+        self.evaluate(simulation.getPhraSEDML())
 
     # FIXME: this test is not working
     def testOnestep(self):
@@ -89,7 +89,7 @@ class TestModel(unittest.TestCase):
         kwargs = {k: np.random.rand() for k in options}
         kwargs["algorithm"] = "CVODE"
         simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)
-        self.evaluate(simulation.getPhrasedml())
+        self.evaluate(simulation.getPhraSEDML())
 
 
     def evaluate(self, phrasedml_str:str):

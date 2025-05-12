@@ -1,13 +1,14 @@
 from typing import Optional, List, Union
+import constants as cn # type: ignore
 
 class Plot:
     def __init__(self, x_var:str, y_var:Union[str, List[str]], z_var:Optional[str]=None, title:Optional[str]=None,
-                 is_plot:bool=True)->None:  
+            is_plot:bool=True)->None:  
         """
         Plot class to represent a plot in the script. The following cases are supported:
-           plot x vs y (z is None, y is str)
-           plot x vs y1, y2, y3 (z is None, y is a list of str)
-           plot x vs y vs z  (z is a str, y is str)
+            plot x vs y (z is None, y is str)
+            plot x vs y1, y2, y3 (z is None, y is a list of str)
+            plot x vs y vs z  (z is a str, y is str)
 
         Args:
             x_var (str): x variable
@@ -21,7 +22,7 @@ class Plot:
         self.title = title
         self.is_plot = is_plot
 
-    def getPhrasedml(self)->str:
+    def getPhraSEDML(self)->str:
         if not self.is_plot:
             return ""
         if self.z_var is None:
@@ -46,24 +47,22 @@ class Plot:
         Returns:
             str: PhraSED-ML string
         """
-        return self.getPhrasedml()
+        return self.getPhraSEDML()
 
-    #FIXME: test 
-    def changeVariableScope(self, old_scope:str, new_scope:str)->None:
-        """Change the scope of the variables in the plot. For example,
-        change "model1.x" to "task1.x"
+    def scopeVariables(self, scope:str)->None:
+        """_summary_
 
         Args:
-            old_scope (str): old scope
-            new_scope (str): new scope
+            scope (str)
         """
-        if self.x_var.startswith(old_scope + "."):
-            self.x_var = self.x_var.replace(old_scope, new_scope)
-        if isinstance(self.y_var, str) and self.y_var.startswith(old_scope + "."):
-            self.y_var = self.y_var.replace(old_scope, new_scope)
+        scope_prefix = scope + "."
+        self.x_var = scope_prefix + self.x_var
+        if isinstance(self.y_var, str):
+            self.y_var = scope_prefix + self.y_var
         elif isinstance(self.y_var, list):
             for i in range(len(self.y_var)):
-                if self.y_var[i].startswith(old_scope + "."):
-                    self.y_var[i] = self.y_var[i].replace(old_scope, new_scope)
-        if self.z_var is not None and self.z_var.startswith(old_scope + "."):
-            self.z_var = self.z_var.replace(old_scope, new_scope)
+                self.y_var[i] = scope_prefix + self.y_var[i]
+        else:
+            raise RuntimeError(f"y_var must be a string or a list of strings, not {type(self.y_var)}")
+        if self.z_var is not None:
+            self.z_var = scope_prefix + self.z_var

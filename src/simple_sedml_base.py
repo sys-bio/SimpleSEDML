@@ -50,19 +50,19 @@ class SimpleSEDMLBase(object):
         self.plot_id = 0
         self.time_course_id = 0
     
-    def getPhrasedml(self)->str:
+    def getPhraSEDML(self)->str:
         """Creates phrasedml string from composition of sections
 
         Returns:
             str: SED-ML string
         """
         sections = [
-            *[m.getPhrasedml() for m in self.model_dct.values()],
-            *[s.getPhrasedml() for s in self.simulation_dct.values()],
-            *[t.getPhrasedml() for t in self.task_dct.values()],
-            *[rt.getPhrasedml() for rt in self.repeated_task_dct.values()],
-            *[r.getPhrasedml() for r in self.report_dct.values()],
-            *[p.getPhrasedml() for p in self.plot_dct.values()],
+            *[m.getPhraSEDML() for m in self.model_dct.values()],
+            *[s.getPhraSEDML() for s in self.simulation_dct.values()],
+            *[t.getPhraSEDML() for t in self.task_dct.values()],
+            *[rt.getPhraSEDML() for rt in self.repeated_task_dct.values()],
+            *[r.getPhraSEDML() for r in self.report_dct.values()],
+            *[p.getPhraSEDML() for p in self.plot_dct.values()],
         ]
         return "\n".join(sections)
     
@@ -73,7 +73,7 @@ class SimpleSEDMLBase(object):
         Returns:
             str: PhraSED-ML string
         """
-        return self.getPhrasedml()
+        return self.getPhraSEDML()
     
     def antimonyToSBML(antimony_str)->str:
         """Converts an Antimony string to SBML
@@ -94,7 +94,7 @@ class SimpleSEDMLBase(object):
         Raises:
             ValueError: if the conversion failsk
         """
-        sedml_str = phrasedml.convertString(self.getPhrasedml())
+        sedml_str = phrasedml.convertString(self.getPhraSEDML())
         if sedml_str is None:
             raise ValueError(phrasedml.getLastError())
         return sedml_str
@@ -153,18 +153,14 @@ class SimpleSEDMLBase(object):
             start (float): start time for simulation
             end (float): end time for simulation 
         """
-        if (num_step is None) and (num_point is None):
-            num_step = cn.D_NUM_STEP
-        elif (num_step is None) and (num_point is not None):
-            num_step = num_point - 1
         if algorithm is None:
             if simulation_type == cn.ST_UNIFORM:
                 algorithm = cn.D_SIM_UNIFORM_ALGORITHM
             elif simulation_type == cn.ST_UNIFORM_STOCHASTIC:
                 algorithm = cn.D_SIM_UNIFORM_STOCHASTIC_ALGORITHM
         self._checkDuplicate(id, cn.SIMULATION)
-        self.simulation_dct[id] = Simulation(id, simulation_type, start, end,
-                num_step, algorithm=algorithm)  # type: ignore
+        self.simulation_dct[id] = Simulation(id, simulation_type=simulation_type, start=start, end=end,
+                num_point=num_point, num_step=num_step, algorithm=algorithm)  # type: ignore
 
     def addTask(self, id, model_id:str, simulation_id:str):
         """Adds a task to the script
