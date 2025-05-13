@@ -223,12 +223,10 @@ class SimpleSEDMLBase(object):
             id = str(self.report_id)
             self.report_id += 1
         if not id in self.report_dct.keys():
-            if len(title) == 0:
-                title = f"Report {id}"
             self.report_dct[id] = Report(metadata=metadata, title=title)
         if metadata is not None:
             self.report_dct[id].metadata = metadata
-        if title is not None:
+        if len(title) > 0:
             self.report_dct[id].title = title
         self.report_dct[id].addVariables(*report_variables)
     

@@ -13,7 +13,7 @@ import tellurium as te # type: ignore
 import unittest
 
 
-IGNORE_TEST = True
+IGNORE_TEST = False
 IS_PLOT = False
 MODEL_ID = "model1"
 MODEL2_ID = "model2"
@@ -54,6 +54,7 @@ WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
 DISPLAY_VARIABLES = ["S1", "S2"]
 NUM_POINT = 100
+MODEL_REFS = [MODEL_SBML, MODEL_ANT]
 
 
 #############################
@@ -82,7 +83,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
     def setUp(self):
         self.remove()
         #self.mmtc = MultipleModelTimeCourse([MODEL_SBML, MODEL2_ANT], start=0,
-        self.model_refs = [MODEL_SBML, MODEL_ANT]
+        self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
                 end=10, num_point=NUM_POINT, k1=1.5,
                 display_variables=DISPLAY_VARIABLES)
@@ -105,14 +106,14 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.assertEqual(self.mmtc.start, 0)
         self.assertEqual(self.mmtc.end, 10)
         self.assertEqual(self.mmtc.num_point, 100)
-        self.assertEqual(self.mmtc.model_refs[0], MODEL_ANT)
-        self.assertEqual(self.mmtc.model_refs[1], MODEL_SBML)
+        self.assertEqual(self.mmtc.model_refs[0], MODEL_SBML)
+        self.assertEqual(self.mmtc.model_refs[1], MODEL_ANT)
 
-    def testMakeSimulationDirective(self):
-        """Test the makeSimulationDirective method"""
+    def testMakeSimulationObject(self):
+        """Test the makeSimulationObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeSimulationDirective()
+        self.mmtc._makeSimulationObject()
         simulation = list(self.mmtc.simulation_dct.values())[0]
         self.assertTrue(isinstance(simulation, Simulation))
         self.assertTrue(str(NUM_POINT-1) in simulation.getPhraSEDML())
@@ -124,29 +125,61 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         task_id = self.mmtc._makeTaskID(MODEL_ID)
         self.assertEqual(task_id, "tmodel1")
 
-    def testMakeModelDirective(self):
-        """Test the makeModelDirective method"""
-        # FIXME: This test is not working
-        return
-        #if IGNORE_TEST:
-        #    return
-        self.mmtc._makeModelDirectives()
-        import pdb; pdb.set_trace()
-        for idx, _ in enumerate(self.model_refs):
-            self.assertTrue(isinstance(model, Model))
-            self.assertTrue(model.id == "model" + str(idx))
-            self.assertTrue(model.is_overwrite)
-
-    def testMakeTaskDirective(self):
-        """Test the makeTaskDirective method"""
+    def testMakeModelObject(self):
+        """Test the makeModelObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelDirectives()
-        self.mmtc._makeTaskDirectives(["model1", "model2"])
-        import pdb; pdb.set_trace()
+        self.mmtc._makeModelObjects()
+        self.assertEqual(len(self.mmtc.model_dct), len(MODEL_REFS))
+        trues = [m in ["model0", "model1"] for m in self.mmtc.model_dct.keys()]
+        self.assertTrue(all(trues))
+
+    def testMakeTaskObjects(self):
+        """Test the makeTaskObject method"""
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeModelObjects()
+        self.mmtc._makeTaskObjects()
         task = list(self.mmtc.task_dct.values())[0]
         self.assertTrue(isinstance(task, Task))
-        self.assertTrue(task.id == "tmodel1")
+        self.assertTrue(task.id == "tmodel0")
+
+    def testMakeVariables(self):
+        """Test the makeTaskObject method"""
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeModelObjects()
+        self.mmtc._makeVariables()
+        self.assertEqual(self.mmtc.display_variables[0], "S1")
+        self.assertEqual(self.mmtc.display_variables[1], "S2")
+
+    def testMakeReportObject(self):
+        """Test the makeTaskObject method"""
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeModelObjects()
+        self.mmtc._makeTaskObjects()
+        self.mmtc._makeReportObject()
+        report_directive = list(self.mmtc.report_dct.values())[0]
+        self.assertEqual(str(report_directive).count("S1"), 2)
+        self.assertEqual(str(report_directive).count("S2"), 2)
+
+    def testMakePlotObject(self):
+        """Test the makeTaskObject method"""
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeModelObjects()
+        self.mmtc._makeTaskObjects()
+        self.mmtc._makePlotObjects()
+        for idx, plot in enumerate(self.mmtc.plot_dct.values()):
+            directive = plot
+            variable_name = "S" + str(idx + 1)
+            self.assertTrue(variable_name in str(directive))
+
+    def testGetPhraSEDML(self):
+        #if IGNORE_TEST:
+        #    return
+        pass
 
 
 if __name__ == '__main__':

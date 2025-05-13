@@ -5,7 +5,7 @@ This module provides a class for comparing multiple models with common variables
 for the same time course. The class allows for the simulation of a collection of models
 with the same variables and generates plots and reports for the comparisons.
 The class is designed to be used with the PhraSED-ML format and provides methods
-for creating simulation directives, task directives, report directives, and plot directives.
+for creating simulation objects, task objects, report objects, and plot objects.
 
 The generation of PhraSED-ML strings is done through the `getPhrasedml` method,
 which constructs the string by adding the necessary directives based on the provided
@@ -86,7 +86,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.model_ids:list =  []
         self.task_ids:list =  []
     
-    def _makeSimulationDirective(self):
+    def _makeSimulationObject(self):
         self.addSimulation(SIM_ID, "uniform", start=self.start, end=self.end, num_step=self.num_step,
                     num_point=self.num_point, algorithm=self.algorithm)
     
@@ -113,40 +113,33 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         """
         return self._makeTaskID(model_id) + "."
     
-    def _makeModelDirectives(self):
+    def _makeModelObjects(self):
         for model_ref in self.model_refs:
             model_id = self.addModel(model_ref, is_overwrite=True, **self.parameter_dct)
             self.model_ids.append(model_id)
 
-    def _makeTaskDirectives(self):
-        """Make the task directives for the compared variables.
+    def _makeTaskObjects(self):
+        """Make the task objects for the compared variables.
 
         Returns:
             str: task ids
         """
-        if len(self.task_ids) == 0:
+        if len(self.model_ids) == 0:
             raise ValueError("No models have been added to the simulation.")
         #
         for model_id in self.model_ids:
-            import pdb; pdb.set_trace()
             task_id = self._makeTaskID(model_id)
             self.addTask(task_id, model_id, SIM_ID)
             self.task_ids.append(task_id)
     
     def _makeVariables(self):
-        # Creates variables if it's None
+        # Creates unscoped variables if it's None
         if self.display_variables is None:
             first_model_id = list(self.model_dct.keys())[0]
             self.display_variables = list(self.model_dct[first_model_id].getInformation().floating_species_dct.keys())
 
-    def _makeReportDirective(self):
-        """Make the report directive for the compared variables.
-
-        Args:
-            task_ids: list of task ids
-
-        Returns:
-            str: report directives
+    def _makeReportObject(self):
+        """Make the report objects for the compared variables.
         """
         # Calculate the task ids to consider
         # Handle the case where no variables are provided
@@ -156,17 +149,11 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         for variable in self.display_variables:
             new_report_variables = [self._makeScopePrefix(m) + variable for m in self.task_ids]
             report_variables.extend(new_report_variables)
-        self.addReport(*report_variables)
+        self.addReport(*report_variables, title="")
 
-    def _makePlotDirective(self):
-        """Make the report directive for the compared variables.
+    def _makePlotObjects(self):
+        """Make the report objects for the compared variables.
         There is one plot for each variable that plots comparisons of the models.
-
-        Args:
-            task_ids: list of task ids
-
-        Returns:
-            str: report directives
         """
         #
         self._makeVariables()
@@ -183,11 +170,11 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             str: Phrased-ML string
         """
         # Add the models specified in the constructors
-        self._makeModelDirectives()
-        self._makeSimulationDirective()
-        self._makeTaskDirectives()
-        self._makeReportDirective()
-        self._makePlotDirectives()
+        self._makeModelObjects()
+        self._makeSimulationObject()
+        self._makeTaskObjects()
+        self._makeReportObject()
+        self._makePlotObjects()
         #
         return self.self.super().getPhrasedml()
     
