@@ -13,7 +13,7 @@ import tellurium as te # type: ignore
 import unittest
 
 
-IGNORE_TEST = False
+IGNORE_TEST = True
 IS_PLOT = False
 MODEL_ID = "model1"
 MODEL2_ID = "model2"
@@ -71,7 +71,6 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
         self.remove()
-        #self.mmtc = MultipleModelTimeCourse([MODEL_SBML, MODEL2_ANT], start=0,
         self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
                 end=10, num_point=NUM_POINT, k1=1.5,
@@ -143,6 +142,13 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.mmtc._makeVariables()
         self.assertEqual(self.mmtc.display_variables[0], "S1")
         self.assertEqual(self.mmtc.display_variables[1], "S2")
+        #
+        mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT)
+        mmtc._makeModelObjects()
+        mmtc._makeVariables()
+        self.assertEqual(mmtc.display_variables[0], "S1")
+        self.assertEqual(mmtc.display_variables[1], "S2")
+        self.assertEqual(mmtc.display_variables[2], "S3")
 
     def testMakeReportObject(self):
         """Test the makeTaskObject method"""

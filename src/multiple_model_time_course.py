@@ -145,7 +145,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
     
     def _makeVariables(self):
         # Creates unscoped variables if it's None
-        if self.display_variables is None:
+        if len(self.display_variables) == 0:
             first_model_id = list(self.model_dct.keys())[0]
             self.display_variables = list(self.model_dct[first_model_id].getInformation().floating_species_dct.keys())
 
