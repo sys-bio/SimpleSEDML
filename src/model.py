@@ -100,13 +100,17 @@ class Model:
             id = INVALID_MODEL_ID
         #
         if ref_type is None:
-            ref_type = self.findReferenceType(model_ref, existing_model_ids)
+            ref_type = self._findReferenceType(model_ref, existing_model_ids)
         # Now we can resolve the model reference and id
         if id == INVALID_MODEL_ID:
-            # id is a file path to an SBML model
-            _, filename = os.path.split(model_ref)
-            splits = filename.split(".")
-            id = splits[0]
+            if "file" in ref_type:
+                # id is a file path to an SBML model
+                _, filename = os.path.split(model_ref)
+                splits = filename.split(".")
+                id = splits[0]
+            else:
+                # Create a unique ID for the model
+                id = "model" + str(len(existing_model_ids))
         # Have resolved: id, model_ref, ref_type
         self.id = id
         self.model_ref = model_ref
@@ -198,7 +202,7 @@ class Model:
         return self.getPhraSEDML()
 
     @staticmethod 
-    def findReferenceType(model_ref:str, model_ids:List[str], ref_type:Optional[str]=None)->str:
+    def _findReferenceType(model_ref:str, model_ids:List[str], ref_type:Optional[str]=None)->str:
         """Infers the reference type from the model reference.
 
         Args:
@@ -224,14 +228,14 @@ class Model:
         # Check for Antimony string
         try:
             _ = te.loada(model_ref)
-            if "->" in model_ref:
+            if " ->" in model_ref:
                 return cn.ANT_STR
         except:
             pass
         # Check for SBML string
         try:
             _ = te.loadSBMLModel(model_ref)
-            if "sbml" in model_ref:
+            if "<sbml" in model_ref:
                 return cn.SBML_STR
         except:
             pass

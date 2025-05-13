@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
             return
         model_ids = ["model1", "model2"]
         def test(model_ref:str, expected_ref_type, ref_type:Optional[str]=None):
-            ref_type = Model.findReferenceType(model_ref, model_ids=model_ids, ref_type=ref_type)
+            ref_type = Model._findReferenceType(model_ref, model_ids=model_ids, ref_type=ref_type)
             self.assertEqual(ref_type, expected_ref_type, f"Expected {expected_ref_type}, got {ref_type}")
         #
         with open(ANT_FILE_PATH, "w") as f:

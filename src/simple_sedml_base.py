@@ -135,12 +135,13 @@ class SimpleSEDMLBase(object):
         Returns:
             str: ID of the model
         """
-        self._checkDuplicate(id, cn.MODEL)
         model_ids = list(self.model_dct.keys())
+        #ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref, ref_type=ref_type,
                 model_source=model_source_path, is_overwrite=is_overwrite,
                 existing_model_ids=model_ids, **parameters)
-        self.model_dct[id] = model
+        self._checkDuplicate(model.id, cn.MODEL)
+        self.model_dct[model.id] = model
         return model.id
 
     def addSimulation(self,
