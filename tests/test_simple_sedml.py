@@ -88,7 +88,7 @@ class TestSimpleSEDML(unittest.TestCase):
         model_information = SimpleSEDML.getModelInformation(MODEL_ANT)
         self.assertTrue(model_information.model_name == MODEL_NAME)
 
-    def testMakeTimeCourse(self):
+    def testMakeSingleModelTimeCourse(self):
         if IGNORE_TEST:
             return
         try:
@@ -97,7 +97,7 @@ class TestSimpleSEDML(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
             smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT,
-                    plot_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
+                    display_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
@@ -114,6 +114,24 @@ class TestSimpleSEDML(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if IS_PLOT:
             _ = smtc.execute()
+
+    def testMakeMultipleModelTimeCourse(self):
+        if IGNORE_TEST:
+            return
+        try:
+            mmtc = SimpleSEDML.makeMultipleModelTimeCourse(
+                    [MODEL_ANT, MODEL2_ANT],
+                    start=0,
+                    end=10,
+                    num_step=100,
+                    k1=1.5,
+                    display_variables=["S1", "S2"],
+                    is_plot=IS_PLOT,
+                    )
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
+        if IS_PLOT:
+            _ = mmtc.execute()
 
 
 if __name__ == '__main__':

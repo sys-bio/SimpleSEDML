@@ -16,9 +16,10 @@ can reference other model definitions that occur later on.
 
 import constants as cn # type: ignore
 from simple_sedml_base import SimpleSEDMLBase  # type:ignore
-from typing import Optional, List
+from typing import Optional, List, Union
 
 SIM_ID = "sim1"
+SCOPE = "."
 
 
 class MultipleModelTimeCourse(SimpleSEDMLBase):
@@ -33,6 +34,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
                     algorithm:str=cn.D_ALGORITHM,
                     time_course_id:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
+                    is_plot:bool=True,
                     **parameter_dct,
                     ):
         """Simulates a collection of models with common variables for the same time course.
@@ -49,7 +51,8 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             models (Optional[List[str]], optional): List of model references. Defaults to None.
             variables (Optional[List[str]], optional): List of variables to be compared. Defaults to None.
                 if not provided, all variables in the model are used.
-            parameters (Optional[dict], optional): Dictionary of parameters whose values are changed
+            is_plot (bool, optional): Whether to plot the results. Defaults to True.
+            parameter_dct (Optional[dict], optional): Dictionary of parameters whose values are changed
 
         Example 1: Compare two models with the same variables
             mmtc = MultipleModelTimeCourse(start=0, end=10, num_step=100,
@@ -76,18 +79,24 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
-        self.model_refs = model_refs
+        self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
         self.time_course_id = time_course_id
         if display_variables is None:
             display_variables = []
         self.display_variables = display_variables
         self.parameter_dct = parameter_dct
+        self.is_plot = is_plot
         # Calculated
-        self.model_ids:list =  []
-        self.task_ids:list =  []
-    
+        self.task_ids:list = []
+
+    @property
+    def model_ids(self)->List[Union[str, None]]: 
+        return list(self.model_ref_dct.values())
+
     def _makeSimulationObject(self):
-        self.addSimulation(SIM_ID, "uniform", start=self.start, end=self.end, num_step=self.num_step,
+        if not SIM_ID in self.simulation_dct:
+            # Create the simulation object
+            self.addSimulation(SIM_ID, "uniform", start=self.start, end=self.end, num_step=self.num_step,
                     num_point=self.num_point, algorithm=self.algorithm)
     
     @staticmethod
@@ -111,12 +120,13 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         Returns:
             str: task name
         """
-        return self._makeTaskID(model_id) + "."
+        return self._makeTaskID(model_id) + SCOPE
     
     def _makeModelObjects(self):
-        for model_ref in self.model_refs:
-            model_id = self.addModel(model_ref, is_overwrite=True, **self.parameter_dct)
-            self.model_ids.append(model_id)
+        for model_ref, task_id in self.model_ref_dct.items():
+            if task_id is None:
+                model_id = self.addModel(model_ref, is_overwrite=True, **self.parameter_dct)
+                self.model_ref_dct[model_ref] = model_id
 
     def _makeTaskObjects(self):
         """Make the task objects for the compared variables.
@@ -129,8 +139,9 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         for model_id in self.model_ids:
             task_id = self._makeTaskID(model_id)
-            self.addTask(task_id, model_id, SIM_ID)
-            self.task_ids.append(task_id)
+            if not task_id in self.task_dct:
+                self.addTask(task_id, model_id, SIM_ID)
+                self.task_ids.append(task_id)
     
     def _makeVariables(self):
         # Creates unscoped variables if it's None
@@ -147,9 +158,11 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         report_variables = []
         for variable in self.display_variables:
-            new_report_variables = [self._makeScopePrefix(m) + variable for m in self.task_ids]
+            new_report_variables = [m + SCOPE + variable for m in self.task_ids]
             report_variables.extend(new_report_variables)
-        self.addReport(*report_variables, title="")
+        first_time_variable = self.task_ids[0] + SCOPE + cn.TIME
+        report_variables.insert(0, first_time_variable)
+        self.addReport(*report_variables, is_plot=self.is_plot)
 
     def _makePlotObjects(self):
         """Make the report objects for the compared variables.
@@ -158,8 +171,12 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         self._makeVariables()
         for variable in self.display_variables:
-            plot_variables = [self._makeScopePrefix(m) + variable for m in self.task_ids]
-            self.addPlot(*plot_variables, title=variable)
+            plot_id = "_".join([variable + "-" + m for m in self.task_ids])
+            if not plot_id in self.plot_dct:
+                variables = [m + SCOPE + variable for m in self.task_ids]
+                first_time_variable = self.task_ids[0] + SCOPE + cn.TIME
+                self.addPlot(x_var=first_time_variable, y_var=variables,
+                    title=variable, id=plot_id, is_plot=self.is_plot)
 
     def getPhraSEDML(self)->str:
         """Construct the PhraSED-ML string. This requires:
@@ -176,7 +193,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self._makeReportObject()
         self._makePlotObjects()
         #
-        return self.self.super().getPhrasedml()
+        return super().getPhraSEDML()
     
     def __str__(self)->str:
         """Return PhraSED-ML string.

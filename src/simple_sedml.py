@@ -3,6 +3,7 @@
 import constants as cn  # type: ignore
 from simple_sedml_base import SimpleSEDMLBase  # type:ignore
 from single_model_time_course import SingleModelTimeCourse  # type:ignore
+from multiple_model_time_course import MultipleModelTimeCourse  # type:ignore
 import model  # type:ignore
 
 import numpy as np  # type:ignore
@@ -52,7 +53,7 @@ class SimpleSEDML(SimpleSEDMLBase):
     def makeSingleModelTimeCourse(cls,
             model_ref:str,
             ref_type:Optional[str]=None,
-            plot_variables:Optional[List[str]]=None,
+            display_variables:Optional[List[str]]=None,
             start:float=cn.D_START,
             end:float=cn.D_END,
             num_step:Optional[int]=None,
@@ -67,7 +68,7 @@ class SimpleSEDML(SimpleSEDMLBase):
         Args:
             model_ref: reference to the model
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
-            plot_variables: variables to be plotted
+            display_variables: variables to be plotted
             start: start time
             end: end time
             num_step: number of steps
@@ -83,7 +84,7 @@ class SimpleSEDML(SimpleSEDMLBase):
         smtc = SingleModelTimeCourse(
             model_ref=model_ref,
             ref_type=ref_type,
-            display_variables=plot_variables,
+            display_variables=display_variables,
             start=start,
             end=end,
             num_step=num_step,
@@ -95,3 +96,48 @@ class SimpleSEDML(SimpleSEDMLBase):
             **parameters
         )
         return smtc
+    
+
+    @classmethod 
+    def makeMultipleModelTimeCourse(cls,
+            model_refs:List[str],
+            display_variables:Optional[List[str]]=None,
+            start:float=cn.D_START,
+            end:float=cn.D_END,
+            num_step:Optional[int]=None,
+            num_point:Optional[int]=None,
+            time_course_id:Optional[str]=None,
+            title:Optional[str]=None,
+            algorithm:Optional[str]=None,
+            is_plot:bool=True,
+            **parameters)->MultipleModelTimeCourse:
+        """Creates a time course simulation
+
+        Args:
+            model_refs: references to the models
+            plot_variables: variables to be plotted
+            start: start time
+            end: end time
+            num_step: number of steps
+            time_course_id: ID of the time course simulation
+            algorithm: algorithm to use for the simulation
+            title: title of the plot
+            is_plot: if True, plot the results
+            parameters: parameters to be passed to the model
+
+        Returns:
+            MultipleModelTimeCourse: a time course simulation object
+        """
+        mmtc = MultipleModelTimeCourse(
+            model_refs,
+            display_variables=display_variables,
+            start=start,
+            end=end,
+            num_step=num_step,
+            num_point=num_point,
+            time_course_id=time_course_id,
+            algorithm=algorithm,
+            is_plot=is_plot,
+            **parameters
+        )
+        return mmtc

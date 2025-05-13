@@ -58,18 +58,7 @@ MODEL_REFS = [MODEL_SBML, MODEL_ANT]
 
 
 #############################
-def evaluate(phrasedml_str:str):
-    """Evaluate the sedml_str and sbml_str
 
-    Args:
-        phrasedml_str (str): phraSED-ML string
-    """
-    sedml_str = phrasedml.convertString(phrasedml_str)
-    try:
-        te.executeSEDML(sedml_str)
-        return True, ""
-    except Exception as e:
-        return False, f"SED-ML execution failed: {e}"
 
 def assemble(*args):
         return "\n".join([str(arg) for arg in args])
@@ -86,7 +75,8 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
                 end=10, num_point=NUM_POINT, k1=1.5,
-                display_variables=DISPLAY_VARIABLES)
+                display_variables=DISPLAY_VARIABLES,
+                is_plot=IS_PLOT)
         self.num_model = len(self.model_refs)
 
     def tearDown(self):
@@ -106,8 +96,9 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.assertEqual(self.mmtc.start, 0)
         self.assertEqual(self.mmtc.end, 10)
         self.assertEqual(self.mmtc.num_point, 100)
-        self.assertEqual(self.mmtc.model_refs[0], MODEL_SBML)
-        self.assertEqual(self.mmtc.model_refs[1], MODEL_ANT)
+        model_refs = list(self.mmtc.model_ref_dct.keys())
+        self.assertEqual(model_refs[0], MODEL_SBML)
+        self.assertEqual(model_refs[1], MODEL_ANT)
 
     def testMakeSimulationObject(self):
         """Test the makeSimulationObject method"""
@@ -177,9 +168,25 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             self.assertTrue(variable_name in str(directive))
 
     def testGetPhraSEDML(self):
-        #if IGNORE_TEST:
-        #    return
-        pass
+        if IGNORE_TEST:
+            return
+        self.evaluate(self.mmtc)
+
+    def evaluate(self, mmtc:MultipleModelTimeCourse):
+        """Evaluate the sedml_str and sbml_str
+
+        Args:
+            phrasedml_str (str): phraSED-ML string
+        """
+        phrasedml_str = mmtc.getPhraSEDML()
+        sedml_str = phrasedml.convertString(phrasedml_str)
+        self.assertIsNotNone(sedml_str, "SED-ML conversion failed\n" + phrasedml.getLastError())
+        try:
+            df = mmtc.executeSEDML(sedml_str)
+            self.assertTrue(isinstance(df, pd.DataFrame))
+            self.assertTrue(df.shape[0] == NUM_POINT)
+        except Exception as e:
+            self.assertTrue(False, f"SED-ML execution failed: {e}")
 
 
 if __name__ == '__main__':

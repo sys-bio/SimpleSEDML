@@ -203,13 +203,16 @@ class SimpleSEDMLBase(object):
             id (str, optional): ID of the plot. Defaults to None.
             is_plot (bool, optional): if True, plot the data. Defaults to True.
         """
+        if not is_plot:
+            return
+        #
         if id is None:
             id = str(self.plot_id)
             self.plot_id += 1
         plot = Plot(x_var, y_var, z_var=z_var, title=title, is_plot=is_plot)
         self.plot_dct[id] = plot
     
-    def addReport(self, *report_variables, id:Optional[str]=None,
+    def addReport(self, *report_variables, id:Optional[str]=None, is_plot:bool=True,
             metadata:Optional[dict]=None, title:str=""):
         """Adds data to the report
 
@@ -240,15 +243,11 @@ class SimpleSEDMLBase(object):
             is_repeated_task = True
         else:
             is_repeated_task = False
-        if len(self.task_dct) > 1:
-            is_more_than_one_task = True
-        else:
-            is_more_than_one_task = False
         if len(self.report_dct) > 0:
             if is_repeated_task:
                 warnings.warn("Reports only generate data for the last repeated task.")
-            if is_more_than_one_task:
-                warnings.warn("Reports only generate data for the last task.")
+        if len(self.report_dct) > 1:
+            warnings.warn("Reports only generate data for the last task.")
         te.executeSEDML(self.getSEDML())
         return te.getLastReport()
     

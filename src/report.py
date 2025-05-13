@@ -23,7 +23,7 @@ class Report:
         self.variables.extend(args)
 
     def getPhraSEDML(self)->str:
-        return "\n".join([f'report "{self.title}" {", ".join(self.variables)}'])
+        return "\n".join([f'report {", ".join(self.variables)}'])
 
     def __str__(self)->str:
         return self.getPhraSEDML()
