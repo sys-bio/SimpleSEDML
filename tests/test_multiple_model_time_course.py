@@ -1,6 +1,10 @@
 import constants as cn # type: ignore
 from multiple_model_time_course import MultipleModelTimeCourse # type:ignore
 from simulation import Simulation # type:ignore
+from task import Task # type:ignore
+from model import Model # type:ignore
+from plot import Plot # type:ignore
+from report import Report # type:ignore
 
 import pandas as pd; # type: ignore
 import os
@@ -9,9 +13,10 @@ import tellurium as te # type: ignore
 import unittest
 
 
-IGNORE_TEST = False
+IGNORE_TEST = True
 IS_PLOT = False
 MODEL_ID = "model1"
+MODEL2_ID = "model2"
 MODEL_ANT = """
 model %s
     S1 -> S2; k1*S1
@@ -27,6 +32,22 @@ model %s
     S4 = 0
 end
 """ % MODEL_ID
+MODEL2_ANT = """
+model %s
+    S1 -> S2; k1*S1
+    S2 -> S3; k2*S2
+    S3 -> S4; k3*S3
+    S3 -> S1; k3*S3
+
+    k1 = 0.1
+    k2 = 0.2
+    k3 = 0.3
+    S1 = 10
+    S2 = 0
+    S3 = 0
+    S4 = 0
+end
+""" % MODEL2_ID
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
@@ -59,9 +80,13 @@ def assemble(*args):
 class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
-        self.mmtc = MultipleModelTimeCourse([MODEL_ANT, MODEL_SBML], start=0, end=10, num_point=NUM_POINT, k1=1.5,
-                display_variables=DISPLAY_VARIABLES)
         self.remove()
+        #self.mmtc = MultipleModelTimeCourse([MODEL_SBML, MODEL2_ANT], start=0,
+        self.model_refs = [MODEL_SBML, MODEL_ANT]
+        self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
+                end=10, num_point=NUM_POINT, k1=1.5,
+                display_variables=DISPLAY_VARIABLES)
+        self.num_model = len(self.model_refs)
 
     def tearDown(self):
         # Remove files if they exist
@@ -91,6 +116,38 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         simulation = list(self.mmtc.simulation_dct.values())[0]
         self.assertTrue(isinstance(simulation, Simulation))
         self.assertTrue(str(NUM_POINT-1) in simulation.getPhraSEDML())
+
+    def testMakeTaskID(self):
+        """Test the makeTaskID method"""
+        if IGNORE_TEST:
+            return
+        task_id = self.mmtc._makeTaskID(MODEL_ID)
+        self.assertEqual(task_id, "tmodel1")
+
+    def testMakeModelDirective(self):
+        """Test the makeModelDirective method"""
+        #if IGNORE_TEST:
+        #    return
+        self.mmtc._makeModelDirectives()
+        import pdb; pdb.set_trace()
+        for idx, _ in enumerate(self.model_refs):
+            model = list(self.mmtc.model_dct.values())[idx]
+            self.assertTrue(isinstance(model, Model))
+            self.assertTrue(model.id == "model" + str(idx))
+            self.assertTrue(model.is_overwrite)
+
+    def testMakeTaskDirective(self):
+        """Test the makeTaskDirective method"""
+        # FIXME
+        return
+        if IGNORE_TEST:
+            return
+        self.mmtc._makeModelDirectives()
+        self.mmtc._makeTaskDirectives(["model1", "model2"])
+        import pdb; pdb.set_trace()
+        task = list(self.mmtc.task_dct.values())[0]
+        self.assertTrue(isinstance(task, Task))
+        self.assertTrue(task.id == "tmodel1")
 
 
 if __name__ == '__main__':

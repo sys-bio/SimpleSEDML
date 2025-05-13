@@ -82,6 +82,9 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             display_variables = []
         self.display_variables = display_variables
         self.parameter_dct = parameter_dct
+        # Calculated
+        self.model_ids:list =  []
+        self.task_ids:list =  []
     
     def _makeSimulationDirective(self):
         self.addSimulation(SIM_ID, "uniform", start=self.start, end=self.end, num_step=self.num_step,
@@ -98,20 +101,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             str: task ID
         """
         return f"t{model_id}"
-
-    def _makeTaskDirectives(self):
-        """Make the task directives for the compared variables.
-
-        Returns:
-            str: task directives
-        """
-        if len(self.model_dct) == 0:
-            raise ValueError("No models have been added to the simulation.")
-        #
-        for model_id in self.model_refs:
-            task_id = self._makeTaskID(model_id)
-            self.addTask(task_id, model_id, SIM_ID)
-
+    
     def _makeScopePrefix(self, model_id:str)->str:
         """Makes the scoping prefix for the compared variables.
 
@@ -123,13 +113,33 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         """
         return self._makeTaskID(model_id) + "."
     
+    def _makeModelDirectives(self):
+        for model_ref in self.model_refs:
+            model_id = self.addModel(model_ref, is_overwrite=True, **self.parameter_dct)
+            self.model_ids.append(model_id)
+
+    def _makeTaskDirectives(self):
+        """Make the task directives for the compared variables.
+
+        Returns:
+            str: task ids
+        """
+        if len(self.task_ids) == 0:
+            raise ValueError("No models have been added to the simulation.")
+        #
+        for model_id in self.model_ids:
+            import pdb; pdb.set_trace()
+            task_id = self._makeTaskID(model_id)
+            self.addTask(task_id, model_id, SIM_ID)
+            self.task_ids.append(task_id)
+    
     def _makeVariables(self):
         # Creates variables if it's None
         if self.display_variables is None:
             first_model_id = list(self.model_dct.keys())[0]
             self.display_variables = list(self.model_dct[first_model_id].getInformation().floating_species_dct.keys())
 
-    def _makeReportDirective(self, task_ids:List[str]):
+    def _makeReportDirective(self):
         """Make the report directive for the compared variables.
 
         Args:
@@ -144,11 +154,11 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         report_variables = []
         for variable in self.display_variables:
-            new_report_variables = [self._makeScopePrefix(m) + variable for m in task_ids]
+            new_report_variables = [self._makeScopePrefix(m) + variable for m in self.task_ids]
             report_variables.extend(new_report_variables)
         self.addReport(*report_variables)
 
-    def _makePlotDirective(self, task_ids:List[str]):
+    def _makePlotDirective(self):
         """Make the report directive for the compared variables.
         There is one plot for each variable that plots comparisons of the models.
 
@@ -161,7 +171,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         self._makeVariables()
         for variable in self.display_variables:
-            plot_variables = [self._makeScopePrefix(m) + variable for m in task_ids]
+            plot_variables = [self._makeScopePrefix(m) + variable for m in self.task_ids]
             self.addPlot(*plot_variables, title=variable)
 
     def getPhraSEDML(self)->str:
@@ -173,17 +183,11 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             str: Phrased-ML string
         """
         # Add the models specified in the constructors
-        exclude_ids = list(self.model_dct.keys())
-        for idx, model_ref in enumerate(self.model_refs):
-            model_id = f"model{idx}"
-            self.addModel(model_id, model_ref, is_overwrite=True, **self.parameter_dct)
-        # Calculate the task ids to consider
-        task_ids = list(set(self.model_dct.keys()) - set(exclude_ids))
-        # Add the other directives
+        self._makeModelDirectives()
         self._makeSimulationDirective()
         self._makeTaskDirectives()
-        self._makeReportDirective(task_ids)
-        self._makePlotDirectives(task_ids)
+        self._makeReportDirective()
+        self._makePlotDirectives()
         #
         return self.self.super().getPhrasedml()
     

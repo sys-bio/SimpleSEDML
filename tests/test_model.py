@@ -28,7 +28,7 @@ end
 """ % MODEL_ID
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
-ANT_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
+ANT_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID + ".ant")
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
 WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
             return
         model_ids = ["model1", "model2"]
         def test(model_ref:str, expected_ref_type, ref_type:Optional[str]=None):
-            ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
+            ref_type = Model.findReferenceType(model_ref, model_ids=model_ids, ref_type=ref_type)
             self.assertEqual(ref_type, expected_ref_type, f"Expected {expected_ref_type}, got {ref_type}")
         #
         with open(ANT_FILE_PATH, "w") as f:

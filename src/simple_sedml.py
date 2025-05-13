@@ -44,8 +44,8 @@ class SimpleSEDML(SimpleSEDMLBase):
                 - num_reaction: number of reactions
                 - num_species: number of species
         """
-        ref_type = model.Model.findReferenceType(model_ref, [])
-        a_model = model.Model("dummy", model_ref, ref_type=ref_type, is_overwrite=True)
+        a_model = model.Model("dummy", model_ref, ref_type=ref_type,
+                is_overwrite=True)
         return a_model.getInformation()
 
     @classmethod 
@@ -60,6 +60,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id:Optional[str]=None,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
+            is_plot:bool=True,
             **parameters)->SingleModelTimeCourse:
         """Creates a time course simulation
 
@@ -73,6 +74,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             title: title of the plot
+            is_plot: if True, plot the results
             parameters: parameters to be passed to the model
 
         Returns:
@@ -89,6 +91,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id=time_course_id,
             title=title,
             algorithm=algorithm,
+            is_plot=is_plot,
             **parameters
         )
         return smtc

@@ -19,6 +19,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             time_course_id:Optional[str]=None,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
+            is_plot:bool=True,
             **parameter_dct):
         """Creates a time course simulation
 
@@ -32,6 +33,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             title: title of the plot
+            is_plot: if True, plot the results
             parameter_dct: dictionary of parameters whose values are changed
 
         Returns:
@@ -58,4 +60,4 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         self.addReport(*display_variables, title=title)
         x1_var = display_variables[0]
         y_vars = display_variables[1:]
-        self.addPlot(x1_var, y_vars, title=title)
+        self.addPlot(x1_var, y_vars, title=title, is_plot=is_plot)

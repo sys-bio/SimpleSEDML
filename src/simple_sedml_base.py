@@ -120,8 +120,9 @@ class SimpleSEDMLBase(object):
         if id in TYPE_DCT[dict_type]:
             raise ValueError(f"Duplicate {dict_type} ID: {id}")
 
-    def addModel(self, id:str, model_ref:str, ref_type:Optional[str]=None,
-          model_source_path:Optional[str]=None, is_overwrite:bool=False, **parameters):
+    def addModel(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None,
+            model_source_path:Optional[str]=None, is_overwrite:bool=False,
+            **parameters)->str:
         """Adds a model to the script
 
         Args:
@@ -130,13 +131,17 @@ class SimpleSEDMLBase(object):
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
             model_source_path: path to the model source file
             is_overwrite: if True, overwrite the model if it already exists
+
+        Returns:
+            str: ID of the model
         """
         self._checkDuplicate(id, cn.MODEL)
         model_ids = list(self.model_dct.keys())
-        ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref, ref_type=ref_type,
-              model_source=model_source_path, is_overwrite=is_overwrite, **parameters)
+                model_source=model_source_path, is_overwrite=is_overwrite,
+                existing_model_ids=model_ids, **parameters)
         self.model_dct[id] = model
+        return model.id
 
     def addSimulation(self,
                     id:str,

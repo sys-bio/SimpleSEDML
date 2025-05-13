@@ -10,6 +10,7 @@ import tellurium as te  # type: ignore
 from typing import Optional, List
 import warnings
 
+INVALID_MODEL_ID = "invalid_model_id"
 
 class ModelInformation:
     """Class that holds information about the model.
@@ -73,6 +74,7 @@ class Model:
     def __init__(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None, 
                     model_source:Optional[str]=None, 
                     is_overwrite:bool=False,
+                    existing_model_ids:Optional[List[str]]=None,
                     **kwargs):
         """Provide information about the model and a model identifier.
 
@@ -90,26 +92,31 @@ class Model:
             model_source (str): source for the SBML model. If None, the source is a file with the same name as the model ID
                 in the current directory.
         """
-        # Handle defaults
+        if existing_model_ids is None:
+            existing_model_ids = []
+        # Model reference to use as arguments until it is resolved
         if model_ref is None:
-            # id is a file path to an SBML model
             model_ref = id
-            _, filename = os.path.split(id)
+            id = INVALID_MODEL_ID
+        #
+        if ref_type is None:
+            ref_type = self.findReferenceType(model_ref, existing_model_ids)
+        # Now we can resolve the model reference and id
+        if id == INVALID_MODEL_ID:
+            # id is a file path to an SBML model
+            _, filename = os.path.split(model_ref)
             splits = filename.split(".")
             id = splits[0]
-            ref_type = cn.SBML_FILE
-        elif ref_type is None:
-            ref_type = cn.SBML_STR
-        # id, model_ref, ref_type should all be assigned
+        # Have resolved: id, model_ref, ref_type
         self.id = id
         self.model_ref = model_ref
         self.ref_type = ref_type
         self.param_change_dct = kwargs
         self.is_overwrite = is_overwrite
         #
-        self._roadrunner = None
         self.sbml_str = self._getSBMLFromReference()
-        self.model_source_path = self._makeModelSource(model_source)
+        self.model_source = self._makeModelSource(model_source)
+        self._roadrunner = None
 
     @property
     def roadrunner(self):
@@ -119,7 +126,7 @@ class Model:
         self._roadrunner.resetAll()
         return self._roadrunner
 
-    def _makeModelSource(self, source:Optional[str])->str:
+    def _makeModelSource(self, source:Optional[str]=None)->str:
         """Saves the model to a file. The file name is the model ID.
         """
         if self.ref_type == cn.MODEL_ID:
@@ -181,7 +188,7 @@ class Model:
         if self.ref_type == cn.MODEL_ID:
             source = self.id
         else:
-            source = f'"{self.model_source_path}"'
+            source = f'"{self.model_source}"'
         return f'{self.id} = model {source} {params}'
     
     def __str__(self)->str:
@@ -217,7 +224,8 @@ class Model:
         # Check for Antimony string
         try:
             _ = te.loada(model_ref)
-            return cn.ANT_STR
+            if "->" in model_ref:
+                return cn.ANT_STR
         except:
             pass
         # Check for SBML string
