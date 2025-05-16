@@ -1,8 +1,8 @@
-import src.constants as cn
-from src.report import Report
-from src.task import Task
-from src.model import Model
-from src.simulation import Simulation
+import SimpleSEDML.constants as cn # type: ignore
+from SimpleSEDML.report import Report # type: ignore
+from SimpleSEDML.task import Task # type: ignore
+from SimpleSEDML.model import Model # type: ignore
+from SimpleSEDML.simulation import Simulation # type: ignore
 
 import pandas as pd; # type: ignore
 import os

@@ -1,5 +1,5 @@
-import src.constants as cn
-from src.simple_sedml_base import SimpleSEDMLBase
+import SimpleSEDML.constants as cn # type: ignore
+from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type: ignore
 
 import numpy as np # type: ignore
 import os

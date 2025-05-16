@@ -1,7 +1,7 @@
-import src.constants as cn
-from src.task import Task, RepeatedTask
-from src.model import Model
-from src.simulation import Simulation
+import SimpleSEDML.constants as cn # type: ignore
+from SimpleSEDML.task import Task, RepeatedTask # type: ignore
+from SimpleSEDML.model import Model # type: ignore
+from SimpleSEDML.simulation import Simulation # type: ignore
 
 import pandas as pd; # type: ignore
 import os

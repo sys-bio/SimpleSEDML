@@ -1,5 +1,5 @@
-import src.constants as cn
-from src.simulation import Simulation
+import SimpleSEDML.constants as cn # type: ignore
+from SimpleSEDML.simulation import Simulation # type: ignore
 
 import numpy as np
 import os

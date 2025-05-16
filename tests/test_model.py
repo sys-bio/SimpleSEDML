@@ -1,5 +1,5 @@
-import src.constants as cn
-from src.model import Model
+import SimpleSEDML.constants as cn  # type: ignore
+from SimpleSEDML.model import Model # type: ignore
 
 import os
 import phrasedml # type: ignore

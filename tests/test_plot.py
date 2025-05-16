@@ -1,8 +1,8 @@
-import constants as cn # type: ignore
-from plot import Plot # type: ignore
-from task import Task # type: ignore
-from model import Model # type: ignore
-from simulation import Simulation # type: ignore
+import SimpleSEDML.constants as cn # type: ignore
+from SimpleSEDML.plot import Plot # type: ignore
+from SimpleSEDML.task import Task # type: ignore
+from SimpleSEDML.model import Model # type: ignore
+from SimpleSEDML.simulation import Simulation # type: ignore
 
 import os
 import phrasedml # type: ignore
