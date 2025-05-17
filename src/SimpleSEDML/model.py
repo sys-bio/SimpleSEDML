@@ -131,7 +131,7 @@ class Model:
         return self._roadrunner
 
     def _makeModelSource(self, source:Optional[str]=None)->str:
-        """Saves the model to a file. The file name is the model ID.
+        """Saves the model to a file. The file name is the model ID with .xml extension for SBML models.
         """
         if self.ref_type == cn.MODEL_ID:
             # model_ref is the ID of a previously defined model
@@ -139,7 +139,7 @@ class Model:
         if source is None:
             # Use the current directory
             source = os.getcwd()
-            source = os.path.join(source, self.id)
+            source = os.path.join(source, f"{self.id}.xml") if self.ref_type in [cn.SBML_FILE, cn.SBML_STR, cn.SBML_URL] else os.path.join(source, self.id)
         source = str(source)
         if self.is_overwrite or not os.path.exists(source):
             with open(source, "wb") as f:
