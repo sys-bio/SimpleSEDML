@@ -30,7 +30,7 @@ MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID)
 ANT_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID + ".ant")
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
-REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE, ANT_FILE_PATH]
 WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
@@ -40,6 +40,8 @@ class TestModel(unittest.TestCase):
 
     def setUp(self):
         self.model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
+        self.remove_files = list(REMOVE_FILES)
+        self.remove_files.append(self.model.model_source)
         self.remove()
 
     def tearDown(self):
@@ -47,7 +49,7 @@ class TestModel(unittest.TestCase):
     
     def remove(self):
         """Remove the files created during the test"""
-        for file in REMOVE_FILES:
+        for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
 
@@ -56,6 +58,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -65,6 +68,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -74,6 +78,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -82,7 +87,8 @@ class TestModel(unittest.TestCase):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
-        _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
+        self.remove_files.append(model.model_source)
         with self.assertWarns(UserWarning):
             _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=False)
     
@@ -93,6 +99,7 @@ class TestModel(unittest.TestCase):
         with open(SBML_FILE_PATH, "w") as f:
             f.write(MODEL_SBML)
         model = Model(MODEL_ID, SBML_FILE_PATH, ref_type="sbml_file", is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -103,6 +110,7 @@ class TestModel(unittest.TestCase):
             return
         model_id = "Wolf2000_Glycolytic_Oscillations"
         model = Model(model_id, WOLF_URL, ref_type="sbml_url", is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
@@ -114,6 +122,7 @@ class TestModel(unittest.TestCase):
         model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
         phrasedml_str = model.getPhraSEDML()
         model = Model("model1", MODEL_ID, ref_type="model_id", is_overwrite=True)
+        self.remove_files.append(model.model_source)
         phrasedml_str += "\n" + model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")

@@ -122,6 +122,3 @@ which generates the following plot:
 
 # Restrictions
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
-
-# Plans
-1. First implementation of ``SimpleSEDML`` with methods for ``addModel``, ``addSimulation``, ``addTask``, ``addReport``, ``execute``, and ``to_sedml``.

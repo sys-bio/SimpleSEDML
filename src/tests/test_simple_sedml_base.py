@@ -58,16 +58,18 @@ WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL335
 class TestSimpleSEDMLBase(unittest.TestCase):
 
     def setUp(self):
+        self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.simple = SimpleSEDMLBase()
 
     def tearDown(self):
         # Remove files if they exist
+        self.remove_files.extend(self.simple.model_sources)
         self.remove()
 
     def remove(self):
         # Remove files if they exist
-        for file in REMOVE_FILES:
+        for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
 
@@ -84,12 +86,12 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 
     def makeInitialSimpleSEDMLBase(self,
-          is_model:bool=True, 
-          is_simulation:bool=True,
-          is_task:bool=True,
-          is_report:bool=True,
-          is_plot:bool=True,
-          )->SimpleSEDMLBase:
+            is_model:bool=True, 
+            is_simulation:bool=True,
+            is_task:bool=True,
+            is_report:bool=True,
+            is_plot:bool=True,
+            )->SimpleSEDMLBase:
         simple = SimpleSEDMLBase()
         if is_model:
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
@@ -107,6 +109,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase(is_plot=False)
+        self.remove_files.extend(simple.model_sources)
         # Check if the model is added correctly
         self.assertEqual(len(simple.model_dct), 1)
         self.assertEqual(len(simple.simulation_dct), 1)
@@ -121,6 +124,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase(is_plot=False)
+        self.remove_files.extend(simple.model_sources)
         simple.addReport("S3")
         simple.addReport("S4")
         # Check if the model is added correctly
@@ -142,6 +146,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
             simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
             simple.addTask("task1", MODEL_NAME, "sim1")
+            self.remove_files.extend(simple.model_sources)
             return simple
         # Works without warning
         simple = makePHRASEDML()
@@ -162,6 +167,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase()
+        self.remove_files.extend(simple.model_sources)
         simple.addReport("S3")
         # Check if the model is added correctly
         self.assertEqual(len(simple.model_dct), 1)

@@ -49,6 +49,15 @@ class SimpleSEDMLBase(object):
         self.report_id = 0
         self.plot_id = 0
         self.time_course_id = 0
+
+    @property
+    def model_sources(self)->List[str]:
+        """Returns a list of model sources
+
+        Returns:
+            List[str]: list of model sources
+        """
+        return [m.model_source for m in self.model_dct.values()]
     
     def getPhraSEDML(self)->str:
         """Creates phrasedml string from composition of sections

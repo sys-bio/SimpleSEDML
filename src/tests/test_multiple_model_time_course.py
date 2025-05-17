@@ -70,6 +70,7 @@ def assemble(*args):
 class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
+        self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
@@ -80,11 +81,12 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def tearDown(self):
         # Remove files if they exist
+        self.remove_files.extend(self.mmtc.model_sources)
         self.remove()
 
     def remove(self):
         # Remove files if they exist
-        for file in REMOVE_FILES:
+        for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
 
@@ -146,6 +148,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT)
         mmtc._makeModelObjects()
         mmtc._makeVariables()
+        self.remove_files.extend(mmtc.model_sources)
         self.assertEqual(mmtc.display_variables[0], "S1")
         self.assertEqual(mmtc.display_variables[1], "S2")
         self.assertEqual(mmtc.display_variables[2], "S3")

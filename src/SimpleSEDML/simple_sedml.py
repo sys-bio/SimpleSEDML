@@ -7,10 +7,12 @@ from SimpleSEDML.multiple_model_time_course import MultipleModelTimeCourse  # ty
 from SimpleSEDML.model import Model, ModelInformation  # type:ignore
 
 import numpy as np  # type:ignore
+import os  # type:ignore
 import pandas as pd  # type:ignore
 import tellurium as te  # type:ignore
 from typing import Optional, List, Union
 
+DUMMY_FILE = "dummy_file"
 
 
 """
@@ -45,9 +47,13 @@ class SimpleSEDML(SimpleSEDMLBase):
                 - num_reaction: number of reactions
                 - num_species: number of species
         """
-        a_model = Model("dummy", model_ref, ref_type=ref_type,
+        a_model = Model(DUMMY_FILE, model_ref, ref_type=ref_type,
                 is_overwrite=True)
-        return a_model.getInformation()
+        model_information = a_model.getInformation()
+        if os.path.exists(a_model.model_source):
+            # Remove the file
+            os.remove(a_model.model_source)
+        return model_information
 
     @classmethod 
     def makeSingleModelTimeCourse(cls,

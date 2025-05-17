@@ -57,16 +57,18 @@ WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL335
 class TestSimpleSEDML(unittest.TestCase):
 
     def setUp(self):
+        self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.simple = SimpleSEDML()
 
     def tearDown(self):
         # Remove files if they exist
+        self.remove_files.extend(self.simple.model_sources)
         self.remove()
 
     def remove(self):
         # Remove files if they exist
-        for file in REMOVE_FILES:
+        for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
 
@@ -112,6 +114,7 @@ class TestSimpleSEDML(unittest.TestCase):
             smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
+        self.remove_files.extend(smtc.model_sources)
         if IS_PLOT:
             _ = smtc.execute()
 
