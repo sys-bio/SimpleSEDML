@@ -57,7 +57,7 @@ class SimpleSEDMLBase(object):
         Returns:
             List[str]: list of model sources
         """
-        return [m.model_source for m in self.model_dct.values()]
+        return [m.source for m in self.model_dct.values()]
     
     def getPhraSEDML(self)->str:
         """Creates phrasedml string from composition of sections
@@ -129,9 +129,14 @@ class SimpleSEDMLBase(object):
         if id in TYPE_DCT[dict_type]:
             raise ValueError(f"Duplicate {dict_type} ID: {id}")
 
-    def addModel(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None,
-            model_source_path:Optional[str]=None, is_overwrite:bool=False,
-            **parameters)->str:
+    def addModel(self,
+                    id:str,
+                    model_ref:Optional[str]=None,
+                    ref_type:Optional[str]=None,
+                    model_source_path:Optional[str]=None,
+                    is_overwrite:bool=False,
+                    target_directory:Optional[str]=None,
+                    **parameters)->str:
         """Adds a model to the script
 
         Args:
@@ -140,6 +145,8 @@ class SimpleSEDMLBase(object):
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
             model_source_path: path to the model source file
             is_overwrite: if True, overwrite the model if it already exists
+            target_directory: directory to save the model file
+            parameters: changes in parameter values for the model
 
         Returns:
             str: ID of the model
@@ -147,7 +154,8 @@ class SimpleSEDMLBase(object):
         model_ids = list(self.model_dct.keys())
         #ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref, ref_type=ref_type,
-                model_source=model_source_path, is_overwrite=is_overwrite,
+                source=model_source_path, is_overwrite=is_overwrite,
+                target_directory=target_directory,
                 existing_model_ids=model_ids, **parameters)
         self._checkDuplicate(model.id, cn.MODEL)
         self.model_dct[model.id] = model

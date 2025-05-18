@@ -36,6 +36,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
                     time_course_id:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
                     is_plot:bool=True,
+                    target_directory:Optional[str]=None,
                     **parameter_dct,
                     ):
         """Simulates a collection of models with common variables for the same time course.
@@ -53,6 +54,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             variables (Optional[List[str]], optional): List of variables to be compared. Defaults to None.
                 if not provided, all variables in the model are used.
             is_plot (bool, optional): Whether to plot the results. Defaults to True.
+            target_directory (Optional[str], optional): Directory to save the files. Defaults to None.
             parameter_dct (Optional[dict], optional): Dictionary of parameters whose values are changed
 
         Example 1: Compare two models with the same variables
@@ -80,6 +82,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
+        self.target_directory = target_directory
         self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
         self.time_course_id = time_course_id # type:ignore
         if display_variables is None:
@@ -126,7 +129,8 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
     def _makeModelObjects(self):
         for model_ref, task_id in self.model_ref_dct.items():
             if task_id is None:
-                model_id = self.addModel(model_ref, is_overwrite=True, **self.parameter_dct)
+                model_id = self.addModel(model_ref, is_overwrite=True,
+                        target_directory=self.target_directory, **self.parameter_dct)
                 self.model_ref_dct[model_ref] = model_id
 
     def _makeTaskObjects(self):

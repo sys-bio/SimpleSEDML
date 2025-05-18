@@ -4,6 +4,7 @@ PROJECT_DIR = os.path.dirname(__file__)
 for _ in range(2):
     PROJECT_DIR = os.path.dirname(PROJECT_DIR)
 SRC_DIR = os.path.join(PROJECT_DIR, "src")
+TEST_DIR = os.path.join(SRC_DIR, "tests")
 # Reference types
 SBML_STR = "sbml_str"
 ANT_STR = "ant_str"
@@ -35,3 +36,6 @@ D_SIM_TYPE  = ST_UNIFORM
 D_SIM_UNIFORM_ALGORITHM = "CVODE"
 D_SIM_UNIFORM_STOCHASTIC_ALGORITHM = "gillespie"
 D_START = 0
+# File extensions
+ANT_EXT = ".ant"
+XML_EXT = ".xml"

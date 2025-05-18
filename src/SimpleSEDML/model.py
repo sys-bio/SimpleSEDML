@@ -72,9 +72,10 @@ Issues
 
 class Model:
     def __init__(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None, 
-                    model_source:Optional[str]=None, 
+                    source:Optional[str]=None, 
                     is_overwrite:bool=False,
                     existing_model_ids:Optional[List[str]]=None,
+                    target_directory:Optional[str]=None,
                     **kwargs):
         """Provide information about the model and a model identifier.
 
@@ -89,11 +90,21 @@ class Model:
                 - "sbml_url": URL to the SBML model
                 - "model_id": ID of a previously defined model
             is_overwrite (bool): if True, overwrite the model if it already exists
-            model_source (str): source for the SBML model. If None, the source is a file with the same name as the model ID
+            source (str): source for the SBML model. If None, the source is a file with the same name as the model ID
                 in the current directory.
+            existing_model_ids (List[str]): list of existing model IDs. This is used to resolve the model reference
+                and to check if the model ID is unique.
+            target_directory (str): directory to save the model file. If None, the current directory is used.
         """
         if existing_model_ids is None:
             existing_model_ids = []
+        if target_directory is not None:
+            # Check if the target directory exists
+            if not os.path.exists(target_directory):
+                raise ValueError(f"Target directory {target_directory} does not exist.")
+        else:
+            target_directory = os.getcwd()
+        self.target_directory = target_directory
         # Model reference to use as arguments until it is resolved
         if model_ref is None:
             model_ref = id
@@ -119,7 +130,7 @@ class Model:
         self.is_overwrite = is_overwrite
         #
         self.sbml_str = self._getSBMLFromReference()
-        self.model_source = self._makeModelSource(model_source)
+        self.source = self._makeModelSource(source)
         self._roadrunner = None
 
     @property
@@ -131,15 +142,14 @@ class Model:
         return self._roadrunner
 
     def _makeModelSource(self, source:Optional[str]=None)->str:
-        """Saves the model to a file. The file name is the model ID.
+        """Saves the model to a file. The file name is the model_id.xml
         """
         if self.ref_type == cn.MODEL_ID:
             # model_ref is the ID of a previously defined model
-            return self.model_ref
+            return self.model_ref + cn.XML_EXT
         if source is None:
             # Use the current directory
-            source = os.getcwd()
-            source = os.path.join(source, self.id)
+            source = os.path.join(self.target_directory, self.id + cn.XML_EXT)
         source = str(source)
         if self.is_overwrite or not os.path.exists(source):
             with open(source, "wb") as f:
@@ -190,9 +200,9 @@ class Model:
         if len(params) > 0:
             params = f" with {params}"
         if self.ref_type == cn.MODEL_ID:
-            source = self.id
+            source = self.model_ref
         else:
-            source = f'"{self.model_source}"'
+            source = f'"{self.source}"'
         return f'{self.id} = model {source} {params}'
     
     def __str__(self)->str:

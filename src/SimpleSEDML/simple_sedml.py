@@ -50,9 +50,9 @@ class SimpleSEDML(SimpleSEDMLBase):
         a_model = Model(DUMMY_FILE, model_ref, ref_type=ref_type,
                 is_overwrite=True)
         model_information = a_model.getInformation()
-        if os.path.exists(a_model.model_source):
+        if os.path.exists(a_model.source):
             # Remove the file
-            os.remove(a_model.model_source)
+            os.remove(a_model.source)
         return model_information
 
     @classmethod 
@@ -113,9 +113,9 @@ class SimpleSEDML(SimpleSEDMLBase):
             num_step:Optional[int]=None,
             num_point:Optional[int]=None,
             time_course_id:Optional[str]=None,
-            title:Optional[str]=None,
             algorithm=cn.D_ALGORITHM,
             is_plot:bool=True,
+            target_directory:Optional[str]=None,
             **parameters)->MultipleModelTimeCourse:
         """Creates a time course simulation
 
@@ -127,8 +127,8 @@ class SimpleSEDML(SimpleSEDMLBase):
             num_step: number of steps
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
-            title: title of the plot
             is_plot: if True, plot the results
+            target_directory: directory to save the files
             parameters: parameters to be passed to the model
 
         Returns:
@@ -144,6 +144,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id=time_course_id,
             algorithm=algorithm,
             is_plot=is_plot,
+            target_directory=target_directory,
             **parameters
         )
         return mmtc

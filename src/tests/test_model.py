@@ -27,10 +27,11 @@ model %s
 end
 """ % MODEL_ID
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
-SBML_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID)
+SBML_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID + ".xml")
 ANT_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID + ".ant")
-WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
-REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE, ANT_FILE_PATH]
+WOLF_ID = "Wolf2000_Glycolytic_Oscillations"
+WOLF_FILE = "Wolf2000_Glycolytic_Oscillations" + ".xml"
+REMOVE_FILES = [SBML_FILE_PATH, WOLF_ID, ANT_FILE_PATH]
 WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
@@ -39,10 +40,12 @@ WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL335
 class TestModel(unittest.TestCase):
 
     def setUp(self):
-        self.model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
         self.remove_files = list(REMOVE_FILES)
-        self.remove_files.append(self.model.model_source)
         self.remove()
+        if IGNORE_TEST:
+            return
+        self.model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
+        self.remove_files.append(self.model.source)
 
     def tearDown(self):
         self.remove()
@@ -58,17 +61,28 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
-
-    def testUsageSBMLStringParameters(self):
+    
+    def testDesigateTargetDirectoryPath(self):
+        # model = model model1 sbml_str
+        if IGNORE_TEST:
+            return
+        model = Model(MODEL_ID, MODEL_SBML, target_directory=cn.TEST_DIR, is_overwrite=True)
+        self.remove_files.append(model.source)
+        path = os.path.join(cn.TEST_DIR, MODEL_ID + cn.XML_EXT)
+        self.assertTrue(os.path.exists(path), f"File {path} not created.")
+        phrasedml_str = model.getPhraSEDML()
+        self.evaluate(phrasedml_str)
+    
+    def testStringParameters(self):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -77,8 +91,8 @@ class TestModel(unittest.TestCase):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
-        model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -88,7 +102,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        self.remove_files.append(model.source)
         with self.assertWarns(UserWarning):
             _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=False)
     
@@ -98,8 +112,8 @@ class TestModel(unittest.TestCase):
             return
         with open(SBML_FILE_PATH, "w") as f:
             f.write(MODEL_SBML)
-        model = Model(MODEL_ID, SBML_FILE_PATH, ref_type="sbml_file", is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        model = Model(MODEL_ID, SBML_FILE_PATH, ref_type=cn.SBML_FILE, is_overwrite=True)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -109,8 +123,8 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model_id = "Wolf2000_Glycolytic_Oscillations"
-        model = Model(model_id, WOLF_URL, ref_type="sbml_url", is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        model = Model(model_id, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
@@ -119,10 +133,11 @@ class TestModel(unittest.TestCase):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
-        model = Model(MODEL_ID, MODEL_ANT, ref_type="ant_str", is_overwrite=True)
+        model = Model(MODEL_ID, MODEL_ANT, ref_type=cn.ANT_STR, is_overwrite=True)
+        self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
-        model = Model("model1", MODEL_ID, ref_type="model_id", is_overwrite=True)
-        self.remove_files.append(model.model_source)
+        model = Model("model2", MODEL_ID, ref_type=cn.MODEL_ID, is_overwrite=True)
+        self.remove_files.append(model.source)
         phrasedml_str += "\n" + model.getPhraSEDML()
         self.evaluate(phrasedml_str)
         self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
@@ -137,15 +152,13 @@ class TestModel(unittest.TestCase):
         #
         with open(ANT_FILE_PATH, "w") as f:
             f.write(MODEL_ANT)
-        _ = Model(MODEL_ID, ANT_FILE_PATH, is_overwrite=True)  # Create file
-        test(ANT_FILE_PATH, "ant_file")
-        test(MODEL_ID, "sbml_str", ref_type="sbml_str")
-        test(MODEL_ANT, "ant_str")
-        test(MODEL_SBML, "sbml_str")
-        test(MODEL_SBML, "sbml_str")
-        test(WOLF_URL, "sbml_url")
-        _ = Model(WOLF_FILE, WOLF_URL, ref_type="sbml_url", is_overwrite=True)  # Create file
-        test(WOLF_FILE, "sbml_file")
+        test(ANT_FILE_PATH, cn.ANT_FILE)
+        test(MODEL_ID, cn.ANT_STR, ref_type=cn.ANT_STR)
+        test(MODEL_ANT, cn.ANT_STR)
+        test(MODEL_SBML, cn.SBML_STR)
+        test(WOLF_URL, cn.SBML_URL)
+        _ = Model(WOLF_ID, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)  # Create file
+        test(WOLF_ID + ".xml", cn.SBML_FILE)
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str
