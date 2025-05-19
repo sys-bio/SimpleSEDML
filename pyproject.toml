@@ -8,6 +8,8 @@ readme = "README.md"
 requires-python = ">=3.6"
 
 dependencies = [
+"biomodels_qc",
+"biosimulators_utils",
 "numpy",
 "build",
 "coverage",

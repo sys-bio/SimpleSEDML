@@ -1,3 +1,5 @@
+biomodels_qc
+biosimulators_utils
 numpy
 build
 coverage

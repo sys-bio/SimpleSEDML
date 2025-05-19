@@ -3,7 +3,7 @@
 # SimpleSEDML
 A simple API for creating directives in the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/) community standard for describing simulation experiments.
 
-The project provides a python interface to generating SED-ML based on the abstractions provided by [phraSED-ML](https://pmc.ncbi.nlm.nih.gov/articles/PMC5313123/pdf/nihms846540.pdf) to describe simulation experiments. These absractions are: (a) models (including changes in values of model parameters);
+The project provides a python interface to generate SED-ML based on the abstractions provided by [phraSED-ML](https://pmc.ncbi.nlm.nih.gov/articles/PMC5313123/pdf/nihms846540.pdf) to describe simulation experiments. These absractions are: (a) models (including changes in values of model parameters);
 (b) simulations (including deterministic, stochastic, and steady state);
 (c) tasks (which specify simulations to run on tasks and repetitions for changes in parameter values);
 and (d) output for data reports and plots.
