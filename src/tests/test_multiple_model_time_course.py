@@ -9,6 +9,7 @@ from SimpleSEDML.report import Report # type:ignore
 import pandas as pd; # type: ignore
 import os
 import phrasedml # type: ignore
+import shutil  # type: ignore
 import tellurium as te # type: ignore
 import unittest
 
@@ -52,6 +53,9 @@ MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_ID)
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_FILE]
+OMEX_DIR = os.path.join(cn.TEST_DIR, "omex")
+OMEX_PROJECT_DIR = os.path.join(cn.TEST_DIR, "project")
+REMOVE_DIRS = [OMEX_DIR, OMEX_PROJECT_DIR]
 DISPLAY_VARIABLES = ["S1", "S2"]
 NUM_POINT = 100
 MODEL_REFS = [MODEL_SBML, MODEL_ANT]
@@ -89,6 +93,9 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
+        for directory in REMOVE_DIRS:
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
 
     def testConstructor(self):
         """Test the constructor of MultipleModelTimeCourse"""
@@ -180,6 +187,17 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         if IGNORE_TEST:
             return
         self.evaluate(self.mmtc)
+
+    def testMakeOMEXFiles(self):
+        """Test the makeOMEXFiles method"""
+        #if IGNORE_TEST:
+        #    return
+        sedml_str = self.mmtc.getSEDML()
+        dir_path = os.path.join(cn.TEST_DIR, "omex")
+        os.makedirs(dir_path, exist_ok=True)
+        sedml_path = os.path.join(dir_path, "sedml.xml")
+        with open(sedml_path, "w") as f:
+            f.write(sedml_str)
 
     def evaluate(self, mmtc:MultipleModelTimeCourse):
         """Evaluate the sedml_str and sbml_str

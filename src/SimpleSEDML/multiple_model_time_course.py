@@ -130,7 +130,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         for model_ref, task_id in self.model_ref_dct.items():
             if task_id is None:
                 model_id = self.addModel(model_ref, is_overwrite=True,
-                        target_directory=self.target_directory, **self.parameter_dct)
+                        **self.parameter_dct)
                 self.model_ref_dct[model_ref] = model_id
 
     def _makeTaskObjects(self):

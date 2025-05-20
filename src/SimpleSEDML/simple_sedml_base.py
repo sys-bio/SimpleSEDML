@@ -6,13 +6,15 @@ from SimpleSEDML.simulation import Simulation  # type:ignore
 from SimpleSEDML.task import Task, RepeatedTask  # type:ignore
 from SimpleSEDML.plot import Plot  # type:ignore
 from SimpleSEDML.report import Report  # type:ignore
+from SimpleSEDML.make_omex import makeOMEX  # type:ignore
 
 from collections import namedtuple
+import os
 import pandas as pd # type: ignore
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
-import warnings
 from typing import Optional, List, Tuple, Union
+import warnings
 
 
 ModelInfo = namedtuple("ModelInfo", ["model_id", "parameters", "floating_species"])
@@ -37,8 +39,17 @@ class SimpleSEDMLBase(object):
     Args:
         object (_type_): _description_
     """
-    def __init__(self)->None:
+    def __init__(self, project_dir:Optional[str]=None)->None:
+        """
+        Args:
+            project_dir (Optional[str]): Directory where project files are stored.
+                Default is current directory.
+        """
         # Dictionary of script elements, indexed by their section ID
+        if project_dir is None:
+            project_dir = os.getcwd()
+        #
+        self.project_dir = project_dir
         self.model_dct:dict = {}
         self.simulation_dct:dict = {}
         self.task_dct:dict = {}
@@ -135,7 +146,6 @@ class SimpleSEDMLBase(object):
                     ref_type:Optional[str]=None,
                     model_source_path:Optional[str]=None,
                     is_overwrite:bool=False,
-                    target_directory:Optional[str]=None,
                     **parameters)->str:
         """Adds a model to the script
 
@@ -145,7 +155,6 @@ class SimpleSEDMLBase(object):
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
             model_source_path: path to the model source file
             is_overwrite: if True, overwrite the model if it already exists
-            target_directory: directory to save the model file
             parameters: changes in parameter values for the model
 
         Returns:
@@ -153,9 +162,9 @@ class SimpleSEDMLBase(object):
         """
         model_ids = list(self.model_dct.keys())
         #ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
-        model = Model(id, model_ref, ref_type=ref_type,
+        model = Model(id, model_ref=model_ref, ref_type=ref_type,
                 source=model_source_path, is_overwrite=is_overwrite,
-                target_directory=target_directory,
+                target_directory=self.project_dir,
                 existing_model_ids=model_ids, **parameters)
         self._checkDuplicate(model.id, cn.MODEL)
         self.model_dct[model.id] = model
@@ -322,3 +331,20 @@ class SimpleSEDMLBase(object):
             return df
         else:
             return pd.DataFrame()
+        
+    def makeOMEXFile(self,
+                project_id:str="project",
+                omex_dir:Optional[str]=None):
+        """
+        Process a project directory to create a Combine archive and write it to an OMEX file.
+        Args:
+            project_id (str): The ID of the project. Default is "project".
+            omex_dir (str): The directory where the OMEX file will be written.
+                            Default is the project directory (self.project_dir).
+        """
+        # Initializations
+        if omex_dir is None:
+            omex_dir = self.project_dir
+        #
+        makeOMEX(project_id=project_id, omex_dir=omex_dir, project_path=self.project_dir,
+                is_write_omex=True)

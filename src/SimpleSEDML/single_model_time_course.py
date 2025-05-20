@@ -52,7 +52,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             title = ""
         #
         self.addModel(model_id, model_ref, ref_type=ref_type, is_overwrite=True,
-                      target_directory=target_directory, **parameter_dct)
+                      **parameter_dct)
         this_model = self.model_dct[model_id]
         if display_variables is None:
             display_variables = list(this_model.getInformation().floating_species_dct.keys())
