@@ -12,9 +12,9 @@ import zipfile
 
 IGNORE_TEST = False
 IS_PLOT = False
-MODEL_ID = "model1"
-MODEL2_ID = "model2"
-MODEL_ANT = """
+MODEL0_ID = "model0"
+MODEL1_ID = "model1"
+MODEL0_ANT = """
 model %s
     S1 -> S2; k1*S1
     S2 -> S3; k2*S2
@@ -28,8 +28,8 @@ model %s
     S3 = 0
     S4 = 0
 end
-""" % MODEL_ID
-MODEL2_ANT = """
+""" % MODEL0_ID
+MODEL1_ANT = """
 model %s
     S1 -> S2; k1*S1
     S2 -> S3; k2*S2
@@ -44,21 +44,16 @@ model %s
     S3 = 0
     S4 = 0
 end
-""" % MODEL2_ID
-MODEL1_SBML = te.antimonyToSBML(MODEL_ANT)
-MODEL2_SBML = te.antimonyToSBML(MODEL2_ANT)
+""" % MODEL1_ID
+MODEL0_SBML = te.antimonyToSBML(MODEL0_ANT)
+MODEL1_SBML = te.antimonyToSBML(MODEL1_ANT)
 OMEX_DIR = os.path.join(cn.TEST_DIR, "omex")
 OMEX_PROJECT_DIR = os.path.join(cn.TEST_DIR, "project")
 REMOVE_DIRS = [OMEX_DIR, OMEX_PROJECT_DIR]
 DISPLAY_VARIABLES = ["S1", "S2"]
 NUM_POINT = 100
-MODEL_REFS = [MODEL1_SBML, MODEL2_SBML]
-MMTC = MultipleModelTimeCourse(MODEL_REFS, start=0,
-                end=10, num_point=NUM_POINT, k1=1.5,
-                display_variables=DISPLAY_VARIABLES,
-                is_plot=False)
-SEDML_STR = MMTC.getSEDML()
-SEDML_PATH = os.path.join(OMEX_PROJECT_DIR, "sedml.xml")
+MODEL_REFS = [MODEL0_SBML, MODEL1_SBML]
+SEDML_PATH = os.path.join(OMEX_PROJECT_DIR, "project.sedml")
 
 
 #############################
@@ -74,18 +69,23 @@ def assemble(*args):
 class TestMakeOmex(unittest.TestCase):
 
     def setUp(self):
-        self.remove_files = []
+        mmtc = MultipleModelTimeCourse(MODEL_REFS, start=0,
+                end=10, num_point=NUM_POINT, k1=1.5,
+                display_variables=DISPLAY_VARIABLES,
+                is_plot=False)
+        sedml_str = mmtc.getSEDML(is_basename_source=True)
+        self.remove_files = mmtc.model_sources
         for directory in REMOVE_DIRS:
             os.makedirs(directory, exist_ok=True)
         self.makeSBMLFiles()
         with open(SEDML_PATH, "w") as f:
-            f.write(SEDML_STR)
+            f.write(sedml_str)
 
     def makeSBMLFiles(self):
         """Create SBML files from Antimony models"""
         # Create the SBML files
         for i, sbml_str in enumerate(MODEL_REFS):
-            path = os.path.join(OMEX_PROJECT_DIR, f"model_{i}.xml")
+            path = os.path.join(OMEX_PROJECT_DIR, f"model{i}.xml")
             with open(path, "w") as f:
                 f.write(sbml_str)
             self.remove_files.append(path)
@@ -107,15 +107,15 @@ class TestMakeOmex(unittest.TestCase):
         """Test the makeOMEXFiles method"""
         if IGNORE_TEST:
             return
-        makeOMEX(project_path=OMEX_PROJECT_DIR, omex_dir=OMEX_DIR)
+        validation_result = makeOMEX(project_path=OMEX_PROJECT_DIR, omex_dir=OMEX_DIR)
         archive_path = os.path.join(OMEX_DIR, "project.omex")
         with zipfile.ZipFile(archive_path, 'r') as zipf:
             ffiles = zipf.namelist()
         self.assertIn("metadata.rdf", ffiles)
         self.assertIn("manifest.xml", ffiles)
-        self.assertIn("sedml.xml", ffiles)
-        self.assertIn("model_0.xml", ffiles)
-        self.assertIn("model_1.xml", ffiles)
+        self.assertIn("project.sedml", ffiles)
+        self.assertIn("model0.xml", ffiles)
+        self.assertIn("model1.xml", ffiles)
         
 
 

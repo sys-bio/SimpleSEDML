@@ -22,7 +22,9 @@ class Report:
         """
         self.variables.extend(args)
 
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, **kwargs)->str:
+        if len(kwargs) > 0:
+            raise ValueError("No keyword arguments are allowed.")
         return "\n".join([f'report {", ".join(self.variables)}'])
 
     def __str__(self)->str:

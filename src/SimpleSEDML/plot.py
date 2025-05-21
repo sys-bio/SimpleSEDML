@@ -23,7 +23,9 @@ class Plot:
         self.title = title
         self.is_plot = is_plot
 
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, **kwargs)->str:
+        if len(kwargs) > 0:
+            raise ValueError("No keyword arguments are allowed.")
         if not self.is_plot:
             return ""
         if self.z_var is None:

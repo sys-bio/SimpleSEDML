@@ -183,7 +183,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
                 self.addPlot(x_var=first_time_variable, y_var=variables,
                     title=variable, id=plot_id, is_plot=self.is_plot)
 
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, is_basename_source:bool=False)->str:
         """Construct the PhraSED-ML string. This requires:
             1. Create simulation and task directives
             2. Changing the model and report
@@ -198,7 +198,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self._makeReportObject()
         self._makePlotObjects()
         #
-        return super().getPhraSEDML()
+        return super().getPhraSEDML(is_basename_source=is_basename_source)
     
     def __str__(self)->str:
         """Return PhraSED-ML string.

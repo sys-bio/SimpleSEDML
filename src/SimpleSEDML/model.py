@@ -195,14 +195,18 @@ class Model:
                 raise ValueError(f"Failed to fetch SBML from URL: {self.model_ref}")
         return sbml_str
 
-    def getPhraSEDML(self):
+    def getPhraSEDML(self, is_basename_source:bool=False)->str:
         params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct.items())
         if len(params) > 0:
             params = f" with {params}"
         if self.ref_type == cn.MODEL_ID:
             source = self.model_ref
         else:
-            source = f'"{self.source}"'
+            if is_basename_source:
+                source = os.path.basename(self.source)
+            else:
+                source = self.source
+            source = f'"{source}"'
         return f'{self.id} = model {source} {params}'
     
     def __str__(self)->str:

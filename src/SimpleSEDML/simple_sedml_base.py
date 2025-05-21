@@ -70,14 +70,15 @@ class SimpleSEDMLBase(object):
         """
         return [m.source for m in self.model_dct.values()]
     
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, is_basename_source:bool=False)->str:
         """Creates phrasedml string from composition of sections
 
         Returns:
             str: SED-ML string
         """
         sections = [
-            *[m.getPhraSEDML() for m in self.model_dct.values()],
+            *[m.getPhraSEDML(is_basename_source=is_basename_source)
+                    for m in self.model_dct.values()],
             *[s.getPhraSEDML() for s in self.simulation_dct.values()],
             *[t.getPhraSEDML() for t in self.task_dct.values()],
             *[rt.getPhraSEDML() for rt in self.repeated_task_dct.values()],
@@ -106,7 +107,7 @@ class SimpleSEDMLBase(object):
         """
         return te.antimonyToSBML(antimony_str)
 
-    def getSEDML(self)->str:
+    def getSEDML(self, is_basename_source:bool=False)->str:
         """Converts the script to a SED-ML string
 
         Returns:
@@ -114,7 +115,8 @@ class SimpleSEDMLBase(object):
         Raises:
             ValueError: if the conversion failsk
         """
-        sedml_str = phrasedml.convertString(self.getPhraSEDML())
+        sedml_str = phrasedml.convertString(
+            self.getPhraSEDML(is_basename_source=is_basename_source))
         if sedml_str is None:
             raise ValueError(phrasedml.getLastError())
         return sedml_str

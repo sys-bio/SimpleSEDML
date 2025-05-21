@@ -85,7 +85,9 @@ class Simulation:
                 variable_step_size=variable_step_size
             )
 
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, **kwargs)->str:
+        if len(kwargs) > 0:
+            raise ValueError("No keyword arguments are allowed.")
         if self.simulation_type == ST_UNIFORM:
             simulate_arg = "simulate uniform"
         elif self.simulation_type == ST_STOCHASTIC:

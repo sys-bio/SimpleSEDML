@@ -9,7 +9,9 @@ class Task:
         self.model_id = model_id
         self.simulation_id = simulation_id
 
-    def getPhraSEDML(self)->str:
+    def getPhraSEDML(self, **kwargs)->str:
+        if len(kwargs) > 0:
+            raise ValueError("No keyword arguments are allowed.")
         result = f'{self.id} = run {self.simulation_id} on {self.model_id}'
         return result
     
