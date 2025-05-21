@@ -71,11 +71,13 @@ Issues
 """
 
 class Model:
-    def __init__(self, id:str, model_ref:Optional[str]=None, ref_type:Optional[str]=None, 
+    def __init__(self, id:str,
+                    model_ref:Optional[str]=None,
+                    ref_type:Optional[str]=None, 
                     source:Optional[str]=None, 
                     is_overwrite:bool=False,
                     existing_model_ids:Optional[List[str]]=None,
-                    target_directory:Optional[str]=None,
+                    project_dir:Optional[str]=None,
                     **kwargs):
         """Provide information about the model and a model identifier.
 
@@ -94,17 +96,17 @@ class Model:
                 in the current directory.
             existing_model_ids (List[str]): list of existing model IDs. This is used to resolve the model reference
                 and to check if the model ID is unique.
-            target_directory (str): directory to save the model file. If None, the current directory is used.
+            project_dir (str): directory to save the model file. If None, the current directory is used.
         """
         if existing_model_ids is None:
             existing_model_ids = []
-        if target_directory is not None:
+        if project_dir is not None:
             # Check if the target directory exists
-            if not os.path.exists(target_directory):
-                raise ValueError(f"Target directory {target_directory} does not exist.")
+            if not os.path.exists(project_dir):
+                os.makedirs(project_dir)
         else:
-            target_directory = os.getcwd()
-        self.target_directory = target_directory
+            project_dir = os.getcwd()
+        self.project_dir = project_dir
         # Model reference to use as arguments until it is resolved
         if model_ref is None:
             model_ref = id
@@ -149,13 +151,12 @@ class Model:
             return self.model_ref + cn.XML_EXT
         if source is None:
             # Use the current directory
-            source = os.path.join(self.target_directory, self.id + cn.XML_EXT)
+            source = os.path.join(self.project_dir, self.id + cn.XML_EXT)
         source = str(source)
         if self.is_overwrite or not os.path.exists(source):
             with open(source, "wb") as f:
                 f.write(self.sbml_str.encode('utf-8'))
                 f.flush()
-                #print(f"**Model saved to {source}")
         if (not self.is_overwrite and os.path.exists(source)):
             msg = "*** File {model_source_path} already exists and will be used as model source."
             msg += "\n  Use is_overwrite=True to overwrite."

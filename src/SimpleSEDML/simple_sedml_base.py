@@ -6,7 +6,7 @@ from SimpleSEDML.simulation import Simulation  # type:ignore
 from SimpleSEDML.task import Task, RepeatedTask  # type:ignore
 from SimpleSEDML.plot import Plot  # type:ignore
 from SimpleSEDML.report import Report  # type:ignore
-from SimpleSEDML.make_omex import makeOMEX  # type:ignore
+from SimpleSEDML.omex_maker import OMEXMaker  # type:ignore
 
 from collections import namedtuple
 import os
@@ -39,7 +39,7 @@ class SimpleSEDMLBase(object):
     Args:
         object (_type_): _description_
     """
-    def __init__(self, project_dir:Optional[str]=None)->None:
+    def __init__(self, project_dir:Optional[str]=None):
         """
         Args:
             project_dir (Optional[str]): Directory where project files are stored.
@@ -115,6 +115,7 @@ class SimpleSEDMLBase(object):
         Raises:
             ValueError: if the conversion failsk
         """
+        phrasedml.setWorkingDirectory(self.project_dir)
         sedml_str = phrasedml.convertString(
             self.getPhraSEDML(is_basename_source=is_basename_source))
         if sedml_str is None:
@@ -166,7 +167,7 @@ class SimpleSEDMLBase(object):
         #ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref=model_ref, ref_type=ref_type,
                 source=model_source_path, is_overwrite=is_overwrite,
-                target_directory=self.project_dir,
+                project_dir=self.project_dir,
                 existing_model_ids=model_ids, **parameters)
         self._checkDuplicate(model.id, cn.MODEL)
         self.model_dct[model.id] = model

@@ -70,7 +70,7 @@ class TestModel(unittest.TestCase):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
-        model = Model(MODEL_ID, MODEL_SBML, target_directory=cn.TEST_DIR, is_overwrite=True)
+        model = Model(MODEL_ID, MODEL_SBML, project_dir=cn.TEST_DIR, is_overwrite=True)
         self.remove_files.append(model.source)
         path = os.path.join(cn.TEST_DIR, MODEL_ID + cn.XML_EXT)
         self.assertTrue(os.path.exists(path), f"File {path} not created.")

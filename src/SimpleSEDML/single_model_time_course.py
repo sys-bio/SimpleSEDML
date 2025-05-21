@@ -11,7 +11,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
     def __init__(self,
             model_ref:str,
             ref_type:Optional[str]=None,
-            target_directory:Optional[str]=None,
+            project_dir:Optional[str]=None,
             display_variables:Optional[List[str]]=None,
             start:float=0,
             end:float=5,
@@ -27,7 +27,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         Args:
             model_ref: reference to the model
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
-            target_directory: directory to save the files
+            project_dir: directory to save the files
             display_variables: variables to be plotted and included the report
             start: start time
             end: end time
@@ -43,6 +43,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         """
         super().__init__()
         #
+        self.project_dir = project_dir # type:ignore
         if time_course_id is None:
             time_course_id = TIME_COURSE
         model_id = f"{time_course_id}_model"
@@ -51,8 +52,8 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         if title is None:
             title = ""
         #
-        self.addModel(model_id, model_ref, ref_type=ref_type, is_overwrite=True,
-                      **parameter_dct)
+        self.addModel(model_id, model_ref=model_ref, ref_type=ref_type, is_overwrite=True,
+                target_directory=project_dir, **parameter_dct)
         this_model = self.model_dct[model_id]
         if display_variables is None:
             display_variables = list(this_model.getInformation().floating_species_dct.keys())

@@ -144,7 +144,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id=time_course_id,
             algorithm=algorithm,
             is_plot=is_plot,
-            target_directory=target_directory,
+            project_dir=target_directory,
             **parameters
         )
         return mmtc

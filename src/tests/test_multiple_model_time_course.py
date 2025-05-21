@@ -188,17 +188,6 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             return
         self.evaluate(self.mmtc)
 
-    def testMakeOMEXFiles(self):
-        """Test the makeOMEXFiles method"""
-        #if IGNORE_TEST:
-        #    return
-        sedml_str = self.mmtc.getSEDML()
-        dir_path = os.path.join(cn.TEST_DIR, "omex")
-        os.makedirs(dir_path, exist_ok=True)
-        sedml_path = os.path.join(dir_path, "sedml.xml")
-        with open(sedml_path, "w") as f:
-            f.write(sedml_str)
-
     def evaluate(self, mmtc:MultipleModelTimeCourse):
         """Evaluate the sedml_str and sbml_str
 
