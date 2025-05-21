@@ -5,8 +5,8 @@ import numpy as np # type: ignore
 import os
 import pandas as pd # type: ignore
 import phrasedml # type: ignore
+import shutil
 import unittest
-import warnings
 import tellurium as te # type: ignore
 
 
@@ -50,6 +50,8 @@ end
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
+SIMPLE_PROJECT_DIR = os.path.join(cn.TEST_DIR, "project")
+REMOVE_DIRS = [SIMPLE_PROJECT_DIR]
 WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
@@ -72,6 +74,9 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         for file in self.remove_files:
             if os.path.exists(file):
                 os.remove(file)
+        for directory in REMOVE_DIRS:
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str
@@ -92,7 +97,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             is_report:bool=True,
             is_plot:bool=True,
             )->SimpleSEDMLBase:
-        simple = SimpleSEDMLBase()
+        simple = SimpleSEDMLBase(project_dir=os.path.join(cn.TEST_DIR, "project"))
         if is_model:
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
         if is_simulation:
@@ -188,6 +193,14 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         self.assertEqual(len(result_dct), 2)
         model_information = result_dct[MODEL_NAME]
         self.assertEqual(model_information.model_id, MODEL_NAME)
+
+    def testMakeOMEXFile(self):
+        if IGNORE_TEST:
+            return
+        simple = self.makeInitialSimpleSEDMLBase()
+        omex_path = os.path.join(cn.TEST_DIR, "project.omex")
+        omex_path, maker = simple.makeOMEXFile(omex_path=omex_path)
+        self.assertTrue(maker.validateOMEXFile())
 
 
 if __name__ == '__main__':

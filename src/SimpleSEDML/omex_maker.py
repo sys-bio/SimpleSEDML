@@ -1,5 +1,7 @@
 '''Creates a Combine archive and writes it to an OMEX file.''' # Author: Lician P. Smith, May 19, 2025
 
+from SimpleSEDML import constants as cn
+
 from biosimulators_utils.combine.io import CombineArchiveWriter  # type: ignore
 from biosimulators_utils.combine.validation import validate  # type: ignore
 from biomodels_qc.utils import build_combine_archive  # type: ignore
@@ -61,7 +63,7 @@ class ValidationResult:
 
 
 class OMEXMaker(object):
-    def __init__(self, project_id:str="project",
+    def __init__(self, project_id:Optional[str]=None,
                     omex_path:Optional[str]=None,
                     project_path:Optional[str]=None,):
         """
@@ -83,6 +85,8 @@ class OMEXMaker(object):
             5. maker.cleanUp()
         """
         ## Initialize the OMEXMaker object
+        if project_id is None:
+            project_id = cn.D_PROJECT_ID
         if project_path is None:
             project_path = os.path.join(os.path.dirname(__file__))
         if omex_path is None:
@@ -178,7 +182,7 @@ class OMEXMaker(object):
         # Write the manifest file
         combine_writer.write_manifest(self.archive.contents, manifest_path)
 
-    def validateOmex(self)->ValidationResult:
+    def validateOMEXFile(self)->ValidationResult:
         """
         Validate the OMEX file.
         Args:

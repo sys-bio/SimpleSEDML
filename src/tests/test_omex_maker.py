@@ -1,6 +1,6 @@
 import SimpleSEDML.constants as cn # type: ignore
 from SimpleSEDML.multiple_model_time_course import MultipleModelTimeCourse # type:ignore
-from SimpleSEDML.omex_maker import OMEXMaker # type:ignore
+from SimpleSEDML.omex_maker import OMEXMaker, ValidationResult # type:ignore
 
 import pandas as pd; # type: ignore
 import os
@@ -120,7 +120,26 @@ class TestMakeOmex(unittest.TestCase):
         self.assertIn("project.sedml", ffiles)
         self.assertIn("model0.xml", ffiles)
         self.assertIn("model1.xml", ffiles)
-        
+
+    def testValidateOmex(self):
+        if IGNORE_TEST:
+            return
+        self.maker.make()
+        result = self.maker.validateOMEXFile()
+        self.assertTrue(result)
+        # Check the contents of the validation result
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result)
+
+    def testCleanUp(self):
+        if IGNORE_TEST:
+            return
+        self.maker.make()
+        self.maker.validateOMEXFile()
+        temp_dir = self.maker.temp_dir
+        self.assertTrue(os.path.exists(temp_dir))
+        self.maker.cleanUp()
+        self.assertFalse(os.path.exists(temp_dir))
 
 
 if __name__ == '__main__':

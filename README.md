@@ -127,9 +127,10 @@ which generates the following plot:
 
 # Versions
 
-* 0.0.4
+* 0.0.5
     * Added ".xml" to SBML files
     * Model files are created in a target directory
     * Files created during tests are eliminated
     * Create separate test module for testing SingleModelTimeCourse
     * \_\_init\_\_ exposes ``makeSingleModelTimeCourse``, ``makeMultipleModelTimeCourse``, ``getModelInformtation``, ``SimpleSEDML``.
+    * Create an OMEX file and validate it
