@@ -168,7 +168,7 @@ class OMEXMaker(object):
             #Have to do this, otherwise build_combine_archive creates a duplicate!
             os.remove(manifest_path)
         self.archive = build_combine_archive(self.project_path, master_files)
-        #Write the new manifest.xml file:
+        # Write the new manifest.xml file:
         combine_writer = CombineArchiveWriter()
         if is_write_omex:
             combine_writer.run(self.archive, self.project_path, self.omex_path)
@@ -197,7 +197,7 @@ class OMEXMaker(object):
         with zipfile.ZipFile(self.omex_path, 'r') as zip_ref:
             zip_ref.extractall(self.temp_dir)
         # Validate the OMEX file
-        return ValidationResult(validate(self.archive, self.temp_dir))
+        return ValidationResult(validate(self.archive, self.temp_dir))  # type: ignore
     
     def cleanUp(self):
         """

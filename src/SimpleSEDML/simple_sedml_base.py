@@ -401,4 +401,4 @@ class SimpleSEDMLBase(object):
                 firstname=firstname, email=email,
                 organization=organization, url=url,
                 description=description, date=date)
-        return str(omex_path), maker
+        return maker.omex_path, maker
