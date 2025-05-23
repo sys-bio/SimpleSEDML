@@ -88,16 +88,20 @@ class Simulation:
     def getPhraSEDML(self, **kwargs)->str:
         if len(kwargs) > 0:
             raise ValueError("No keyword arguments are allowed.")
+        #
         if self.simulation_type == ST_UNIFORM:
-            simulate_arg = "simulate uniform"
+            line = f'{self.id} = simulate uniform'
+            line += f'({self.start}, {self.end}, {self.num_step})'
         elif self.simulation_type == ST_STOCHASTIC:
-            simulate_arg = "simulate uniform_stochastic"
-        if self.simulation_type == ST_ONESTEP:
+            line = f'{self.id} = simulate uniform_stochastic '
+            line += f'({self.start}, {self.end}, {self.num_step})'
+        elif self.simulation_type == ST_ONESTEP:
             line = f'{self.id} = simulate onestep({self.time_interval})'
         else:
-            line = f'{self.id} = {simulate_arg}({self.start}, {self.end}, {self.num_step})'
+            raise ValueError(f"Unknown simulation type: {self.simulation_type}")
         # Include the options
-        option_lines = [f"{self.id}.algorithm.{k} = {str(v)} " for k, v in self.option_dct.items() 
+        option_lines = [f"{self.id}.algorithm.{k} = {str(v)} "
+                for k, v in self.option_dct.items() 
                 if (v is not None) and (k != "algorithm")]
         option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
         section = line + "\n" + "\n".join(option_lines)

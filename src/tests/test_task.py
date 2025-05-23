@@ -97,8 +97,8 @@ class TestRepeatedTask(unittest.TestCase):
             if os.path.exists(file):
                 os.remove(file)
 
-    def makeTask(self, **kwargs)->Tuple[Task, str]:
-        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True, **kwargs)
+    def makeTask(self, parameter_dct:Optional[dict]=None)->Tuple[Task, str]:
+        model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True, parameter_dct=parameter_dct)
         simulation = Simulation("simulation1", "uniform", 0, 10, 100)
         task = Task("task1", model.id, simulation.id)
         return task, assemble(model, simulation, task)
@@ -121,7 +121,7 @@ class TestRepeatedTask(unittest.TestCase):
         # repeated_task1 = repeat task1 for k1 in [1, 3, 5], reset=true
         if IGNORE_TEST:
             return
-        task, phrasedml_str = self.makeTask(k3=13)
+        task, phrasedml_str = self.makeTask(parameter_dct=dict(k3=13))
         # Create a repeated task
         parameter_df = pd.DataFrame({"k1": [1, 3, 5], "k2": [0, 10, 3]})
         repeated_task = RepeatedTask("repeat1", task.id, parameter_df=parameter_df, reset=True)

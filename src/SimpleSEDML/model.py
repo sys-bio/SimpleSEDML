@@ -78,7 +78,7 @@ class Model:
                     is_overwrite:bool=False,
                     existing_model_ids:Optional[List[str]]=None,
                     project_dir:Optional[str]=None,
-                    **kwargs):
+                    parameter_dct:Optional[dict]=None):
         """Provide information about the model and a model identifier.
 
         Args:
@@ -97,6 +97,7 @@ class Model:
             existing_model_ids (List[str]): list of existing model IDs. This is used to resolve the model reference
                 and to check if the model ID is unique.
             project_dir (str): directory to save the model file. If None, the current directory is used.
+            parameter_dct (dict): dictionary of parameters whose values are changed
         """
         if existing_model_ids is None:
             existing_model_ids = []
@@ -128,7 +129,9 @@ class Model:
         self.id = id
         self.model_ref = model_ref
         self.ref_type = ref_type
-        self.param_change_dct = kwargs
+        if parameter_dct is None:
+            parameter_dct = {}
+        self.parameter_dct = parameter_dct 
         self.is_overwrite = is_overwrite
         #
         self.sbml_str = self._getSBMLFromReference()
@@ -197,7 +200,7 @@ class Model:
         return sbml_str
 
     def getPhraSEDML(self, is_basename_source:bool=False)->str:
-        params = ", ".join(f"{param} = {val}" for param, val in self.param_change_dct.items())
+        params = ", ".join(f"{param} = {val}" for param, val in self.parameter_dct.items())
         if len(params) > 0:
             params = f" with {params}"
         if self.ref_type == cn.MODEL_ID:

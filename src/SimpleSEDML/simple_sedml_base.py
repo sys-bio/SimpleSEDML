@@ -55,6 +55,8 @@ class SimpleSEDMLBase(object):
             project_dir = os.getcwd()
         #
         self.project_id = project_id
+        if project_dir is None:
+            project_dir = os.path.join(os.getcwd(), project_id)
         self.project_dir = project_dir
         self.model_dct:dict = {}
         self.simulation_dct:dict = {}
@@ -101,7 +103,8 @@ class SimpleSEDMLBase(object):
             str: PhraSED-ML string
         """
         return self.getPhraSEDML()
-    
+
+    @staticmethod 
     def antimonyToSBML(antimony_str)->str:
         """Converts an Antimony string to SBML
 
@@ -155,7 +158,7 @@ class SimpleSEDMLBase(object):
                     ref_type:Optional[str]=None,
                     model_source_path:Optional[str]=None,
                     is_overwrite:bool=False,
-                    **parameters)->str:
+                    parameter_dct:Optional[dict]=None)->str:
         """Adds a model to the script
 
         Args:
@@ -170,11 +173,10 @@ class SimpleSEDMLBase(object):
             str: ID of the model
         """
         model_ids = list(self.model_dct.keys())
-        #ref_type = Model.findReferenceType(model_ref, model_ids, ref_type=ref_type)
         model = Model(id, model_ref=model_ref, ref_type=ref_type,
                 source=model_source_path, is_overwrite=is_overwrite,
                 project_dir=self.project_dir,
-                existing_model_ids=model_ids, **parameters)
+                existing_model_ids=model_ids, parameter_dct=parameter_dct)
         self._checkDuplicate(model.id, cn.MODEL)
         self.model_dct[model.id] = model
         return model.id
@@ -284,7 +286,7 @@ class SimpleSEDMLBase(object):
         if len(self.report_dct) > 1:
             warnings.warn("Reports only generate data for the last task.")
         te.executeSEDML(self.getSEDML())
-        return te.getLastReport()
+        return te.getLastReport()   # type: ignore
     
     def getAllModelInformation(self, model_id:Optional[str]=None)->dict:
         """Returns a list of information about all models

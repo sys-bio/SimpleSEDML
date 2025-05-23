@@ -31,7 +31,7 @@ class SimpleSEDML(SimpleSEDMLBase):
 
     @classmethod
     def getModelInformation(cls, model_ref:str,
-            ref_type:Optional[str]=None)->Union[List, ModelInformation]:
+            ref_type:Optional[str]=None)->ModelInformation:
         """Get the model global parameters and floating species.
 
         Args:
@@ -47,7 +47,7 @@ class SimpleSEDML(SimpleSEDMLBase):
                 - num_reaction: number of reactions
                 - num_species: number of species
         """
-        a_model = Model(DUMMY_FILE, model_ref, ref_type=ref_type,
+        a_model = Model(DUMMY_FILE, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True)
         model_information = a_model.getInformation()
         if os.path.exists(a_model.source):
@@ -68,7 +68,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
             is_plot:bool=True,
-            **parameters)->SingleModelTimeCourse:
+            **parameter_dct)->SingleModelTimeCourse:
         """Creates a time course simulation
 
         Args:
@@ -82,7 +82,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             algorithm: algorithm to use for the simulation
             title: title of the plot
             is_plot: if True, plot the results
-            parameters: parameters to be passed to the model
+            parameter_dct: parameters to be passed to the model
 
         Returns:
             SingleModelTimeCourse: a time course simulation object
@@ -99,7 +99,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             title=title,
             algorithm=algorithm,
             is_plot=is_plot,
-            **parameters
+            **parameter_dct,
         )
         return smtc
     
@@ -115,8 +115,8 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id:Optional[str]=None,
             algorithm=cn.D_ALGORITHM,
             is_plot:bool=True,
-            target_directory:Optional[str]=None,
-            **parameters)->MultipleModelTimeCourse:
+            project_dir:Optional[str]=None,
+            **parameter_dct)->MultipleModelTimeCourse:
         """Creates a time course simulation
 
         Args:
@@ -128,8 +128,8 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             is_plot: if True, plot the results
-            target_directory: directory to save the files
-            parameters: parameters to be passed to the model
+            project_dir: directory to save the files
+            parameter_dct: parameters to be passed to the model
 
         Returns:
             MultipleModelTimeCourse: a time course simulation object
@@ -144,7 +144,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             time_course_id=time_course_id,
             algorithm=algorithm,
             is_plot=is_plot,
-            project_dir=target_directory,
-            **parameters
+            project_dir=project_dir,
+            parameter_dct=parameter_dct,
         )
         return mmtc

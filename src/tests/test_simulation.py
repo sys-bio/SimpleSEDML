@@ -86,9 +86,10 @@ class TestModel(unittest.TestCase):
                 "seed",
                 "variable_step_size",
         ]
-        kwargs = {k: np.random.rand() for k in options}
+        kwargs = {}
         kwargs["algorithm"] = "CVODE"
-        simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)
+        kwargs = {k: np.random.rand() for k in options if k != "algorithm"}
+        simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)  # type: ignore
         self.evaluate(simulation.getPhraSEDML())
 
 

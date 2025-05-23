@@ -93,6 +93,7 @@ class TestSimpleSEDML(unittest.TestCase):
     def testMakeSingleModelTimeCourse(self):
         if IGNORE_TEST:
             return
+        smtc = None
         try:
             smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT)
         except Exception as e:
@@ -114,13 +115,15 @@ class TestSimpleSEDML(unittest.TestCase):
             smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
-        self.remove_files.extend(smtc.model_sources)
-        if IS_PLOT:
-            _ = smtc.execute()
+        if smtc is not None:
+            self.remove_files.extend(smtc.model_sources)
+            if IS_PLOT:
+                _ = smtc.execute()
 
     def testMakeMultipleModelTimeCourse(self):
         if IGNORE_TEST:
             return
+        mmtc = None
         try:
             mmtc = SimpleSEDML.makeMultipleModelTimeCourse(
                     [MODEL_ANT, MODEL2_ANT],
@@ -133,8 +136,9 @@ class TestSimpleSEDML(unittest.TestCase):
                     )
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
-        if IS_PLOT:
-            _ = mmtc.execute()
+        if mmtc is not None:
+            if IS_PLOT:
+                _ = mmtc.execute()
 
 
 if __name__ == '__main__':

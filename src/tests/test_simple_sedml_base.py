@@ -99,7 +99,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             )->SimpleSEDMLBase:
         simple = SimpleSEDMLBase(project_dir=os.path.join(cn.TEST_DIR, "project"))
         if is_model:
-            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", 
+                    parameter_dct=dict(k1=2.5, k2= 100), is_overwrite=True)
         if is_simulation:
             simple.addSimulation("sim1", "uniform", 0, 10, 100)
         if is_task:
@@ -148,7 +149,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         NUM_SAMPLE = 100
         def makePHRASEDML()->SimpleSEDMLBase:
             simple = SimpleSEDMLBase()
-            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", k1=2.5, k2= 100, is_overwrite=True)
+            simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", 
+                    parameter_dct=dict(k1=2.5, k2= 100), is_overwrite=True)
             simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
             simple.addTask("task1", MODEL_NAME, "sim1")
             self.remove_files.extend(simple.model_sources)
@@ -187,7 +189,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
     def testGetModelInfo(self):
         if IGNORE_TEST:
             return
-        self.simple.addModel(MODEL_NAME, MODEL_ANT, ref_type="ant_str", k1=2.5, k2= 100, is_overwrite=True)
+        self.simple.addModel(MODEL_NAME, MODEL_ANT, ref_type="ant_str",
+                parameter_dct=dict(k1=2.5, k2=100), is_overwrite=True)
         self.simple.addModel(MODEL2_NAME, MODEL2_ANT, ref_type="ant_str", is_overwrite=True)
         result_dct = self.simple.getAllModelInformation()
         self.assertEqual(len(result_dct), 2)

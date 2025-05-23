@@ -28,6 +28,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
 
     def __init__(self,
                     model_refs:List[str],
+                    project_dir:Optional[str]=None,
                     start:float=cn.D_START,
                     end:float=cn.D_END,
                     num_step:Optional[int]=None,
@@ -36,8 +37,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
                     time_course_id:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
                     is_plot:bool=True,
-                    project_dir:Optional[str]=None,
-                    **parameter_dct,
+                    parameter_dct:Optional[dict]=None,
                     ):
         """Simulates a collection of models with common variables for the same time course.
         All models have the compared_variables. The outputs are:
@@ -45,6 +45,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             - a report with the values of each variable for each model
 
         Args:
+            project_dir (Optional[str], optional): Directory to save the files. Defaults to None.
             start (float, optional): simulation start time. Defaults to cn.D_START.
             end (float, optional): simulation end time. Defaults to cn.D_END.
             num_step (int, optional): Defaults to cn.D_NUM_STEP.
@@ -54,7 +55,6 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             variables (Optional[List[str]], optional): List of variables to be compared. Defaults to None.
                 if not provided, all variables in the model are used.
             is_plot (bool, optional): Whether to plot the results. Defaults to True.
-            project_dir (Optional[str], optional): Directory to save the files. Defaults to None.
             parameter_dct (Optional[dict], optional): Dictionary of parameters whose values are changed
 
         Example 1: Compare two models with the same variables
@@ -75,14 +75,16 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         if len(model_refs) == 0:
             raise ValueError("No models have been added to the simulation.")
         #
-        super().__init__()
+        super().__init__(project_dir=project_dir)
         #
         self.start = start
         self.end = end
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
-        self.project_dir:Optional[str] = project_dir # type:ignore
+        if project_dir is None:
+            project_dir = cn.D_PROJECT_DIR
+        self.project_dir = project_dir
         self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
         self.time_course_id = time_course_id # type:ignore
         if display_variables is None:
@@ -127,10 +129,10 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         return self._makeTaskID(model_id) + SCOPE
     
     def _makeModelObjects(self):
-        for model_ref, task_id in self.model_ref_dct.items():
-            if task_id is None:
+        for model_ref, model_id in self.model_ref_dct.items():
+            if model_id is None:
                 model_id = self.addModel(model_ref, is_overwrite=True,
-                        **self.parameter_dct)
+                        parameter_dct=self.parameter_dct)
                 self.model_ref_dct[model_ref] = model_id
 
     def _makeTaskObjects(self):
@@ -143,6 +145,8 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             raise ValueError("No models have been added to the simulation.")
         #
         for model_id in self.model_ids:
+            if model_id is None:
+                continue
             task_id = self._makeTaskID(model_id)
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id, SIM_ID)

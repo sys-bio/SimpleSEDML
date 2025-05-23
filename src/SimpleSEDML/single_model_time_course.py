@@ -41,9 +41,8 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         Returns:
             SingleModelTimeCourse: a time course simulation object
         """
-        super().__init__()
+        super().__init__(project_dir=project_dir)
         #
-        self.project_dir = project_dir # type:ignore
         if time_course_id is None:
             time_course_id = TIME_COURSE
         model_id = f"{time_course_id}_model"
@@ -53,7 +52,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             title = ""
         #
         self.addModel(model_id, model_ref=model_ref, ref_type=ref_type, is_overwrite=True,
-                target_directory=project_dir, **parameter_dct)
+                parameter_dct=parameter_dct)
         this_model = self.model_dct[model_id]
         if display_variables is None:
             display_variables = list(this_model.getInformation().floating_species_dct.keys())

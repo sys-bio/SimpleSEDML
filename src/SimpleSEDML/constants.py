@@ -3,6 +3,7 @@ import os
 PROJECT_DIR = os.path.dirname(__file__)
 for _ in range(2):
     PROJECT_DIR = os.path.dirname(PROJECT_DIR)
+EXAMPLE_DIR = os.path.join(PROJECT_DIR, "examples")
 SRC_DIR = os.path.join(PROJECT_DIR, "src")
 TEST_DIR = os.path.join(SRC_DIR, "tests")
 # Reference types
@@ -31,6 +32,7 @@ D_ALGORITHM = "CVODE"
 D_END = 5
 D_NUM_STEP = 10
 D_NUM_POINT = D_NUM_STEP + 1
+D_PROJECT_DIR = "project"
 D_PROJECT_ID = "project"
 D_REF_TYPE = ANT_STR
 D_SIM_TYPE  = ST_UNIFORM

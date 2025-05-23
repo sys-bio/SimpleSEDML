@@ -81,7 +81,8 @@ class TestModel(unittest.TestCase):
         # model = model model1 sbml_str
         if IGNORE_TEST:
             return
-        model = Model(MODEL_ID, MODEL_SBML, k1=10, k2=20, is_overwrite=True)
+        model = Model(MODEL_ID, MODEL_SBML,
+                parameter_dct=dict(k1=10, k2=20), is_overwrite=True)
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
