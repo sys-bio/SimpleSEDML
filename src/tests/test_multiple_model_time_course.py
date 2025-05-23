@@ -78,7 +78,8 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.remove()
         self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
-                end=10, num_point=NUM_POINT, k1=1.5,
+                end=10, num_point=NUM_POINT,
+                parameter_dct=dict(k1=1.5),
                 display_variables=DISPLAY_VARIABLES,
                 is_plot=IS_PLOT)
         self.num_model = len(self.model_refs)

@@ -71,7 +71,8 @@ class TestMakeOmex(unittest.TestCase):
     def setUp(self):
         self.remove_files = list(REMOVE_FILES)
         self.mmtc = MultipleModelTimeCourse(MODEL_REFS, start=0,
-                end=10, num_point=NUM_POINT, k1=1.5,
+                end=10, num_point=NUM_POINT,
+                parameter_dct=dict(k1=1.5),
                 display_variables=DISPLAY_VARIABLES,
                 project_dir=OMEX_PROJECT_DIR,
                 is_plot=False)
@@ -137,9 +138,9 @@ class TestMakeOmex(unittest.TestCase):
         self.maker.make()
         self.maker.validateOMEXFile()
         temp_dir = self.maker.temp_dir
-        self.assertTrue(os.path.exists(temp_dir))
+        self.assertTrue(os.path.exists(str(temp_dir)))
         self.maker.cleanUp()
-        self.assertFalse(os.path.exists(temp_dir))
+        self.assertFalse(os.path.exists(str(temp_dir)))
 
 
 if __name__ == '__main__':

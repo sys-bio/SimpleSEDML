@@ -11,7 +11,6 @@ SCRIPT_PATH = os.path.join(cn.EXAMPLE_DIR, NOTEBOOK_NAME + ".py")
 ENDING_SCRIPT = """
 if __name__ == '__main__':                                                  
     main()
-    mp.freeze_support()
 """
 
 # Load the notebook
