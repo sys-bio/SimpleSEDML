@@ -82,9 +82,6 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
-        if project_dir is None:
-            project_dir = cn.D_PROJECT_DIR
-        self.project_dir = project_dir
         self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
         self.time_course_id = time_course_id # type:ignore
         if display_variables is None:

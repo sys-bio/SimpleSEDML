@@ -13,6 +13,7 @@ import os
 import pandas as pd # type: ignore
 import phrasedml # type: ignore
 import tellurium as te  # type: ignore
+import tempfile # type: ignore
 from typing import Optional, List, Tuple, Union
 import warnings
 
@@ -51,13 +52,9 @@ class SimpleSEDMLBase(object):
         # Initializations
         if project_id is None:
             project_id = cn.D_PROJECT_ID
-        if project_dir is None:
-            project_dir = os.getcwd()
         #
         self.project_id = project_id
-        if project_dir is None:
-            project_dir = os.path.join(os.getcwd(), project_id)
-        self.project_dir = project_dir
+        self.project_dir = self._makeDefaultProjectDir(project_dir)
         self.model_dct:dict = {}
         self.simulation_dct:dict = {}
         self.task_dct:dict = {}
@@ -402,3 +399,19 @@ class SimpleSEDMLBase(object):
                 organization=organization, url=url,
                 description=description, date=date)
         return maker.omex_path, maker
+    
+    @staticmethod
+    def _makeDefaultProjectDir(project_dir:Union[str, None])->str:
+        """Creates a default project directory in a temporary location
+
+        Args:
+            project_dir: path to the project directory. If None, a temporary directory is created.
+
+        Returns:
+            str: path to the project directory
+        """
+        if project_dir is not None:
+            new_project_dir = str(project_dir)
+        else:
+            new_project_dir = tempfile.mkdtemp()
+        return new_project_dir
