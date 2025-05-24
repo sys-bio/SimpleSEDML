@@ -127,7 +127,9 @@ which generates the following plot:
 
 # Versions
 
-* 0.0.5
+* 0.0.6
+
+* 0.0.5 5/24/2025
     * Added ".xml" to SBML files
     * Model files are created in a target directory
     * Files created during tests are eliminated

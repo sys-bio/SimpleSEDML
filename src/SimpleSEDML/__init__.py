@@ -1,4 +1,4 @@
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
 import SimpleSEDML.constants as cn # type:ignore
 getModelInformation = SimpleSEDML.getModelInformation # type:ignore
