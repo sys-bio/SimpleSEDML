@@ -2,7 +2,7 @@
 # Source path (for github actions)
 import sys
 import os
-project_path = os.path.dirname(os.path.dirname(os.path.abspath("__FILE__")))
+project_path = os.path.dirname(os.path.abspath("__FILE__"))
 src_path = os.path.join(project_path, "src")
 sys.path.insert(0, src_path)
 #
