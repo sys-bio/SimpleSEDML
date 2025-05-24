@@ -20,9 +20,5 @@ jobs:
         cd src; nose2 --with-coverage tests
     - name: Run notebook
       run: |
-        echo "PYTHONPATH=src" >> $GITHUB_ENV
-        echo $GITHUB_ENV
-        echo "PYTHONPATH: $PYTHONPATH"
-        echo "`pwd`"
         python scripts/convert_notebook_to_script.py
-        ipython examples/api_basics.py
+        ipython examples/usage_examples.py
