@@ -1,8 +1,8 @@
 '''Class that handles model definitions and their parameters.'''
 
 import SimpleSEDML.constants as cn # type: ignore
+import SimpleSEDML.utils as utils # type: ignore
 
-from collections import namedtuple
 import codecs
 import urllib3
 import os
@@ -12,7 +12,7 @@ import warnings
 
 INVALID_MODEL_ID = "invalid_model_id"
 
-class ModelInformation:
+class ModelInformation(object):
     """Class that holds information about the model.
 
     Attributes:
@@ -28,10 +28,10 @@ class ModelInformation:
     def __init__(self, roadrunner, model_id:Optional[str]=None):
         ##
         def makeDict(names)->dict:
-            dct = {}
+            my_dict = {}
             for name in names:
-                dct[name] = self.roadrunner[name]
-            return dct
+                my_dict[name] = self.roadrunner[name]
+            return my_dict
         ##
         self.model_id = model_id
         self.roadrunner = roadrunner
@@ -106,7 +106,7 @@ class Model:
             if not os.path.exists(project_dir):
                 os.makedirs(project_dir)
         else:
-            project_dir = os.getcwd()
+            project_dir = utils.makeDefaultProjectDir(project_dir)
         self.project_dir = project_dir
         # Model reference to use as arguments until it is resolved
         if model_ref is None:

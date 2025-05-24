@@ -27,7 +27,7 @@ Restrictions:
     - No formulas (because this is an API and python can do this)
 """
 
-class SimpleSEDML(SimpleSEDMLBase):
+class SimpleSEDML(object):
 
     @classmethod
     def getModelInformation(cls, model_ref:str,
@@ -47,12 +47,11 @@ class SimpleSEDML(SimpleSEDMLBase):
                 - num_reaction: number of reactions
                 - num_species: number of species
         """
-        a_model = Model(DUMMY_FILE, model_ref=model_ref, ref_type=ref_type,
+        simple = SimpleSEDMLBase()
+        model_id = simple.addModel(DUMMY_FILE, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True)
-        model_information = a_model.getInformation()
-        if os.path.exists(a_model.source):
-            # Remove the file
-            os.remove(a_model.source)
+        model_information = simple.model_dct[model_id].getInformation()
+        simple.cleanUp()
         return model_information
 
     @classmethod 

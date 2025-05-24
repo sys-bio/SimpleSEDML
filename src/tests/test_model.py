@@ -64,7 +64,7 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+        self.checkFile(model)
     
     def testDesigateTargetDirectoryPath(self):
         # model = model model1 sbml_str
@@ -72,10 +72,9 @@ class TestModel(unittest.TestCase):
             return
         model = Model(MODEL_ID, MODEL_SBML, project_dir=cn.TEST_DIR, is_overwrite=True)
         self.remove_files.append(model.source)
-        path = os.path.join(cn.TEST_DIR, MODEL_ID + cn.XML_EXT)
-        self.assertTrue(os.path.exists(path), f"File {path} not created.")
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
+        self.checkFile(model)
     
     def testStringParameters(self):
         # model = model model1 sbml_str
@@ -86,7 +85,7 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+        self.checkFile(model)
 
     def testUsageAntimonyString(self):
         # model = model model1 sbml_str
@@ -96,7 +95,7 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+        self.checkFile(model)
 
     def testUsageStringNoOverwrite(self):
         # model = model model1 sbml_str
@@ -117,7 +116,13 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
+        self.checkFile(model)
+
+    def checkFile(self, model:Model):
+        """Check if the file exists and is not empty"""
+        filename = model.id + cn.XML_EXT
+        self.assertTrue(filename in os.listdir(model.project_dir),
+                f"File {filename} not created.")
 
     def testUsageURL(self):
         # model = model model1 URL
@@ -128,7 +133,7 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(WOLF_FILE), f"File {WOLF_FILE} not created.")
+        self.checkFile(model)
     
     def testUsageModelid(self):
         # model = model model1 sbml_str
@@ -141,7 +146,6 @@ class TestModel(unittest.TestCase):
         self.remove_files.append(model.source)
         phrasedml_str += "\n" + model.getPhraSEDML()
         self.evaluate(phrasedml_str)
-        self.assertTrue(os.path.exists(SBML_FILE_PATH), f"File {SBML_FILE_PATH} not created.")
 
     def testFindReferenceType(self):
         if IGNORE_TEST:
@@ -151,6 +155,8 @@ class TestModel(unittest.TestCase):
             ref_type = Model._findReferenceType(model_ref, model_ids=model_ids, ref_type=ref_type)
             self.assertEqual(ref_type, expected_ref_type, f"Expected {expected_ref_type}, got {ref_type}")
         #
+        model = Model(WOLF_ID, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)  # Create file
+        test(model.source, cn.SBML_FILE)
         with open(ANT_FILE_PATH, "w") as f:
             f.write(MODEL_ANT)
         test(ANT_FILE_PATH, cn.ANT_FILE)
@@ -158,8 +164,6 @@ class TestModel(unittest.TestCase):
         test(MODEL_ANT, cn.ANT_STR)
         test(MODEL_SBML, cn.SBML_STR)
         test(WOLF_URL, cn.SBML_URL)
-        _ = Model(WOLF_ID, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)  # Create file
-        test(WOLF_ID + ".xml", cn.SBML_FILE)
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str

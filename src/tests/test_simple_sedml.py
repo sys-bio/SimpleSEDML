@@ -63,7 +63,6 @@ class TestSimpleSEDML(unittest.TestCase):
 
     def tearDown(self):
         # Remove files if they exist
-        self.remove_files.extend(self.simple.model_sources)
         self.remove()
 
     def remove(self):

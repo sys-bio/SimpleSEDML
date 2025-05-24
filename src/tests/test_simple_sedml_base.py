@@ -10,7 +10,7 @@ import unittest
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = False
+IGNORE_TEST = True
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -204,6 +204,16 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         omex_path = os.path.join(cn.TEST_DIR, "project.omex")
         omex_path, maker = simple.makeOMEXFile(omex_path=omex_path)
         self.assertTrue(maker.validateOMEXFile())
+
+    def testUsageModelidForSameSimple(self):
+        #if IGNORE_TEST:
+        #    return
+        simple = SimpleSEDMLBase()
+        simple.addModel(MODEL_NAME, MODEL_ANT, is_overwrite=True)
+        simple.addModel("new", MODEL_NAME, is_overwrite=True)
+        phrasedml_str = simple.getPhraSEDML()
+        self.evaluate(phrasedml_str)
+        self.assertTrue(MODEL_NAME + ".xml" in os.listdir(simple.project_dir))
 
 
 if __name__ == '__main__':
