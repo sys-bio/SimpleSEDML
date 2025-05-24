@@ -52,22 +52,9 @@ class TestModel(unittest.TestCase):
     def testUniform(self):
         if IGNORE_TEST:
             return
-        simulation = Simulation(SIMULATION_ID, "uniform", 0, 10, 100)
+        simulation = Simulation(SIMULATION_ID,
+                simulation_type=cn.ST_UNIFORM, start=0, end=10, num_point=100)
         self.evaluate(simulation.getPhraSEDML())
-
-    def testStochastic(self):
-        if IGNORE_TEST:
-            return
-        simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100)
-        self.evaluate(simulation.getPhraSEDML())
-
-    # FIXME: this test is not working
-    def testOnestep(self):
-        if IGNORE_TEST:
-            return
-        return
-        simulation = Simulation(SIMULATION_ID, "onestep", time_interval=1)
-        self.evaluate(simulation.getPhrasedml())
 
     def testOptions(self):
         if IGNORE_TEST:
@@ -89,9 +76,31 @@ class TestModel(unittest.TestCase):
         kwargs = {}
         kwargs["algorithm"] = "CVODE"
         kwargs = {k: np.random.rand() for k in options if k != "algorithm"}
-        simulation = Simulation(SIMULATION_ID, "stochastic", 0, 10, 100, **kwargs)  # type: ignore
+        simulation = Simulation(SIMULATION_ID,
+                simulation_type=cn.ST_UNIFORM_STOCHASTIC,
+                start=0, end=10, num_point=100)  # type: ignore
         self.evaluate(simulation.getPhraSEDML())
 
+    def testSteadyState(self):
+        if IGNORE_TEST:
+            return
+        simulation = Simulation(SIMULATION_ID,
+                simulation_type=cn.ST_STEADYSTATE, start=0, end=10, num_point=100)
+        self.evaluate(simulation.getPhraSEDML())
+    
+    def testUniformUniformStochastic(self):
+        if IGNORE_TEST:
+            return
+        simulation = Simulation(SIMULATION_ID,
+                simulation_type=cn.ST_UNIFORM_STOCHASTIC, start=0, end=10, num_point=100)
+        self.evaluate(simulation.getPhraSEDML())
+
+    def testUniformOnestep(self):
+        if IGNORE_TEST:
+            return
+        simulation = Simulation(SIMULATION_ID,
+                simulation_type=cn.ST_ONESTEP, start=5)
+        self.evaluate(simulation.getPhraSEDML())
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str

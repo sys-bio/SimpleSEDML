@@ -3,16 +3,14 @@ import SimpleSEDML.constants as cn # type: ignore
 
 from typing import Optional
 
-# Simulation types
-ST_UNIFORM = "uniform"
-ST_STOCHASTIC = "stochastic"
-ST_ONESTEP = "onestep"
+
 
 
 class Simulation:
-    def __init__(self, id:str, simulation_type:str,
-            start:float=0,
-            end:float=5,
+    def __init__(self, id:str, 
+            simulation_type:str=cn.ST_UNIFORM,
+            start:Optional[float]=None,
+            end:Optional[float]=None,
             num_step:Optional[int]=None,
             num_point:Optional[int]=None,
             time_interval:float=0.5, # required for onestep
@@ -34,8 +32,8 @@ class Simulation:
             id (str): identifier for the simulation
             simulation_type (str): type of simulation
                 - "uniform": uniform simulation
-                - "stochastic": stochastic simulation
-                - "onestep": one-step simulation
+                - "uniform_stochastic": stochastic simulation
+                - "steadystate": one-step simulation
             start (float): start time for the simulation
             end (float): end time for the simulation
             num_step (int): number of steps for the simulation
@@ -47,25 +45,37 @@ class Simulation:
         """
         self.id = id
         self.simulation_type = simulation_type
-        self.start = start
-        self.end = end
         self.time_interval = time_interval
-        # Calculate the number of steps
-        if (num_step is None) and (num_point is None):
-            self.num_step = cn.D_NUM_STEP
-        elif (num_step is None) and (num_point is not None):
-            self.num_step = num_point - 1
-        elif (num_step is not None) and (num_point is None):
-            self.num_step = num_step
-        else:
-            if num_step != num_point - 1:  # type: ignore
-                raise ValueError("num_point must be num_step + 1")
-            self.num_step = num_step
-        #
+        # Handle start
+        if simulation_type in [cn.ST_UNIFORM, cn.ST_UNIFORM_STOCHASTIC, cn.ST_ONESTEP]:
+            if start is None:
+                self.start = cn.D_START
+            else:
+                self.start = start
+        if simulation_type in [cn.ST_UNIFORM, cn.ST_UNIFORM_STOCHASTIC]:
+            # Handle end
+            if end is None:
+                self.end = cn.D_END
+            else:
+                self.end = float(end)
+            if self.start >= self.end:
+                raise ValueError("start must be less than end")
+            # Handle num_step and num_point
+            if (num_step is None) and (num_point is None):
+                self.num_step = cn.D_NUM_STEP
+            elif (num_step is None) and (num_point is not None):
+                self.num_step = num_point - 1
+            elif (num_step is not None) and (num_point is None):
+                self.num_step = num_step
+            else:
+                if num_step != num_point - 1:  # type: ignore
+                    raise ValueError("num_point must be num_step + 1")
+                self.num_step = num_step
+        # Determine the simulation algorithm
         if algorithm is None:
-            if simulation_type == ST_UNIFORM:
+            if simulation_type == cn.ST_UNIFORM:
                 algorithm = cn.D_ALGORITHM
-            elif simulation_type == ST_STOCHASTIC:
+            elif simulation_type == cn.ST_UNIFORM_STOCHASTIC:
                 algorithm = "gillespie"
         self.algorithm = algorithm
         # Setup the options
@@ -89,21 +99,19 @@ class Simulation:
         if len(kwargs) > 0:
             raise ValueError("No keyword arguments are allowed.")
         #
-        if self.simulation_type == ST_UNIFORM:
-            line = f'{self.id} = simulate uniform'
+        line = f'{self.id} = simulate %s' % self.simulation_type
+        if self.simulation_type == cn.ST_UNIFORM:
             line += f'({self.start}, {self.end}, {self.num_step})'
-        elif self.simulation_type == ST_STOCHASTIC:
-            line = f'{self.id} = simulate uniform_stochastic '
+        elif self.simulation_type == cn.ST_UNIFORM_STOCHASTIC:
             line += f'({self.start}, {self.end}, {self.num_step})'
-        elif self.simulation_type == ST_ONESTEP:
-            line = f'{self.id} = simulate onestep({self.time_interval})'
-        else:
-            raise ValueError(f"Unknown simulation type: {self.simulation_type}")
+        elif self.simulation_type == cn.ST_ONESTEP:
+            line += f'({self.time_interval})'
         # Include the options
         option_lines = [f"{self.id}.algorithm.{k} = {str(v)} "
                 for k, v in self.option_dct.items() 
                 if (v is not None) and (k != "algorithm")]
-        option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
+        if self.algorithm is not None:
+            option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
         section = line + "\n" + "\n".join(option_lines)
         return section
     

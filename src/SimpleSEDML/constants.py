@@ -25,11 +25,12 @@ PLOT2D = "plot2d"
 TIME_COURSE = "time_course"
 # Simulation parameters
 ST_UNIFORM = "uniform"
-ST_STEADY_STATE = "steady_state"
+ST_STEADYSTATE = "steadystate"
 ST_UNIFORM_STOCHASTIC = "uniform_stochastic"
+ST_ONESTEP = "onestep"
 # Default values
 D_ALGORITHM = "CVODE"
-D_END = 5
+D_END = 5.0
 D_NUM_STEP = 10
 D_NUM_POINT = D_NUM_STEP + 1
 D_PROJECT_DIR = "project"
@@ -38,7 +39,7 @@ D_REF_TYPE = ANT_STR
 D_SIM_TYPE  = ST_UNIFORM
 D_SIM_UNIFORM_ALGORITHM = "CVODE"
 D_SIM_UNIFORM_STOCHASTIC_ALGORITHM = "gillespie"
-D_START = 0
+D_START = 0.0
 # File extensions
 ANT_EXT = ".ant"
 XML_EXT = ".xml"
