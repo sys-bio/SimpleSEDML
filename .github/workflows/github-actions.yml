@@ -20,5 +20,5 @@ jobs:
         cd src; nose2 --with-coverage tests
     - name: Run notebook
       run: |
-        python scripts/make_example_script.py
+        python scripts/convert_notebook_to_script.py
         ipython examples/api_basics.py
