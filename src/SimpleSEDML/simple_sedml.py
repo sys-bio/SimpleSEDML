@@ -27,7 +27,7 @@ Restrictions:
     - No formulas (because this is an API and python can do this)
 """
 
-class SimpleSEDML(object):
+class SimpleSEDML(SimpleSEDMLBase):
 
     @classmethod
     def getModelInformation(cls, model_ref:str,
