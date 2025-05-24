@@ -21,6 +21,7 @@ jobs:
     - name: Run notebook
       run: |
         echo "PYTHONPATH=src" >> $GITHUB_ENV
-        echo %PYTHONPATH%
+        echo $PYTHONPATH
+        echo "`pwd`"
         python scripts/convert_notebook_to_script.py
         ipython examples/api_basics.py
