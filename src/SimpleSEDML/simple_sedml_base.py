@@ -43,7 +43,8 @@ class SimpleSEDMLBase(object):
     """
     def __init__(self, 
                     project_id:Optional[str]=None,
-                    project_dir:Optional[str]=None):
+                    project_dir:Optional[str]=None,
+                    display_variables:Optional[List[str]]=None):
         """
         Args:
             project_id (Optional[str]): ID of the project. Default is "project".
@@ -63,9 +64,26 @@ class SimpleSEDMLBase(object):
         self.report_dct:dict = {}
         self.plot_dct:dict = {}
         #
+        self._display_variables:Optional[List[str]] = display_variables
         self.report_id = 0
         self.plot_id = 0
         self.time_course_id = 0
+
+    @property
+    def display_variables(self)->List[str]:
+        """Returns list of display variables. If unspecified, use all variables
+        from the first model.
+
+        Returns:
+            Optional[List[str]]: list of display variables
+        """
+        if self._display_variables is None:
+            if len(self.model_dct) == 0:
+                return [] 
+            this_model = list(self.model_dct.values())[0]
+            self._display_variables = list(this_model.getInformation().floating_species_dct.keys())
+            self._display_variables.insert(0, cn.TIME)   # type: ignore
+        return self._display_variables
 
     @property
     def model_sources(self)->List[str]:
@@ -225,7 +243,10 @@ class SimpleSEDMLBase(object):
         task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
         self.repeated_task_dct[id] = task
 
-    def addPlot(self, x_var:str, y_var:Union[str, List[str]], z_var:Optional[str]=None, title:Optional[str]=None,
+    def addPlot(self, x_var:str,
+                y_var:Union[str, List[str]],
+                z_var:Optional[str]=None,
+                title:Optional[str]=None,
                 id:Optional[str]=None,
                 is_plot:bool=True)->None:  
         """
@@ -247,7 +268,7 @@ class SimpleSEDMLBase(object):
         plot = Plot(x_var, y_var, z_var=z_var, title=title, is_plot=is_plot)
         self.plot_dct[id] = plot
     
-    def addReport(self, *report_variables, id:Optional[str]=None, is_plot:bool=True,
+    def addReport(self, *report_variables, id:Optional[str]=None,
             metadata:Optional[dict]=None, title:str=""):
         """Adds data to the report
 

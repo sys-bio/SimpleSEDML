@@ -29,6 +29,17 @@ Restrictions:
 
 class SimpleSEDML(SimpleSEDMLBase):
 
+    def __init__(self, 
+                    project_id:Optional[str]=None,
+                    project_dir:Optional[str]=None):
+        """
+        Args:
+            project_id (Optional[str]): ID of the project. Default is "project".
+            project_dir (Optional[str]): Directory where project files are stored.
+                Default is current directory.
+        """
+        super().__init__(project_id=project_id, project_dir=project_dir)
+
     @classmethod
     def getModelInformation(cls, model_ref:str,
             ref_type:Optional[str]=None)->ModelInformation:
@@ -47,7 +58,7 @@ class SimpleSEDML(SimpleSEDMLBase):
                 - num_reaction: number of reactions
                 - num_species: number of species
         """
-        simple = SimpleSEDMLBase()
+        simple = cls()
         model_id = simple.addModel(DUMMY_FILE, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True)
         model_information = simple.model_dct[model_id].getInformation()
@@ -102,7 +113,7 @@ class SimpleSEDML(SimpleSEDMLBase):
             title=title,
             algorithm=algorithm,
             is_plot=is_plot,
-            **parameter_dct,
+            parameter_dct=parameter_dct,
         )
         return smtc
     

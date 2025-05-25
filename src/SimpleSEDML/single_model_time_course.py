@@ -4,13 +4,12 @@ from SimpleSEDML import constants as cn # type:ignore
 from typing import Optional, List
 
 
-TIME_COURSE = "time_course"
-
 class SingleModelTimeCourse(SimpleSEDMLBase):
     """Class to create a time course simulation for a single model"""
 
     def __init__(self,
             model_ref:str,
+            project_id:Optional[str]=None,
             ref_type:Optional[str]=None,
             simulation_type:str=cn.ST_UNIFORM,
             project_dir:Optional[str]=None,
@@ -23,14 +22,15 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
             is_plot:bool=True,
-            **parameter_dct):
+            parameter_dct:Optional[dict]=None):
         """Creates a time course simulation
 
         Args:
             model_ref: reference to the model
+            project_id: ID of the project, if None, uses the default project ID
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
             simulation_type: type of the simulation
-                (e.g. "uniform", "uniform_stochastic", "steadystate", "onestep")
+                    (e.g., "uniform", "uniform_stochastic", "steadystate", "onestep")
             project_dir: directory to save the files
             display_variables: variables to be plotted and included the report
             start: start time
@@ -45,13 +45,12 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         Returns:
             SingleModelTimeCourse: a time course simulation object
         """
-        super().__init__(project_dir=project_dir)
+        super().__init__(project_dir=project_dir, project_id=project_id,
+                display_variables=display_variables)
         #
-        if time_course_id is None:
-            time_course_id = TIME_COURSE
-        model_id = f"{time_course_id}_model"
-        sim_id = f"{time_course_id}_sim"
-        task_id = f"{time_course_id}_task"
+        model_id = f"{self.project_id}_model"
+        sim_id = f"{self.project_id}_sim"
+        task_id = f"{self.project_id}_task"
         if title is None:
             title = ""
         #

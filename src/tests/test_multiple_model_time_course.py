@@ -144,18 +144,17 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.assertTrue(isinstance(task, Task))
         self.assertTrue(task.id == "tmodel0")
 
-    def testMakeVariables(self):
+    def testDisplayVariables(self):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
             return
         self.mmtc._makeModelObjects()
-        self.mmtc._makeVariables()
         self.assertEqual(self.mmtc.display_variables[0], "S1")
         self.assertEqual(self.mmtc.display_variables[1], "S2")
         #
-        mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT)
+        mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT,
+                display_variables=["S1", "S2", "S3"])
         mmtc._makeModelObjects()
-        mmtc._makeVariables()
         self.remove_files.extend(mmtc.model_sources)
         self.assertEqual(mmtc.display_variables[0], "S1")
         self.assertEqual(mmtc.display_variables[1], "S2")

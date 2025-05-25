@@ -16,6 +16,7 @@ MODEL_ID = "model_id"
 MODEL_REF_TYPES = [SBML_STR, ANT_STR, SBML_FILE, ANT_FILE, SBML_URL, MODEL_ID]
 #
 REPORT = "report"
+SCOPE_INDICATOR = "."
 MODEL = "model"
 SIMULATION = "simulation"
 TASK = "task"

@@ -128,6 +128,7 @@ which generates the following plot:
 # Versions
 
 * 0.0.6
+    * Time courses simulate onestep, stochastic, steadystate
 
 * 0.0.5 5/24/2025
     * Added ".xml" to SBML files

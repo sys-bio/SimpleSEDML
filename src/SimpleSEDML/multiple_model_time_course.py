@@ -20,7 +20,6 @@ from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase  # type:ignore
 from typing import Optional, List, Union
 
 SIM_ID = "sim1"
-SCOPE = "."
 
 
 class MultipleModelTimeCourse(SimpleSEDMLBase):
@@ -28,6 +27,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
 
     def __init__(self,
                     model_refs:List[str],
+                    project_id:Optional[str]=None,
                     simulation_type:str=cn.ST_UNIFORM,
                     project_dir:Optional[str]=None,
                     start:float=cn.D_START,
@@ -47,6 +47,9 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
 
         Args:
             project_dir (Optional[str], optional): Directory to save the files. Defaults to None.
+            project_id (Optional[str], optional): Project ID. Defaults to None.
+            simulation_type: type of the simulation
+                    (e.g., "uniform", "uniform_stochastic", "steadystate", "onestep")
             start (float, optional): simulation start time. Defaults to cn.D_START.
             end (float, optional): simulation end time. Defaults to cn.D_END.
             num_step (int, optional): Defaults to cn.D_NUM_STEP.
@@ -72,11 +75,9 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             mmtc.addModel(model1_str, k1=0.2, k2=0.4)
             sedml_str = mmtc.getSEDMLString()
         """
-        # Error checks
-        if len(model_refs) == 0:
-            raise ValueError("No models have been added to the simulation.")
         #
-        super().__init__(project_dir=project_dir)
+        super().__init__(project_dir=project_dir, 
+                project_id=project_id, display_variables=display_variables)
         #
         self.simulation_type = simulation_type
         self.start = start
@@ -86,9 +87,6 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.algorithm = algorithm
         self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
         self.time_course_id = time_course_id # type:ignore
-        if display_variables is None:
-            display_variables = []
-        self.display_variables = display_variables
         self.parameter_dct = parameter_dct
         self.is_plot = is_plot
         # Calculated
@@ -127,7 +125,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         Returns:
             str: task name
         """
-        return self._makeTaskID(model_id) + SCOPE
+        return self._makeTaskID(model_id) + cn.SCOPE_INDICATOR
     
     def _makeModelObjects(self):
         for model_ref, model_id in self.model_ref_dct.items():
@@ -152,39 +150,29 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id, SIM_ID)
                 self.task_ids.append(task_id)
-    
-    def _makeVariables(self):
-        # Creates unscoped variables if it's None
-        if len(self.display_variables) == 0:
-            first_model_id = list(self.model_dct.keys())[0]
-            self.display_variables = list(self.model_dct[first_model_id].getInformation().floating_species_dct.keys())
 
     def _makeReportObject(self):
         """Make the report objects for the compared variables.
         """
         # Calculate the task ids to consider
-        # Handle the case where no variables are provided
-        self._makeVariables()
         #
         report_variables = []
         for variable in self.display_variables:
-            new_report_variables = [m + SCOPE + variable for m in self.task_ids]
+            new_report_variables = [m + cn.SCOPE_INDICATOR + variable for m in self.task_ids]
             report_variables.extend(new_report_variables)
-        first_time_variable = self.task_ids[0] + SCOPE + cn.TIME
+        first_time_variable = self.task_ids[0] + cn.SCOPE_INDICATOR + cn.TIME
         report_variables.insert(0, first_time_variable)
-        self.addReport(*report_variables, is_plot=self.is_plot)
+        self.addReport(*report_variables)
 
     def _makePlotObjects(self):
         """Make the report objects for the compared variables.
         There is one plot for each variable that plots comparisons of the models.
         """
-        #
-        self._makeVariables()
         for variable in self.display_variables:
             plot_id = "_".join([variable + "-" + m for m in self.task_ids])
             if not plot_id in self.plot_dct:
-                variables = [m + SCOPE + variable for m in self.task_ids]
-                first_time_variable = self.task_ids[0] + SCOPE + cn.TIME
+                variables = [m + cn.SCOPE_INDICATOR + variable for m in self.task_ids]
+                first_time_variable = self.task_ids[0] + cn.SCOPE_INDICATOR + cn.TIME
                 self.addPlot(x_var=first_time_variable, y_var=variables,
                     title=variable, id=plot_id, is_plot=self.is_plot)
 

@@ -47,6 +47,7 @@ class ModelInformation(object):
         end_pos = info_str.find("\n")
         self.model_name = info_str[:end_pos]
         # Extract dictionary information
+        self.is_time = cn.TIME in self.roadrunner.keys()
         self.boundary_species_dct = makeDict(self.roadrunner.getBoundarySpeciesConcentrationIds())
         self.floating_species_dct = makeDict(self.roadrunner.getFloatingSpeciesIds())
         self.parameter_dct = makeDict(self.roadrunner.getGlobalParameterIds())
