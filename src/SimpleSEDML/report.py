@@ -29,17 +29,3 @@ class Report:
 
     def __str__(self)->str:
         return self.getPhraSEDML()
-
-    def scopeVariables(self, scope:str)->None:
-        """Use the specified scope for all variables
-
-        Args:
-            scope (str): scope
-        """
-        scope_indicator = "."
-        scope_str = scope + scope_indicator
-        for idx in range(len(self.variables)):
-            # FIXME: Make scoping a utility
-            if scope_indicator in self.variables[idx]:
-                raise ValueError(f"Variable {self.variables[idx]} already has a scope. Cannot change scope.")
-            self.variables[idx] = scope_str + self.variables[idx]

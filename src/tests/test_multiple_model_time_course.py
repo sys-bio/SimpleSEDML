@@ -172,6 +172,24 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.assertEqual(str(report_directive).count("S1"), 2)
         self.assertEqual(str(report_directive).count("S2"), 2)
 
+    def testStochasticSimulation(self):
+        """Test the makeTaskObject method"""
+        if IGNORE_TEST:
+            return
+        plot_dct = {cn.ST_UNIFORM_STOCHASTIC: IS_PLOT,
+                    cn.ST_ONESTEP: False,
+                    cn.ST_STEADYSTATE: False}
+        for simulation_type, is_plot in plot_dct.items():
+            mmtc = MultipleModelTimeCourse(self.model_refs,
+                    simulation_type=simulation_type,
+                    start=0,
+                    end=10,
+                    num_point=NUM_POINT,
+                    parameter_dct=dict(k1=1.5),
+                    display_variables=DISPLAY_VARIABLES,
+                    is_plot=is_plot)
+            self.evaluate(mmtc)
+
     def testMakePlotObject(self):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
@@ -201,7 +219,9 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         try:
             df = mmtc.executeSEDML(sedml_str)
             self.assertTrue(isinstance(df, pd.DataFrame))
-            self.assertTrue(df.shape[0] == NUM_POINT)
+            if not (cn.ST_ONESTEP in phrasedml_str or cn.ST_STEADYSTATE in phrasedml_str):
+                self.assertTrue(len([c for c in df.columns if cn.TIME in c]) == 1)
+                self.assertTrue(df.shape[0] == NUM_POINT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 

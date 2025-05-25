@@ -43,6 +43,15 @@ class Simulation:
                 - "CVODE": CVODE algorithm
                 - "gillespie": Gillespie algorithm
         """
+        if simulation_type not in cn.ST_SIMULATION_TYPES:
+            raise ValueError(f"simulation_type must be one of {cn.ST_SIMULATION_TYPES}")
+        if simulation_type in [cn.ST_ONESTEP, cn.ST_UNIFORM]:
+            if algorithm is None:
+                algorithm = cn.D_SIM_UNIFORM_ALGORITHM
+        elif simulation_type == cn.ST_UNIFORM_STOCHASTIC:
+            if algorithm is None:
+                algorithm = cn.D_SIM_UNIFORM_STOCHASTIC_ALGORITHM
+        #
         self.id = id
         self.simulation_type = simulation_type
         self.time_interval = time_interval
@@ -107,11 +116,14 @@ class Simulation:
         elif self.simulation_type == cn.ST_ONESTEP:
             line += f'({self.time_interval})'
         # Include the options
-        option_lines = [f"{self.id}.algorithm.{k} = {str(v)} "
-                for k, v in self.option_dct.items() 
-                if (v is not None) and (k != "algorithm")]
-        if self.algorithm is not None:
-            option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
+        if self.simulation_type != cn.ST_ONESTEP:
+            option_lines = [f"{self.id}.algorithm.{k} = {str(v)} "
+                    for k, v in self.option_dct.items() 
+                    if (v is not None) and (k != "algorithm")]
+            if self.algorithm is not None:
+                option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
+        else:
+            option_lines = []
         section = line + "\n" + "\n".join(option_lines)
         return section
     

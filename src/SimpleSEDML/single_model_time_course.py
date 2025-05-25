@@ -1,4 +1,5 @@
 from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type:ignore
+from SimpleSEDML import constants as cn # type:ignore
 
 from typing import Optional, List
 
@@ -11,6 +12,7 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
     def __init__(self,
             model_ref:str,
             ref_type:Optional[str]=None,
+            simulation_type:str=cn.ST_UNIFORM,
             project_dir:Optional[str]=None,
             display_variables:Optional[List[str]]=None,
             start:float=0,
@@ -27,6 +29,8 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         Args:
             model_ref: reference to the model
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
+            simulation_type: type of the simulation
+                (e.g. "uniform", "uniform_stochastic", "steadystate", "onestep")
             project_dir: directory to save the files
             display_variables: variables to be plotted and included the report
             start: start time
@@ -57,8 +61,9 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
         if display_variables is None:
             display_variables = list(this_model.getInformation().floating_species_dct.keys())
             display_variables.insert(0, "time")   # type: ignore
-        self.addSimulation(sim_id, "uniform", start=start, end=end, num_step=num_step, num_point=num_point,
-                            algorithm=algorithm)
+        self.addSimulation(sim_id, simulation_type=simulation_type,
+                start=start, end=end, num_step=num_step, num_point=num_point,
+                algorithm=algorithm)
         self.addTask(task_id, model_id, sim_id)
         self.addReport(*display_variables, title=title)
         x1_var = display_variables[0]

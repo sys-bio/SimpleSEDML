@@ -58,6 +58,7 @@ class SimpleSEDML(SimpleSEDMLBase):
     def makeSingleModelTimeCourse(cls,
             model_ref:str,
             ref_type:Optional[str]=None,
+            simulation_type:str=cn.ST_UNIFORM,
             display_variables:Optional[List[str]]=None,
             start:float=cn.D_START,
             end:float=cn.D_END,
@@ -73,6 +74,8 @@ class SimpleSEDML(SimpleSEDMLBase):
         Args:
             model_ref: reference to the model
             ref_type: type of the reference (e.g. "sbml_str", "ant_str", "sbml_file", "ant_file", "sbml_url")
+            simulation_type: type of the simulation
+                (e.g. "uniform", "uniform_stochastic", "steadystate", "onestep")
             display_variables: variables to be plotted
             start: start time
             end: end time
@@ -89,6 +92,7 @@ class SimpleSEDML(SimpleSEDMLBase):
         smtc = SingleModelTimeCourse(
             model_ref=model_ref,
             ref_type=ref_type,
+            simulation_type=simulation_type,
             display_variables=display_variables,
             start=start,
             end=end,
@@ -107,6 +111,7 @@ class SimpleSEDML(SimpleSEDMLBase):
     def makeMultipleModelTimeCourse(cls,
             model_refs:List[str],
             display_variables:Optional[List[str]]=None,
+            simulation_type:str=cn.ST_UNIFORM,
             start:float=cn.D_START,
             end:float=cn.D_END,
             num_step:Optional[int]=None,
@@ -121,6 +126,8 @@ class SimpleSEDML(SimpleSEDMLBase):
         Args:
             model_refs: references to the models
             plot_variables: variables to be plotted
+            simulation_type: type of the simulation
+                (e.g. "uniform", "uniform_stochastic", "steadystate", "onestep")
             start: start time
             end: end time
             num_step: number of steps
@@ -135,6 +142,7 @@ class SimpleSEDML(SimpleSEDMLBase):
         """
         mmtc = MultipleModelTimeCourse(
             model_refs,
+            simulation_type=simulation_type,
             display_variables=display_variables,
             start=start,
             end=end,

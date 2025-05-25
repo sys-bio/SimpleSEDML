@@ -10,7 +10,7 @@ import unittest
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = True
+IGNORE_TEST = False
 IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
@@ -206,8 +206,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         self.assertTrue(maker.validateOMEXFile())
 
     def testUsageModelidForSameSimple(self):
-        #if IGNORE_TEST:
-        #    return
+        if IGNORE_TEST:
+            return
         simple = SimpleSEDMLBase()
         simple.addModel(MODEL_NAME, MODEL_ANT, is_overwrite=True)
         simple.addModel("new", MODEL_NAME, is_overwrite=True)

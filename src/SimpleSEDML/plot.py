@@ -51,21 +51,3 @@ class Plot:
             str: PhraSED-ML string
         """
         return self.getPhraSEDML()
-
-    def scopeVariables(self, scope:str)->None:
-        """_summary_
-
-        Args:
-            scope (str)
-        """
-        scope_prefix = scope + "."
-        self.x_var = scope_prefix + self.x_var
-        if isinstance(self.y_var, str):
-            self.y_var = scope_prefix + self.y_var
-        elif isinstance(self.y_var, list):
-            for i in range(len(self.y_var)):
-                self.y_var[i] = scope_prefix + self.y_var[i]
-        else:
-            raise RuntimeError(f"y_var must be a string or a list of strings, not {type(self.y_var)}")
-        if self.z_var is not None:
-            self.z_var = scope_prefix + self.z_var

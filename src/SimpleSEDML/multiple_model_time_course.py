@@ -28,12 +28,13 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
 
     def __init__(self,
                     model_refs:List[str],
+                    simulation_type:str=cn.ST_UNIFORM,
                     project_dir:Optional[str]=None,
                     start:float=cn.D_START,
                     end:float=cn.D_END,
                     num_step:Optional[int]=None,
                     num_point:Optional[int]=None,
-                    algorithm:str=cn.D_ALGORITHM,
+                    algorithm:Optional[str]=None,
                     time_course_id:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
                     is_plot:bool=True,
@@ -77,6 +78,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         #
         super().__init__(project_dir=project_dir)
         #
+        self.simulation_type = simulation_type
         self.start = start
         self.end = end
         self.num_step = num_step
@@ -99,7 +101,9 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
     def _makeSimulationObject(self):
         if not SIM_ID in self.simulation_dct:
             # Create the simulation object
-            self.addSimulation(SIM_ID, "uniform", start=self.start, end=self.end, num_step=self.num_step,
+            self.addSimulation(SIM_ID,
+                    simulation_type=self.simulation_type,
+                    start=self.start, end=self.end, num_step=self.num_step,
                     num_point=self.num_point, algorithm=self.algorithm)
     
     @staticmethod
