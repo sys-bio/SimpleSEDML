@@ -116,15 +116,16 @@ class Simulation:
         elif self.simulation_type == cn.ST_ONESTEP:
             line += f'({self.time_interval})'
         # Include the options
+        lines = [line]
+        option_lines:list = []
         if self.simulation_type != cn.ST_ONESTEP:
             option_lines = [f"{self.id}.algorithm.{k} = {str(v)} "
                     for k, v in self.option_dct.items() 
                     if (v is not None) and (k != "algorithm")]
             if self.algorithm is not None:
                 option_lines.append(f"{self.id}.algorithm = {self.algorithm}")
-        else:
-            option_lines = []
-        section = line + "\n" + "\n".join(option_lines)
+            lines.extend(option_lines)
+        section = "\n".join(lines)
         return section
     
     def __str__(self)->str:

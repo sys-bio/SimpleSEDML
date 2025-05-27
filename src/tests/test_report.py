@@ -46,7 +46,7 @@ def execute(phrasedml_str:str)->pd.DataFrame:
     sedml_str = phrasedml.convertString(phrasedml_str)
     try:
         te.executeSEDML(sedml_str)
-        return te.getLastReport()
+        return te.getLastReport()  # type: ignore
     except Exception as e:
         raise RuntimeError(f"SED-ML execution failed: {e}")
 

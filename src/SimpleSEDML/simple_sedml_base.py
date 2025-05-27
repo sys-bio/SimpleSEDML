@@ -2,6 +2,7 @@
 
 import SimpleSEDML.constants as cn # type:ignore
 from SimpleSEDML.model import Model  # type:ignore
+from SimpleSEDML.model_information import ModelInformation  # type:ignore
 from SimpleSEDML.simulation import Simulation  # type:ignore
 from SimpleSEDML.task import Task, RepeatedTask  # type:ignore
 from SimpleSEDML.plot import Plot  # type:ignore
@@ -66,7 +67,7 @@ class SimpleSEDMLBase(object):
         #
         self._display_variables:Optional[List[str]] = display_variables
         self.report_id = 0
-        self.plot_id = 0
+        self.plot_idx = 0
         self.time_course_id = 0
 
     @property
@@ -81,7 +82,8 @@ class SimpleSEDMLBase(object):
             if len(self.model_dct) == 0:
                 return [] 
             this_model = list(self.model_dct.values())[0]
-            self._display_variables = list(this_model.getInformation().floating_species_dct.keys())
+            model_info = ModelInformation.getFromModel(this_model)
+            self._display_variables = list(model_info.floating_species_dct.keys())
             self._display_variables.insert(0, cn.TIME)   # type: ignore
         return self._display_variables
 
@@ -204,13 +206,23 @@ class SimpleSEDMLBase(object):
                     end:float=cn.D_END,
                     num_step:Optional[int]=None,
                     num_point:Optional[int]=None,
+                    time_interval:float=0.5,
                     algorithm:Optional[str]=None): 
         """Adds a simulation to the script
 
         Args:
             id (str): Simulation identifier
+            simulation_type (str): type of simulation
+                - "uniform": uniform simulation
+                - "uniform_stochastic": stochastic simulation
+                - "steadystate": one-step simulationa
+                - "onestep": one-step simulation (requires time_interval)
             start (float): start time for simulation
             end (float): end time for simulation 
+            num_step (int, optional): number of steps for the simulation
+            num_point (int, optional): number of points for the simulation
+            time_interval (float, optional): time interval for the simulation
+            algorithm (str, optional): algorithm to use for the simulation.
         """
         if algorithm is None:
             if simulation_type == cn.ST_UNIFORM:
@@ -218,10 +230,16 @@ class SimpleSEDMLBase(object):
             elif simulation_type == cn.ST_UNIFORM_STOCHASTIC:
                 algorithm = cn.D_SIM_UNIFORM_STOCHASTIC_ALGORITHM
         self._checkDuplicate(id, cn.SIMULATION)
-        self.simulation_dct[id] = Simulation(id, simulation_type=simulation_type, start=start, end=end,
-                num_point=num_point, num_step=num_step, algorithm=algorithm)  # type: ignore
+        self.simulation_dct[id] = Simulation(id,
+                simulation_type=simulation_type,
+                start=start,
+                end=end,
+                num_point=num_point,
+                num_step=num_step,
+                time_interval=time_interval,
+                algorithm=algorithm)  # type: ignore
 
-    def addTask(self, id, model_id:str, simulation_id:str):
+    def addTask(self, id:str, model_id:str, simulation_id:str):
         """Adds a task to the script
 
         Args:
@@ -263,8 +281,8 @@ class SimpleSEDMLBase(object):
             return
         #
         if id is None:
-            id = str(self.plot_id)
-            self.plot_id += 1
+            id = str(self.plot_idx)
+            self.plot_idx += 1
         plot = Plot(x_var, y_var, z_var=z_var, title=title, is_plot=is_plot)
         self.plot_dct[id] = plot
     
@@ -320,7 +338,7 @@ class SimpleSEDMLBase(object):
         """
         model_information_dct = {}
         for id, model in self.model_dct.items():
-            model_information_dct[id] = model.getInformation()
+            model_information_dct[id] = ModelInformation.getFromModel(model)
             model_information_dct[id].model_id = model.id
         return model_information_dct
 

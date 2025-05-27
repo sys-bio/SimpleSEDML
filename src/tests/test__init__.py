@@ -1,5 +1,6 @@
-import SimpleSEDML.constants as cn # type: ignore
-from SimpleSEDML.simple_sedml import SimpleSEDML # type: ignore
+'''Tests the API'''
+
+import SimpleSEDML as ss  # type: ignore
 
 import numpy as np # type: ignore
 import os
@@ -47,7 +48,7 @@ model %s
 end
 """ % MODEL2_NAME
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
-SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
+SBML_FILE_PATH = os.path.join(ss.cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
 WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
@@ -59,7 +60,6 @@ class TestSimpleSEDML(unittest.TestCase):
     def setUp(self):
         self.remove_files = list(REMOVE_FILES)
         self.remove()
-        self.simple = SimpleSEDML()
 
     def tearDown(self):
         # Remove files if they exist
@@ -86,7 +86,7 @@ class TestSimpleSEDML(unittest.TestCase):
     def testGetModelInformation(self):
         if IGNORE_TEST:
             return
-        model_information = SimpleSEDML.getModelInformation(MODEL_ANT)
+        model_information = ss.getModelInformation(MODEL_ANT)
         self.assertTrue(model_information.model_name == MODEL_NAME)
 
     def testMakeSingleModelTimeCourse(self):
@@ -94,24 +94,24 @@ class TestSimpleSEDML(unittest.TestCase):
             return
         smtc = None
         try:
-            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT)
+            smtc = ss.makeSingleModelTimeCourse(MODEL_ANT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT,
+            smtc = ss.makeSingleModelTimeCourse(MODEL_ANT,
                     display_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SimpleSEDML.makeSingleModelTimeCourse(MODEL_ANT, title="my plot")
+            smtc = ss.makeSingleModelTimeCourse(MODEL_ANT, title="my plot")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, title="Wolf2000")
+            smtc = ss.makeSingleModelTimeCourse(WOLF_URL, title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SimpleSEDML.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
+            smtc = ss.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if smtc is not None:
@@ -124,12 +124,12 @@ class TestSimpleSEDML(unittest.TestCase):
             return
         mmtc = None
         try:
-            mmtc = SimpleSEDML.makeMultipleModelTimeCourse(
+            mmtc = ss.makeMultipleModelTimeCourse(
                     [MODEL_ANT, MODEL2_ANT],
                     start=0,
                     end=10,
                     num_step=100,
-                    k1=1.5,
+                    parameter_dct=dict(k1=1.5),
                     display_variables=["S1", "S2"],
                     is_plot=IS_PLOT,
                     )

@@ -3,8 +3,12 @@
 """
 Produces a plot with a curve for each display variable and the x-axis are
 the values of the scan parameters.
-Produces a report.
+Produces a report but it only contains information on the last parameter combination.
 """
+
+# FIXME: steadystate doesn't work
+# FIXME: doesn't handle no display variables
+
 
 from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type:ignore
 from SimpleSEDML import constants as cn # type:ignore
@@ -24,7 +28,7 @@ class SingleModelParameterScan(SimpleSEDMLBase):
             simulation_type:str=cn.ST_STEADYSTATE,
             project_dir:Optional[str]=None,
             display_variables:Optional[List[str]]=None,
-            start:float=0,
+            time_interval:float=0.5,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
             model_parameter_dct:Optional[dict]=None,
@@ -42,7 +46,7 @@ class SingleModelParameterScan(SimpleSEDMLBase):
                     (i.e., "steadystate", "onestep")
             project_dir: directory to save the files
             display_variables: variables to be plotted and included the report
-            start: start time
+            time_interval: time interval for the simulation, used for onestep simulations
             end: end time
             num_step: number of steps
             time_course_id: ID of the time course simulation
@@ -69,20 +73,24 @@ class SingleModelParameterScan(SimpleSEDMLBase):
         # Construct the IDs
         self.model_id = f"m_{self.project_id}"
         self.sim_id = f"s_{self.project_id}"
-        self.subtask_id = f"bt_{self.project_id}" # base task for the repeated task
+        self.subtask_id = f"st_{self.project_id}" # base task for the repeated task
         self.repeatedtask_id = f"rt_{self.project_id}" # repeated task
         self.report_id = f"r_{self.project_id}"   # type: ignore
         self.plot_id = f"p_{self.project_id}"  # type: ignore
+        # Create the ScopedCollection
+        self.scan_parameter_dct = scan_parameter_dct
+        self.scoped_collection = _ScopedCollection(self)
         # Set the title
         self.is_plot = is_plot
         if title is None:
             title = ""
-        self.scan_parameter_dct = scan_parameter_dct
         self.addModel(self.model_id, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True,
                 parameter_dct=model_parameter_dct)
         self.addSimulation(self.sim_id, simulation_type=simulation_type,
-                algorithm=algorithm, start=start)
+                algorithm=algorithm, time_interval=time_interval)
+        self.addTask(self.subtask_id, model_id=self.model_id,
+                simulation_id=self.sim_id)
         self.base_model = self.model_dct[self.model_id]
         # Parameter scan does not include time as a display variable
         if cn.TIME in self.display_variables:
@@ -99,27 +107,44 @@ class SingleModelParameterScan(SimpleSEDMLBase):
         self.addRepeatedTask(self.repeatedtask_id, subtask_id=self.subtask_id,
                 parameter_df=parameter_df, reset=True)
         
-    def _makeScopedVariables(self)->List[str]:
-        """Makes the scoped variables for the scan parameters"""
-        variables = list(self.scan_parameter_dct.keys())
-        variables.extend(self.display_variables)
-        scoped_scan_variables = [self.repeatedtask_id + cn.SCOPE_INDICATOR + k 
-                for k in variables]
-        return scoped_scan_variables
-        
     def _addReport(self):
         """Adds a report for the parameter scan"""
         # Make the parameter variables
-        scoped_variables = self._makeScopedVariables()
         # Add the report
-        self.addReport(*scoped_variables, id=self.report_id,
+        self.addReport(*self.scoped_collection.all_variables_without_time, id=self.report_id,
                 title=f"Parameter scan for {self.model_id}")
         
     def _addPlot(self):
         """Adds a plot for the parameter scan"""
         # Add the plot
-        scoped_variables = self._makeScopedVariables()
-        x_var = scoped_variables[0]
-        y_vars = scoped_variables[1:]
+        x_var = self.scoped_collection.parameters[0]  # The first parameter is the x-axis
+        y_vars = self.scoped_collection.display_variables_without_time
         self.addPlot(x_var=x_var, y_var=y_vars,
-                title=f"Parameter scan for {self.model_id}", is_plot=self.is_plot)
+                title=f"Parameter scan for {self.model_id}", 
+                id=self.plot_id, is_plot=self.is_plot)
+
+
+class _ScopedCollection(object):
+    # Applies scoping to variables
+
+    def __init__(self, smps:SingleModelParameterScan):
+        self.smps = smps
+        self.scope = self.smps.repeatedtask_id
+        self.parameters = self._addScope(list(self.smps.scan_parameter_dct.keys()))
+        self.display_variables_with_time = list(self._addScope(self.smps.display_variables))
+
+    @property
+    def display_variables_without_time(self)->List[str]:
+        return [v for v in self.display_variables_with_time if not cn.TIME in v]
+    
+    @property
+    def all_variables(self)->List[str]:
+        return self.parameters + self.display_variables_with_time
+
+    @property
+    def all_variables_without_time(self)->List[str]:
+        return self.parameters + self.display_variables_without_time
+
+    def _addScope(self, variables:List[str])->List[str]:
+        """Adds scope to the variables"""
+        return [f"{self.scope}{cn.SCOPE_INDICATOR}{var}" for var in variables]

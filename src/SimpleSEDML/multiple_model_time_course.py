@@ -35,7 +35,6 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
                     num_step:Optional[int]=None,
                     num_point:Optional[int]=None,
                     algorithm:Optional[str]=None,
-                    time_course_id:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
                     is_plot:bool=True,
                     parameter_dct:Optional[dict]=None,
@@ -85,8 +84,7 @@ class MultipleModelTimeCourse(SimpleSEDMLBase):
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
-        self.model_ref_dct:dict = {m: None for m in model_refs}  # Maps model reference to model ID
-        self.time_course_id = time_course_id # type:ignore
+        self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
         self.parameter_dct = parameter_dct
         self.is_plot = is_plot
         # Calculated

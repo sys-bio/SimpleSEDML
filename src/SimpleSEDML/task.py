@@ -64,7 +64,7 @@ class RepeatedTask:
     def getPhraSEDML(self)->str:
         line = f'{self.id} = repeat {self.subtask_id} for '
         line += self._makeChangeValues()
-        line += f', reset={self.reset}'
+        line += f', reset={str(self.reset).lower()}'
         return line
     
     def __str__(self)->str:

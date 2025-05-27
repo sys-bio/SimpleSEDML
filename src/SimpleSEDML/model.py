@@ -6,65 +6,12 @@ import SimpleSEDML.utils as utils # type: ignore
 import codecs
 import urllib3
 import os
+import shutil
 import tellurium as te  # type: ignore
 from typing import Optional, List
 import warnings
 
 INVALID_MODEL_ID = "invalid_model_id"
-
-class ModelInformation(object):
-    """Class that holds information about the model.
-
-    Attributes:
-        model_name (str): name of the model
-        parameters (list): list of global parameters
-        floating_species (list): list of floating species
-        boundary_species (list): list of boundary species
-        num_reaction (int): number of reactions
-        num_species (int): number of species
-        model_id (str): ID of the model
-        roadrunner (object): RoadRunner object for the model
-    """
-    def __init__(self, roadrunner, model_id:Optional[str]=None):
-        ##
-        def makeDict(names)->dict:
-            my_dict = {}
-            for name in names:
-                my_dict[name] = self.roadrunner[name]
-            return my_dict
-        ##
-        self.model_id = model_id
-        self.roadrunner = roadrunner
-        # Extract the model name
-        MODEL_NAME = "modelName"
-        self.roadrunner = roadrunner
-        # Get the model name
-        info_str = self.roadrunner.getInfo()
-        pos = info_str.find(MODEL_NAME)
-        info_str = info_str[pos:]
-        pos = info_str.find(":") + 2
-        info_str = info_str[pos:]
-        end_pos = info_str.find("\n")
-        self.model_name = info_str[:end_pos]
-        # Extract dictionary information
-        self.is_time = cn.TIME in self.roadrunner.keys()
-        self.boundary_species_dct = makeDict(self.roadrunner.getBoundarySpeciesConcentrationIds())
-        self.floating_species_dct = makeDict(self.roadrunner.getFloatingSpeciesIds())
-        self.parameter_dct = makeDict(self.roadrunner.getGlobalParameterIds())
-        self.num_reaction = self.roadrunner.getNumReactions()
-        self.num_species = self.roadrunner.getNumFloatingSpecies() + self.roadrunner.getNumBoundarySpecies()
-        self.model_id = model_id 
-
-    def __repr__(self):
-        """Returns a string representation of the model information"""
-        result_str = f"Model: {self.model_name}"
-        result_str += f"\nParameters: {self.parameter_dct}"
-        result_str += f"\nFloating Species: {self.floating_species_dct}"
-        result_str += f"\nBoundary Species: {self.boundary_species_dct}"
-        result_str += f"\nNumber of Reactions: {self.num_reaction}"
-        result_str += f"\nNumber of Species: {self.num_species}"
-        return result_str
-
 
 """
 Issues
@@ -280,13 +227,8 @@ class Model:
         msg = f"Unidentifiable model reference: {model_ref}. "
         msg += f"\nFix the reference and/or specify the reference type.\nMust be one of {cn.MODEL_REF_TYPES}."
         raise ValueError(msg)
-
-    def getInformation(self)->ModelInformation:
-        """Returns information about model ID, parameters, floating species and fixed species.
-
-        Args:
-            model_id (str):
-
-        Returns: ModelInfo
-        """
-        return ModelInformation(self.roadrunner, model_id=self.id)
+    
+    def cleanUp(self):
+        """Clean up the model files"""
+        if self.project_dir is not None and os.path.exists(self.project_dir):
+            shutil.rmtree(self.project_dir)

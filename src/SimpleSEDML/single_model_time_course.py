@@ -1,4 +1,5 @@
 from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type:ignore
+from SimpleSEDML.model_information import ModelInformation # type:ignore
 from SimpleSEDML import constants as cn # type:ignore
 
 from typing import Optional, List
@@ -18,7 +19,6 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             end:float=5,
             num_step:Optional[int]=None,
             num_point:Optional[int]=None,
-            time_course_id:Optional[str]=None,
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
             is_plot:bool=True,
@@ -36,7 +36,6 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
             start: start time
             end: end time
             num_step: number of steps
-            time_course_id: ID of the time course simulation
             algorithm: algorithm to use for the simulation
             title: title of the plot
             is_plot: if True, plot the results
@@ -58,7 +57,8 @@ class SingleModelTimeCourse(SimpleSEDMLBase):
                 parameter_dct=parameter_dct)
         this_model = self.model_dct[model_id]
         if display_variables is None:
-            display_variables = list(this_model.getInformation().floating_species_dct.keys())
+            model_information = ModelInformation.getFromModel(this_model)
+            display_variables = list(model_information.floating_species_dct.keys())
             display_variables.insert(0, "time")   # type: ignore
         self.addSimulation(sim_id, simulation_type=simulation_type,
                 start=start, end=end, num_step=num_step, num_point=num_point,
