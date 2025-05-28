@@ -19,6 +19,7 @@ dependencies = [
 "pandas",
 "phrasedml",
 "pip",
+"python-libsbml",
 "requests",
 "tabulate",
 "tellurium",

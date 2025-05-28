@@ -86,24 +86,26 @@ class TestSingleModelTimeCourse(unittest.TestCase):
             return
         smtc = None
         try:
-            smtc = SingleModelTimeCourse(MODEL_ANT)
+            smtc = SingleModelTimeCourse(MODEL_ANT, is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
             smtc = SingleModelTimeCourse(MODEL_ANT,
-                    display_variables=["time", "S1", "S2"], start=0, end=10, num_step=100)
+                    display_variables=["time", "S1", "S2"], start=0, end=10, num_step=100,
+                    is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SingleModelTimeCourse(MODEL_ANT, title="my plot")
+            smtc = SingleModelTimeCourse(MODEL_ANT, title="my plot", is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SingleModelTimeCourse(WOLF_URL, title="Wolf2000")
+            smtc = SingleModelTimeCourse(WOLF_URL, title="Wolf2000", is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
+            smtc = SingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000",
+                    is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if smtc is None:

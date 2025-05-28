@@ -1,15 +1,16 @@
 biomodels_qc
 biosimulators_utils
-numpy
 build
 coverage
 jupyterlab
 matplotlib
 nose2
+numpy
 pandas
 phrasedml
 pip
 pylint
+python-libsbml
 requests
 tabulate
 tellurium
