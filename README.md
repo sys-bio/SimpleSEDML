@@ -127,6 +127,8 @@ which generates the following plot:
 
 # Versions
 
+* 0.0.7
+
 * 0.0.6  5/27/2025
     * Time courses simulate onestep, stochastic, steadystate
     * Refactored API.

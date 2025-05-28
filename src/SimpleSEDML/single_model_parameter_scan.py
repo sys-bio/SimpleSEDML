@@ -77,6 +77,7 @@ class SingleModelParameterScan(SimpleSEDMLBase):
         self.repeatedtask_id = f"rt_{self.project_id}" # repeated task
         self.report_id = f"r_{self.project_id}"   # type: ignore
         self.plot_id = f"p_{self.project_id}"  # type: ignore
+        self.simulation_type = simulation_type
         # Create the ScopedCollection
         self.scan_parameter_dct = scan_parameter_dct
         self.scoped_collection = _ScopedCollection(self)
@@ -87,7 +88,7 @@ class SingleModelParameterScan(SimpleSEDMLBase):
         self.addModel(self.model_id, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True,
                 parameter_dct=model_parameter_dct)
-        self.addSimulation(self.sim_id, simulation_type=simulation_type,
+        self.addSimulation(self.sim_id, simulation_type=self.simulation_type,
                 algorithm=algorithm, time_interval=time_interval)
         self.addTask(self.subtask_id, model_id=self.model_id,
                 simulation_id=self.sim_id)
@@ -122,6 +123,18 @@ class SingleModelParameterScan(SimpleSEDMLBase):
         self.addPlot(x_var=x_var, y_var=y_vars,
                 title=f"Parameter scan for {self.model_id}", 
                 id=self.plot_id, is_plot=self.is_plot)
+        
+    def execute(self)-> pd.DataFrame:
+        """Executes the parameter scan and returns the results as a DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame with the results of the parameter scan.
+        """
+        if self.simulation_type == cn.ST_STEADYSTATE:
+            # For steadystate, we can execute the repeated task directly
+            raise NotImplementedError("Can generate an OMEX file and execute that.")
+        else:
+            return super().execute()  # type:ignore
 
 
 class _ScopedCollection(object):

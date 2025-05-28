@@ -9,7 +9,7 @@ import tellurium as te # type: ignore
 
 
 IGNORE_TEST = False
-IS_PLOT = True
+IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
 model %s
@@ -67,11 +67,18 @@ class TestSingleModelTimeCourse(unittest.TestCase):
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 
-    def testSteadyState(self):
+    def testOnestep(self):
         if IGNORE_TEST:
             return
         smps = self.make(cn.ST_ONESTEP, time_interval=10)
         self.evaluate(smps)
+
+    def testSteadyState(self):
+        if IGNORE_TEST:
+            return
+        smps = self.make(cn.ST_STEADYSTATE, time_interval=10)
+        with self.assertRaises(NotImplementedError):
+            smps.execute()
 
 
 if __name__ == '__main__':
