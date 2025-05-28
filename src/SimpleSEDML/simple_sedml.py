@@ -35,7 +35,7 @@ Restrictions:
 """
 
 
-class SimpleSEDMLBase(object):
+class SimpleSEDML(object):
     """A directive can consist of many sections each of which species a Model, Simulation, Task or repeated task,
     and an action (plot or report).
 

@@ -1,11 +1,11 @@
-from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type:ignore
+from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
 from SimpleSEDML.model_information import ModelInformation # type:ignore
 from SimpleSEDML import constants as cn # type:ignore
 
 from typing import Optional, List
 
 
-class SingleModelTimeCourse(SimpleSEDMLBase):
+class SingleModelTimeCourse(SimpleSEDML):
     """Class to create a time course simulation for a single model"""
 
     def __init__(self,

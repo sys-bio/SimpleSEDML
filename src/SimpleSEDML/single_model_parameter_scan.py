@@ -10,7 +10,7 @@ Produces a report but it only contains information on the last parameter combina
 # FIXME: doesn't handle no display variables
 
 
-from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type:ignore
+from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
 from SimpleSEDML import constants as cn # type:ignore
 
 import numpy as np # type:ignore
@@ -18,7 +18,7 @@ import pandas as pd # type:ignore
 from typing import Optional, List
 
 
-class SingleModelParameterScan(SimpleSEDMLBase):
+class SingleModelParameterScan(SimpleSEDML):
 
     def __init__(self,
             model_ref:str,

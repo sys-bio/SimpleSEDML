@@ -1,5 +1,5 @@
 import SimpleSEDML.constants as cn # type: ignore
-from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase # type: ignore
+from SimpleSEDML.simple_sedml import SimpleSEDML # type: ignore
 
 import numpy as np # type: ignore
 import os
@@ -62,7 +62,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
     def setUp(self):
         self.remove_files = list(REMOVE_FILES)
         self.remove()
-        self.simple = SimpleSEDMLBase()
+        self.simple = SimpleSEDML()
 
     def tearDown(self):
         # Remove files if they exist
@@ -96,8 +96,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
             is_task:bool=True,
             is_report:bool=True,
             is_plot:bool=True,
-            )->SimpleSEDMLBase:
-        simple = SimpleSEDMLBase(project_dir=os.path.join(cn.TEST_DIR, "project"))
+            )->SimpleSEDML:
+        simple = SimpleSEDML(project_dir=os.path.join(cn.TEST_DIR, "project"))
         if is_model:
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", 
                     parameter_dct=dict(k1=2.5, k2= 100), is_overwrite=True)
@@ -147,8 +147,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         NUM_SAMPLE = 100
-        def makePHRASEDML()->SimpleSEDMLBase:
-            simple = SimpleSEDMLBase()
+        def makePHRASEDML()->SimpleSEDML:
+            simple = SimpleSEDML()
             simple.addModel(MODEL_NAME, MODEL_SBML, ref_type="sbml_str", 
                     parameter_dct=dict(k1=2.5, k2= 100), is_overwrite=True)
             simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
@@ -208,7 +208,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
     def testUsageModelidForSameSimple(self):
         if IGNORE_TEST:
             return
-        simple = SimpleSEDMLBase()
+        simple = SimpleSEDML()
         simple.addModel(MODEL_NAME, MODEL_ANT, is_overwrite=True)
         simple.addModel("new", MODEL_NAME, is_overwrite=True)
         phrasedml_str = simple.getPhraSEDML()

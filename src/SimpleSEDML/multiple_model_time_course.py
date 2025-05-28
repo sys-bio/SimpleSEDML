@@ -15,14 +15,14 @@ can reference other model definitions that occur later on.
 """
 
 import SimpleSEDML.constants as cn # type: ignore
-from SimpleSEDML.simple_sedml_base import SimpleSEDMLBase  # type:ignore
+from SimpleSEDML.simple_sedml import SimpleSEDML  # type:ignore
 
 from typing import Optional, List, Union
 
 SIM_ID = "sim1"
 
 
-class MultipleModelTimeCourse(SimpleSEDMLBase):
+class MultipleModelTimeCourse(SimpleSEDML):
     """Provides comparisons between multiple simulations."""
 
     def __init__(self,
