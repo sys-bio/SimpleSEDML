@@ -115,7 +115,7 @@ class TestSimpleSEDML(unittest.TestCase):
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if smtc is not None:
-            self.remove_files.extend(smtc.model_sources)
+            self.remove_files.extend(smtc._model_sources)
             if IS_PLOT:
                 _ = smtc.execute()
 

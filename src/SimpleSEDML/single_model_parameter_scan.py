@@ -94,7 +94,7 @@ class SingleModelParameterScan(SimpleSEDML):
                 simulation_id=self.sim_id)
         self.base_model = self.model_dct[self.model_id]
         # Parameter scan does not include time as a display variable
-        if cn.TIME in self.display_variables:
+        if cn.TIME in self.display_variables:  # type:ignore
             self._display_variables = self._display_variables.remove(cn.TIME)   # type:ignore
         self._addRepeatedTask()
         self._addReport()

@@ -66,7 +66,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
 
     def tearDown(self):
         # Remove files if they exist
-        self.remove_files.extend(self.simple.model_sources)
+        self.remove_files.extend(self.simple._model_sources)
         self.remove()
 
     def remove(self):
@@ -115,7 +115,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase(is_plot=False)
-        self.remove_files.extend(simple.model_sources)
+        self.remove_files.extend(simple._model_sources)
         # Check if the model is added correctly
         self.assertEqual(len(simple.model_dct), 1)
         self.assertEqual(len(simple.simulation_dct), 1)
@@ -130,7 +130,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase(is_plot=False)
-        self.remove_files.extend(simple.model_sources)
+        self.remove_files.extend(simple._model_sources)
         simple.addReport("S3")
         simple.addReport("S4")
         # Check if the model is added correctly
@@ -153,7 +153,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
                     parameter_dct=dict(k1=2.5, k2= 100), is_overwrite=True)
             simple.addSimulation("sim1", "uniform", 0, 10, NUM_SAMPLE)
             simple.addTask("task1", MODEL_NAME, "sim1")
-            self.remove_files.extend(simple.model_sources)
+            self.remove_files.extend(simple._model_sources)
             return simple
         # Works without warning
         simple = makePHRASEDML()
@@ -174,7 +174,7 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         if IGNORE_TEST:
             return
         simple = self.makeInitialSimpleSEDMLBase()
-        self.remove_files.extend(simple.model_sources)
+        self.remove_files.extend(simple._model_sources)
         simple.addReport("S3")
         # Check if the model is added correctly
         self.assertEqual(len(simple.model_dct), 1)
@@ -204,6 +204,8 @@ class TestSimpleSEDMLBase(unittest.TestCase):
         omex_path = os.path.join(cn.TEST_DIR, "project.omex")
         omex_path, maker = simple.makeOMEXFile(omex_path=omex_path)
         self.assertTrue(maker.validateOMEXFile())
+        if os.path.exists(omex_path):
+            self.remove_files.append(omex_path)
 
     def testUsageModelidForSameSimple(self):
         if IGNORE_TEST:

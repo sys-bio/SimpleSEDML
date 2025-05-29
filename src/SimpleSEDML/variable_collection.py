@@ -11,6 +11,7 @@ Modify SEDML to use display names for display variables.
 import SimpleSEDML.constants as cn # type:ignore
 from SimpleSEDML.model_information import ModelInformation # type:ignore
 from SimpleSEDML.model import Model # type:ignore
+import SimpleSEDML.utils as utils # type:ignore
 
 import libsbml # type:ignore
 from typing import Optional, List, Dict
@@ -77,7 +78,7 @@ class VariableCollection(object):
                 value: scoped variable name
         """
         ##
-        def addScope(variables:List[str])->Dict[str, str]:
+        def addScopeStr(variables:List[str])->Dict[str, str]:
             """Adds scope to the variables"""
             return {v: f"{scope_str}{cn.SCOPE_INDICATOR}{v}" for v in variables}
         ##
@@ -89,4 +90,32 @@ class VariableCollection(object):
         if not is_time:
             if cn.TIME in variables:
                 variables.remove(cn.TIME)
-        return addScope(variables)
+        return addScopeStr(variables)
+    
+    def getDisplayNameDct(self, scope_str:Optional[str]=None, is_time:bool=True) -> Dict[str, str]:
+        """Finds the display names in a model.
+        If an element does not have a display name, its element id is used.
+
+        Args:
+            scope_str (str): string used to scope variables
+            is_time (bool, optional): Include time in the display names. Defaults to True. 
+
+        Returns:
+            Dict[str, str]: Dictionary of display names
+                key: scoped element_id
+                value: display name
+        """
+        # Map element ids to display names
+        dct = utils.makeDisplayNameDct(self.model.source)
+        if not is_time and cn.TIME in dct:
+            del dct[cn.TIME]
+        # Map variable names to scoped variable names
+        if scope_str is None:
+            scope_dct = {k: k for k in dct.keys()}  # No scoping
+        else:
+            scope_dct = self.getScopedVariables(scope_str, is_time=is_time, 
+                    is_parameters=False, is_display_variables=True)
+        # Map scoped variable names to display names
+        result_dct = {scope_dct[k]: v for k, v in dct.items() if k in self.display_variables}
+        #
+        return result_dct

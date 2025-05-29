@@ -77,7 +77,7 @@ class TestMakeOmex(unittest.TestCase):
                 project_dir=OMEX_PROJECT_DIR,
                 is_plot=False)
         sedml_str = self.mmtc.getSEDML(is_basename_source=True)
-        self.remove_files.extend(self.mmtc.model_sources)
+        self.remove_files.extend(self.mmtc._model_sources)
         for directory in REMOVE_DIRS:
             os.makedirs(directory, exist_ok=True)
         with open(SEDML_PATH, "w") as f:

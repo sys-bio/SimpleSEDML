@@ -111,7 +111,7 @@ class TestSingleModelTimeCourse(unittest.TestCase):
         if smtc is None:
             self.assertTrue(False, "SingleModelTimeCourse object is None")
         else:
-            self.remove_files.extend(smtc.model_sources)
+            self.remove_files.extend(smtc._model_sources)
             _ = smtc.execute()
 
 

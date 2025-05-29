@@ -8,6 +8,7 @@ from SimpleSEDML.task import Task, RepeatedTask  # type:ignore
 from SimpleSEDML.plot import Plot  # type:ignore
 from SimpleSEDML.report import Report  # type:ignore
 from SimpleSEDML.omex_maker import OMEXMaker  # type:ignore
+from SimpleSEDML.variable_collection import VariableCollection  # type:ignore
 import SimpleSEDML.utils as utils # type:ignore
 
 from collections import namedtuple
@@ -30,8 +31,8 @@ A model section may contain changes to parameters, initial conditions or other m
 
 
 Restrictions:
-  - No local variables (because this is an API)
-  - No formulas (because this is an API and python can do this)
+    - No local variables (because this is an API)
+    - No formulas (because this is an API and python can do this)
 """
 
 
@@ -52,43 +53,52 @@ class SimpleSEDML(object):
             project_dir (Optional[str]): Directory where project files are stored.
                 Default is current directory.
         """
+        # Handle defaults
+        if display_variables is None:
+            display_variables = []
         # Initializations
         if project_id is None:
             project_id = cn.D_PROJECT_ID
-        #
+        # Set parameters
         self.project_id = project_id
         self.project_dir = utils.makeDefaultProjectDir(project_dir)
+        self.display_variables = display_variables
+        # Initialize state
         self.model_dct:dict = {}
         self.simulation_dct:dict = {}
         self.task_dct:dict = {}
         self.repeated_task_dct:dict = {}
         self.report_dct:dict = {}
         self.plot_dct:dict = {}
-        #
-        self._display_variables:Optional[List[str]] = display_variables
+        self.parameters:List[str] = []
         self.report_id = 0
         self.plot_idx = 0
         self.time_course_id = 0
 
     @property
-    def display_variables(self)->List[str]:
+    def _variable_collection(self)->VariableCollection:
         """Returns list of display variables. If unspecified, use all variables
         from the first model.
 
         Returns:
             Optional[List[str]]: list of display variables
         """
-        if self._display_variables is None:
-            if len(self.model_dct) == 0:
-                return [] 
-            this_model = list(self.model_dct.values())[0]
-            model_info = ModelInformation.getFromModel(this_model)
-            self._display_variables = list(model_info.floating_species_dct.keys())
-            self._display_variables.insert(0, cn.TIME)   # type: ignore
-        return self._display_variables
+        if len(self.model_dct) == 0:
+            raise ValueError("No models defined in the script.")
+        model = list(self.model_dct.values())[0]
+        return VariableCollection(model, display_variables=self.display_variables,
+                parameters=self.parameters)
+    
+    def _addParameters(self, variable_names:List[str]) -> None:
+        """Adds parameters to the script
+
+        Args:
+            variable_names: list of variable names to be added as parameters
+        """
+        self.parameters.extend(variable_names)
 
     @property
-    def model_sources(self)->List[str]:
+    def _model_sources(self)->List[str]:
         """Returns a list of model sources
 
         Returns:
@@ -134,19 +144,33 @@ class SimpleSEDML(object):
         """
         return te.antimonyToSBML(antimony_str)
 
-    def getSEDML(self, is_basename_source:bool=False)->str:
+    def getSEDML(self, is_basename_source:bool=False, display_name_dct:Optional[dict]=None)->str:
         """Converts the script to a SED-ML string
+
+        Args:
+            is_basename_source: if True, use the basename of the model source files
+            display_name_dct: dictionary of display names for the variables
 
         Returns:
             str: SED-ML string
         Raises:
             ValueError: if the conversion failsk
         """
+        # Handle defaults
+        if display_name_dct is None:
+            display_name_dct = {}
+        #
         phrasedml.setWorkingDirectory(self.project_dir)
         sedml_str = phrasedml.convertString(
             self.getPhraSEDML(is_basename_source=is_basename_source))
         if sedml_str is None:
             raise ValueError(phrasedml.getLastError())
+        # Handle display names
+        for raw_name, display_name in display_name_dct.items():
+            search_str = f"name=\"{raw_name}\""
+            replace_str = f"name=\"{display_name}\""
+            sedml_str = sedml_str.replace(search_str, replace_str)
+        #
         return sedml_str
     
     def _checkDuplicate(self, id:str, dict_type:str):
@@ -260,6 +284,10 @@ class SimpleSEDML(object):
         self._checkDuplicate(id, cn.REPEATED_TASK)
         task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
         self.repeated_task_dct[id] = task
+        # Add the parameters
+        if len(parameter_df.columns) > 0:
+            self._addParameters(list(parameter_df.columns))
+
 
     def addPlot(self, x_var:str,
                 y_var:Union[str, List[str]],
