@@ -86,7 +86,7 @@ class TestSingleModelTimeCourse(unittest.TestCase):
             return
         smtc = None
         try:
-            smtc = SingleModelTimeCourse(MODEL_ANT, is_plot=IS_PLOT)
+            smtc = SingleModelTimeCourse(MODEL_ANT, num_point=200, is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
@@ -105,7 +105,7 @@ class TestSingleModelTimeCourse(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
             smtc = SingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000",
-                    is_plot=IS_PLOT)
+                    num_point=200, is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if smtc is None:
@@ -113,6 +113,7 @@ class TestSingleModelTimeCourse(unittest.TestCase):
         else:
             self.remove_files.extend(smtc._model_sources)
             _ = smtc.execute()
+
 
 
 if __name__ == '__main__':

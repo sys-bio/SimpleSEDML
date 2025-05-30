@@ -7,7 +7,6 @@ Produces a report but it only contains information on the last parameter combina
 """
 
 # FIXME: steadystate doesn't work
-# FIXME: doesn't handle no display variables
 
 
 from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
@@ -16,6 +15,7 @@ from SimpleSEDML import constants as cn # type:ignore
 import numpy as np # type:ignore
 import pandas as pd # type:ignore
 from typing import Optional, List
+import warnings
 
 
 class SingleModelParameterScan(SimpleSEDML):
@@ -80,7 +80,6 @@ class SingleModelParameterScan(SimpleSEDML):
         self.simulation_type = simulation_type
         # Create the ScopedCollection
         self.scan_parameter_dct = scan_parameter_dct
-        self.scoped_collection = _ScopedCollection(self)
         # Set the title
         self.is_plot = is_plot
         if title is None:
@@ -94,7 +93,7 @@ class SingleModelParameterScan(SimpleSEDML):
                 simulation_id=self.sim_id)
         self.base_model = self.model_dct[self.model_id]
         # Parameter scan does not include time as a display variable
-        if cn.TIME in self.display_variables:  # type:ignore
+        if cn.TIME in self.initial_display_variables:  # type:ignore
             self._display_variables = self._display_variables.remove(cn.TIME)   # type:ignore
         self._addRepeatedTask()
         self._addReport()
@@ -112,19 +111,29 @@ class SingleModelParameterScan(SimpleSEDML):
         """Adds a report for the parameter scan"""
         # Make the parameter variables
         # Add the report
-        self.addReport(*self.scoped_collection.all_variables_without_time, id=self.report_id,
+        all_variables_without_time = self.variable_collection.getScopedVariables(
+                self.repeatedtask_id, is_time=False, is_parameters=True,
+                is_display_variables=True).lst
+        self.addReport(*all_variables_without_time, id=self.report_id,
                 title=f"Parameter scan for {self.model_id}")
         
     def _addPlot(self):
         """Adds a plot for the parameter scan"""
         # Add the plot
-        x_var = self.scoped_collection.parameters[0]  # The first parameter is the x-axis
-        y_vars = self.scoped_collection.display_variables_without_time
+        scoped_parameters = self.variable_collection.getScopedVariables(
+                self.repeatedtask_id, is_time=False, is_parameters=True,
+                is_display_variables=False).lst
+        if len(scoped_parameters) > 1:
+            warnings.warn("Can only plot one parameter on the x-axis. Plotting the first.")
+        x_var = scoped_parameters[0]  # The first parameter is the x-axis
+        y_vars = self.variable_collection.getScopedVariables(
+                self.repeatedtask_id, is_time=False, is_parameters=False,
+                is_display_variables=True).lst
         self.addPlot(x_var=x_var, y_var=y_vars,
                 title=f"Parameter scan for {self.model_id}", 
                 id=self.plot_id, is_plot=self.is_plot)
         
-    def execute(self)-> pd.DataFrame:
+    def execute(self, *args)-> pd.DataFrame:  # type:ignore
         """Executes the parameter scan and returns the results as a DataFrame.
 
         Returns:
@@ -132,32 +141,8 @@ class SingleModelParameterScan(SimpleSEDML):
         """
         if self.simulation_type == cn.ST_STEADYSTATE:
             # For steadystate, we can execute the repeated task directly
-            raise NotImplementedError("Can generate an OMEX file and execute that.")
+            msg = "Cannot execute parameter scan for steadystate. "
+            msg += "\n   Consider using onestep with a large time_interval."
+            raise NotImplementedError(msg)
         else:
-            return super().execute()  # type:ignore
-
-
-class _ScopedCollection(object):
-    # Applies scoping to variables
-
-    def __init__(self, smps:SingleModelParameterScan):
-        self.smps = smps
-        self.scope = self.smps.repeatedtask_id
-        self.parameters = self._addScope(list(self.smps.scan_parameter_dct.keys()))
-        self.display_variables_with_time = list(self._addScope(self.smps.display_variables))
-
-    @property
-    def display_variables_without_time(self)->List[str]:
-        return [v for v in self.display_variables_with_time if not cn.TIME in v]
-    
-    @property
-    def all_variables(self)->List[str]:
-        return self.parameters + self.display_variables_with_time
-
-    @property
-    def all_variables_without_time(self)->List[str]:
-        return self.parameters + self.display_variables_without_time
-
-    def _addScope(self, variables:List[str])->List[str]:
-        """Adds scope to the variables"""
-        return [f"{self.scope}{cn.SCOPE_INDICATOR}{var}" for var in variables]
+            return super().execute(*args)  # type:ignore

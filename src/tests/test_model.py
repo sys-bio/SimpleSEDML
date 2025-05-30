@@ -104,7 +104,8 @@ class TestModel(unittest.TestCase):
         model = Model(MODEL_ID, MODEL_SBML, is_overwrite=True)
         self.remove_files.append(model.source)
         with self.assertWarns(UserWarning):
-            _ = Model(MODEL_ID, MODEL_SBML, is_overwrite=False)
+            _ = Model(MODEL_ID, MODEL_SBML, 
+                    project_dir=model.project_dir, is_overwrite=False)
     
     def testUsageFile(self):
         # model = model model1 file-path

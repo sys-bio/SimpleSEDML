@@ -46,23 +46,25 @@ class SimpleSEDML(object):
     def __init__(self, 
                     project_id:Optional[str]=None,
                     project_dir:Optional[str]=None,
-                    display_variables:Optional[List[str]]=None):
+                    display_variables:Optional[List[str]]=None,
+                    scan_parameters:Optional[List[str]]=None,
+                    ):
         """
         Args:
             project_id (Optional[str]): ID of the project. Default is "project".
             project_dir (Optional[str]): Directory where project files are stored.
                 Default is current directory.
+            display_variables (Optional[List[str]]): List of variables to be displayed in the report and plots.
+            scan_parameters (Optional[List[str]]): List of parameters used in parameter scan.
         """
-        # Handle defaults
-        if display_variables is None:
-            display_variables = []
         # Initializations
         if project_id is None:
             project_id = cn.D_PROJECT_ID
         # Set parameters
         self.project_id = project_id
         self.project_dir = utils.makeDefaultProjectDir(project_dir)
-        self.display_variables = display_variables
+        self.initial_display_variables = display_variables
+        self.scan_parameters = scan_parameters if scan_parameters is not None else []
         # Initialize state
         self.model_dct:dict = {}
         self.simulation_dct:dict = {}
@@ -70,13 +72,12 @@ class SimpleSEDML(object):
         self.repeated_task_dct:dict = {}
         self.report_dct:dict = {}
         self.plot_dct:dict = {}
-        self.parameters:List[str] = []
         self.report_id = 0
         self.plot_idx = 0
         self.time_course_id = 0
 
     @property
-    def _variable_collection(self)->VariableCollection:
+    def variable_collection(self)->VariableCollection:
         """Returns list of display variables. If unspecified, use all variables
         from the first model.
 
@@ -86,16 +87,8 @@ class SimpleSEDML(object):
         if len(self.model_dct) == 0:
             raise ValueError("No models defined in the script.")
         model = list(self.model_dct.values())[0]
-        return VariableCollection(model, display_variables=self.display_variables,
-                parameters=self.parameters)
-    
-    def _addParameters(self, variable_names:List[str]) -> None:
-        """Adds parameters to the script
-
-        Args:
-            variable_names: list of variable names to be added as parameters
-        """
-        self.parameters.extend(variable_names)
+        return VariableCollection(model, display_variables=self.initial_display_variables,
+                scan_parameters=self.scan_parameters)
 
     @property
     def _model_sources(self)->List[str]:
@@ -262,6 +255,17 @@ class SimpleSEDML(object):
                 num_step=num_step,
                 time_interval=time_interval,
                 algorithm=algorithm)  # type: ignore
+        
+    def _addParameters(self, scan_parameters:List[str]):
+        """Adds parameters to the script
+
+        Args:
+            scan_parameters: list of parameter names
+        """
+        if len(scan_parameters) == 0:
+            return
+        # Add parameters to the variable collection
+        self.variable_collection.addScanParameters(scan_parameters)
 
     def addTask(self, id:str, model_id:str, simulation_id:str):
         """Adds a task to the script
@@ -335,8 +339,11 @@ class SimpleSEDML(object):
             self.report_dct[id].title = title
         self.report_dct[id].addVariables(*report_variables)
     
-    def execute(self)->pd.DataFrame:
+    def execute(self, scope_str:Optional[str]=None)->pd.DataFrame:
         """Executes the script and returns the results as a DataFrame
+
+        Args:
+            scope_str: string used to scope variables. If None, uses the default scope.
 
         Returns:
             pd.DataFrame: DataFrame with the results
@@ -350,7 +357,8 @@ class SimpleSEDML(object):
                 warnings.warn("Reports only generate data for the last repeated task.")
         if len(self.report_dct) > 1:
             warnings.warn("Reports only generate data for the last task.")
-        te.executeSEDML(self.getSEDML())
+        display_variable_dct = self.variable_collection.getDisplayNameDct(scope_str)
+        te.executeSEDML(self.getSEDML(display_name_dct=display_variable_dct))
         return te.getLastReport()   # type: ignore
     
     def getAllModelInformation(self, model_id:Optional[str]=None)->dict:

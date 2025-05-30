@@ -127,7 +127,9 @@ which generates the following plot:
 
 # Versions
 
-* 0.0.7
+* 0.0.7 5/30/2025
+    * Single model parameter scan, but cannot execute for steadystate.
+    * Display variables are used on plots.
 
 * 0.0.6  5/27/2025
     * Time courses simulate onestep, stochastic, steadystate

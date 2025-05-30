@@ -22,7 +22,7 @@ class SingleModelTimeCourse(SimpleSEDML):
             title:Optional[str]=None,
             algorithm:Optional[str]=None,
             is_plot:bool=True,
-            parameter_dct:Optional[dict]=None):
+            model_parameter_dct:Optional[dict]=None):
         """Creates a time course simulation
 
         Args:
@@ -36,10 +36,11 @@ class SingleModelTimeCourse(SimpleSEDML):
             start: start time
             end: end time
             num_step: number of steps
+            num_point: number of points to be plotted
             algorithm: algorithm to use for the simulation
             title: title of the plot
             is_plot: if True, plot the results
-            parameter_dct: dictionary of parameters whose values are changed
+            model_parameter_dct: dictionary of parameters whose values are changed
 
         Returns:
             SingleModelTimeCourse: a time course simulation object
@@ -54,10 +55,10 @@ class SingleModelTimeCourse(SimpleSEDML):
             title = ""
         #
         self.addModel(model_id, model_ref=model_ref, ref_type=ref_type, is_overwrite=True,
-                parameter_dct=parameter_dct)
-        this_model = self.model_dct[model_id]
+                parameter_dct=model_parameter_dct)
+        self.model = self.model_dct[model_id]
         if display_variables is None:
-            model_information = ModelInformation.getFromModel(this_model)
+            model_information = ModelInformation.getFromModel(self.model)
             display_variables = list(model_information.floating_species_dct.keys())
             display_variables.insert(0, "time")   # type: ignore
         self.addSimulation(sim_id, simulation_type=simulation_type,

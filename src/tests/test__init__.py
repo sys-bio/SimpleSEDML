@@ -129,7 +129,7 @@ class TestSimpleSEDML(unittest.TestCase):
                     start=0,
                     end=10,
                     num_step=100,
-                    parameter_dct=dict(k1=1.5),
+                    model_parameter_dct=dict(k1=1.5),
                     display_variables=["S1", "S2"],
                     is_plot=IS_PLOT,
                     )

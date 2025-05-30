@@ -79,7 +79,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.model_refs = MODEL_REFS
         self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
                 end=10, num_point=NUM_POINT,
-                parameter_dct=dict(k1=1.5),
+                model_parameter_dct=dict(k1=1.5),
                 display_variables=DISPLAY_VARIABLES,
                 is_plot=IS_PLOT)
         self.num_model = len(self.model_refs)
@@ -149,16 +149,20 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         if IGNORE_TEST:
             return
         self.mmtc._makeModelObjects()
-        self.assertEqual(self.mmtc.display_variables[0], "S1")
-        self.assertEqual(self.mmtc.display_variables[1], "S2")
+        if self.mmtc.initial_display_variables is None:
+            raise ValueError("Display variables are not set.")
+        self.assertEqual(self.mmtc.initial_display_variables[0], "S1")
+        self.assertEqual(self.mmtc.initial_display_variables[1], "S2")
         #
         mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT,
                 display_variables=["S1", "S2", "S3"])
         mmtc._makeModelObjects()
         self.remove_files.extend(mmtc._model_sources)
-        self.assertEqual(mmtc.display_variables[0], "S1")
-        self.assertEqual(mmtc.display_variables[1], "S2")
-        self.assertEqual(mmtc.display_variables[2], "S3")
+        if mmtc.initial_display_variables is None:
+            raise ValueError("Display variables are not set.")
+        self.assertEqual(mmtc.initial_display_variables[0], "S1")
+        self.assertEqual(mmtc.initial_display_variables[1], "S2")
+        self.assertEqual(mmtc.initial_display_variables[2], "S3")
 
     def testMakeReportObject(self):
         """Test the makeTaskObject method"""
@@ -184,7 +188,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
                     start=0,
                     end=10,
                     num_point=NUM_POINT,
-                    parameter_dct=dict(k1=1.5),
+                    model_parameter_dct=dict(k1=1.5),
                     display_variables=DISPLAY_VARIABLES,
                     is_plot=is_plot)
             self.evaluate(mmtc)
@@ -202,8 +206,8 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             self.assertTrue(variable_name in str(directive))
 
     def testGetPhraSEDML(self):
-        if IGNORE_TEST:
-            return
+        #if IGNORE_TEST:
+        #    return
         self.evaluate(self.mmtc)
 
     def evaluate(self, mmtc:MultipleModelTimeCourse):

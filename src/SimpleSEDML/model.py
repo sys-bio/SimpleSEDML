@@ -104,14 +104,13 @@ class Model:
             # Use the current directory
             source = os.path.join(self.project_dir, self.id + cn.XML_EXT)
         source = str(source)
-        if self.is_overwrite or not os.path.exists(source):
-            with open(source, "wb") as f:
-                f.write(self.sbml_str.encode('utf-8'))
-                f.flush()
         if (not self.is_overwrite and os.path.exists(source)):
             msg = "*** File {model_source_path} already exists and will be used as model source."
             msg += "\n  Use is_overwrite=True to overwrite."
             warnings.warn(msg)
+        with open(source, "wb") as f:
+            f.write(self.sbml_str.encode('utf-8'))
+            f.flush()
         return source
 
     def _getSBMLFromReference(self)->str:

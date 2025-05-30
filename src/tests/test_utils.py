@@ -10,7 +10,7 @@ import unittest
 SBML_PATH = os.path.join(cn.TEST_DIR, "BIOMD0000000206.xml")
 
 IGNORE_TEST = False
-IS_PLOT = True
+IS_PLOT = False
 
 #############################
 # Tests

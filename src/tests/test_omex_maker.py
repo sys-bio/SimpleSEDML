@@ -72,7 +72,7 @@ class TestMakeOmex(unittest.TestCase):
         self.remove_files = list(REMOVE_FILES)
         self.mmtc = MultipleModelTimeCourse(MODEL_REFS, start=0,
                 end=10, num_point=NUM_POINT,
-                parameter_dct=dict(k1=1.5),
+                model_parameter_dct=dict(k1=1.5),
                 display_variables=DISPLAY_VARIABLES,
                 project_dir=OMEX_PROJECT_DIR,
                 is_plot=False)
