@@ -357,6 +357,7 @@ class SimpleSEDML(object):
                 warnings.warn("Reports only generate data for the last repeated task.")
         if len(self.report_dct) > 1:
             warnings.warn("Reports only generate data for the last task.")
+        _ = self.getPhraSEDML()  # Ensure that objects have been created
         display_variable_dct = self.variable_collection.getDisplayNameDct(scope_str)
         te.executeSEDML(self.getSEDML(display_name_dct=display_variable_dct))
         return te.getLastReport()   # type: ignore

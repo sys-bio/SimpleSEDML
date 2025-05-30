@@ -20,7 +20,9 @@ from SimpleSEDML.simple_sedml import SimpleSEDML  # type:ignore
 import pandas as pd # type:ignore
 from typing import Optional, List, Union
 
-SIM_ID = "sim1"
+SIM_ID = "mmtc_sim1"
+REPORT_ID = "mmtc_report1"
+PLOT_ID = "mmtc_plot1"
 
 
 class MultipleModelTimeCourse(SimpleSEDML):
@@ -154,11 +156,13 @@ class MultipleModelTimeCourse(SimpleSEDML):
         """
         # Calculate the task ids to consider
         #
+        if REPORT_ID in self.report_dct:
+            return
         report_variables = self.variable_collection.getScopedVariables(
                 self.task_ids, is_time=False, is_parameters=True,
                 is_display_variables=True).lst
         report_variables.insert(0, self._getScopedTime())
-        self.addReport(*report_variables)
+        self.addReport(*report_variables, id=REPORT_ID)
 
     def _makePlotObjects(self):
         """Make the report objects for the compared variables.
@@ -166,7 +170,7 @@ class MultipleModelTimeCourse(SimpleSEDML):
         """
         display_variables = list(set(self.variable_collection.display_variables) - set([cn.TIME]))
         for variable in display_variables:
-            plot_id = "_".join([variable + "-" + m for m in self.task_ids])
+            plot_id = "_".join([PLOT_ID + "_" + variable + "-" + m for m in self.task_ids])
             if not plot_id in self.plot_dct:
                 variables = [m + cn.SCOPE_INDICATOR + variable for m in self.task_ids]
                 self.addPlot(x_var=self._getScopedTime(), y_var=variables,
@@ -181,12 +185,11 @@ class MultipleModelTimeCourse(SimpleSEDML):
             str: Phrased-ML string
         """
         # Make the objects if they have not been created yet
-        if None in self.model_ref_dct.values():
-            self._makeModelObjects()
-            self._makeSimulationObject()
-            self._makeTaskObjects()
-            self._makeReportObject()
-            self._makePlotObjects()
+        self._makeModelObjects()
+        self._makeSimulationObject()
+        self._makeTaskObjects()
+        self._makeReportObject()
+        self._makePlotObjects()
         #
         return super().getPhraSEDML(is_basename_source=is_basename_source)
     
@@ -197,15 +200,3 @@ class MultipleModelTimeCourse(SimpleSEDML):
             str:
         """
         return self.getPhraSEDML()
-    
-    def execute(self, scope_str:Optional[str]=None)->pd.DataFrame:
-        """Executes the script and returns the results as a DataFrame
-
-        Args:
-            scope_str: string used to scope variables. If None, uses the default scope.
-
-        Returns:
-            pd.DataFrame: DataFrame with the results
-        """
-        _ = self.getPhraSEDML()  # Ensure that objects have been created
-        return super().execute(scope_str=scope_str)

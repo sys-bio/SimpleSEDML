@@ -206,9 +206,10 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             self.assertTrue(variable_name in str(directive))
 
     def testGetPhraSEDML(self):
-        #if IGNORE_TEST:
-        #    return
+        if IGNORE_TEST:
+            return
         self.evaluate(self.mmtc)
+        self.evaluate(self.mmtc)  # Ensure works with repeated calls
 
     def evaluate(self, mmtc:MultipleModelTimeCourse):
         """Evaluate the sedml_str and sbml_str

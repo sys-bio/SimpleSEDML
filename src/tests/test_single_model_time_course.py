@@ -115,6 +115,5 @@ class TestSingleModelTimeCourse(unittest.TestCase):
             _ = smtc.execute()
 
 
-
 if __name__ == '__main__':
     unittest.main()
