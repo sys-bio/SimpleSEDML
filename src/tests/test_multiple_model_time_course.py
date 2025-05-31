@@ -31,6 +31,9 @@ model %s
     S2 = 0
     S3 = 0
     S4 = 0
+
+    S1 is "species1"
+    S2 is "species2"
 end
 """ % MODEL_ID
 MODEL2_ANT = """
@@ -200,14 +203,18 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.mmtc._makeModelObjects()
         self.mmtc._makeTaskObjects()
         self.mmtc._makePlotObjects()
-        for idx, plot in enumerate(self.mmtc.plot_dct.values()):
-            directive = plot
+        # Variable plots may not appear in sequence
+        directives = [str(v) for v in self.mmtc.plot_dct.values()]
+        for idx in range(len(self.mmtc.plot_dct)):
             variable_name = "S" + str(idx + 1)
-            self.assertTrue(variable_name in str(directive))
+            true = any([variable_name in directive for directive in directives])
+            if not true:
+                import pdb; pdb.set_trace()
+            self.assertTrue(true)
 
-    def testGetPhraSEDML(self):
-        if IGNORE_TEST:
-            return
+    def testExecute(self):
+        #if IGNORE_TEST:
+        #    return
         self.evaluate(self.mmtc)
         self.evaluate(self.mmtc)  # Ensure works with repeated calls
 
@@ -221,7 +228,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         sedml_str = phrasedml.convertString(phrasedml_str)
         self.assertIsNotNone(sedml_str, "SED-ML conversion failed\n" + phrasedml.getLastError())
         try:
-            df = mmtc.executeSEDML(sedml_str)
+            df = mmtc.execute()
             self.assertTrue(isinstance(df, pd.DataFrame))
             if not (cn.ST_ONESTEP in phrasedml_str or cn.ST_STEADYSTATE in phrasedml_str):
                 self.assertTrue(len([c for c in df.columns if cn.TIME in c]) == 1)

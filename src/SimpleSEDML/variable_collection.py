@@ -26,12 +26,14 @@ class VariableCollection(object):
     def __init__(self,
                 model:Model,
                 display_variables:Optional[List[str]]=None,
-                scan_parameters:Optional[List[str]]=None) -> None:
+                scan_parameters:Optional[List[str]]=None,
+                scope_strs:Optional[List[str]]=None) -> None:
         """
         Args:
             model (Model): _description_
             display_variables (Optional[List[str]], optional): _description_. Defaults to None.
-            parameters (Optional[List[str]], optional): _description_. Defaults to None.
+            scan_parameters (Optional[List[str]], optional): Parameters for scans. Defaults to None.
+            scope_strs (Optional[List[str]], optional): List of scopes for display variables. Defaults to None.
         """
         if scan_parameters is None:
             scan_parameters = []
@@ -39,8 +41,10 @@ class VariableCollection(object):
         self.model = model
         self._display_variables = display_variables
         self.scan_parameters:List[str] = scan_parameters
+        if scope_strs is None:
+            scope_strs = []
         #
-        self.scope:Optional[str] = None
+        self.scope_strs:List[str] = scope_strs
 
     @property
     def display_variables(self)->List[str]:
@@ -89,21 +93,25 @@ class VariableCollection(object):
         def addScopeStr(variables:List[str])->Dict[str, str]:
             """Adds scope to the variables"""
             result_dct:dict = {}
-            for scope_str in scope_strs:
-                dct = {v: f"{scope_str}{cn.SCOPE_INDICATOR}{v}" for v in variables
-                    if v != cn.TIME}
-                for k in dct.keys():
-                    if not k in result_dct:
-                        result_dct[k] = []
-                [result_dct[k].append(dct[k]) for k, v in dct.items()]
-            if is_time and cn.TIME in variables:
-                result_dct[cn.TIME] = [cn.TIME]
+            if len(scope_strs) == 0:  # No scoping
+                result_dct = {v: [v] for v in variables}
+            else:
+                for scope_str in scope_strs:
+                    dct = {v: f"{scope_str}{cn.SCOPE_INDICATOR}{v}" for v in variables
+                        if v != cn.TIME}
+                    for k in dct.keys():
+                        if not k in result_dct:
+                            result_dct[k] = []
+                    [result_dct[k].append(dct[k]) for k, v in dct.items()]
+                if is_time and cn.TIME in variables:
+                    result_dct[cn.TIME] = [cn.TIME]
             return result_dct
         ##
         if isinstance(scope_str, str):
             scope_strs = [scope_str]
         else:
             scope_strs = scope_str
+        scope_strs.extend(self.scope_strs)
         #
         variables = []
         if is_parameters:
@@ -118,26 +126,35 @@ class VariableCollection(object):
         [result_list.extend(v) for v in result_dct.values()]   # type:ignore
         return ScopedVariableResult(dct=result_dct, lst=result_list)
     
-    def getDisplayNameDct(self, scope_str:Optional[str]=None) -> Dict[str, str]:
+    def getDisplayNameDct(self,
+            scope_str:Optional[Union[str, List[str]]]=None) -> Dict[str, str]:
         """Finds the display names in a model.
         If an element does not have a display name, its element id is used.
         This dictionary is used in editing SEDML to use display names.
 
         Args:
-            scope_str (str): string used to scope variables
+            scope_str (str): string or strings used to scope variables
 
         Returns:
             Dict[str, str]: Dictionary of display names
                 key: scoped element_id
                 value: display name
         """
+        # Resolve defaults
+        if scope_str is None:
+            scope_strs = []
+        elif isinstance(scope_str, str):
+            scope_strs = [scope_str]
+        else:
+            scope_strs = scope_str
+        scope_strs.extend(self.scope_strs)
         # Map element ids to display names
         dct = utils.makeDisplayNameDct(self.model.source)
         # Map variable names to scoped variable names
-        if scope_str is None:
+        if len(scope_strs) == 0:  # No scoping
             scope_dct = {k: k for k in dct.keys()}  # No scoping
         else:
-            scope_dct = self.getScopedVariables(scope_str, is_time=False, 
+            scope_dct = self.getScopedVariables(scope_strs, is_time=False, 
                     is_parameters=False, is_display_variables=True).dct
             # Use the first scoped variable name for each variable
             scope_dct = {k: v[0] for k, v in scope_dct.items() if k in dct}
@@ -151,3 +168,13 @@ class VariableCollection(object):
             result_dct[scope_dct[key]] = value[0] if isinstance(value, list) else value
         #
         return result_dct
+    
+    def addScopeStrs(self, scope_strs:List[str]) -> None:
+        """Adds scope strings to the variable collection.
+
+        Args:
+            scope_strs (List[str]): List of scope strings to add
+        """
+        for scope_str in scope_strs:
+            if not scope_str in self.scope_strs:
+                self.scope_strs.append(scope_str)

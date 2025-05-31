@@ -87,6 +87,7 @@ class MultipleModelTimeCourse(SimpleSEDML):
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
+        self.task_model_dct:dict = {}  # Model associated with each task
         self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
         self.model_parameter_dct = model_parameter_dct
         self.is_plot = is_plot
@@ -137,9 +138,11 @@ class MultipleModelTimeCourse(SimpleSEDML):
             if model_id is None:
                 continue
             task_id = self._makeTaskID(model_id)
+            self.task_model_dct[task_id] = model_id
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id, SIM_ID)
                 self.task_ids.append(task_id)
+        self.variable_collection.addScopeStrs(self.task_ids)
 
     def _getScopedTime(self)->str:
         """Get the first scoped time variable.
@@ -172,7 +175,7 @@ class MultipleModelTimeCourse(SimpleSEDML):
         for variable in display_variables:
             plot_id = "_".join([PLOT_ID + "_" + variable + "-" + m for m in self.task_ids])
             if not plot_id in self.plot_dct:
-                variables = [m + cn.SCOPE_INDICATOR + variable for m in self.task_ids]
+                variables = [t + cn.SCOPE_INDICATOR + variable for t in self.task_ids]
                 self.addPlot(x_var=self._getScopedTime(), y_var=variables,
                     title=variable, id=plot_id, is_plot=self.is_plot)
 
@@ -192,6 +195,37 @@ class MultipleModelTimeCourse(SimpleSEDML):
         self._makePlotObjects()
         #
         return super().getPhraSEDML(is_basename_source=is_basename_source)
+    
+    def getSEDML(self, is_basename_source:bool=False, display_name_dct:Optional[dict]=None)->str:
+        """Converts the script to a SED-ML string. Special case for MMTC since multiple models.
+
+        Args:
+            is_basename_source: if True, use the basename of the model source files
+            display_name_dct: dictionary of display names for the variables
+
+        Returns:
+            str: SED-ML string
+        Raises:
+            ValueError: if the conversion failsk
+        """
+        # Handle defaults
+        if display_name_dct is None:
+            display_name_dct = {}
+        # Do initial replacements
+        sedml_str = super().getSEDML(is_basename_source=is_basename_source)
+        # Make legend lines be the model IDs
+        for task_id, model_id in self.task_model_dct.items():
+            # Handle time
+            search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{cn.TIME}\""
+            replace_str = f"name=\"{cn.TIME}\""
+            sedml_str = sedml_str.replace(search_str, replace_str)
+            # Handle other variables
+            for raw_name in display_name_dct.keys():
+                # Handle legend lines
+                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{raw_name}\""
+                replace_str = f"name=\"{model_id}\""
+                sedml_str = sedml_str.replace(search_str, replace_str)
+        return sedml_str
     
     def __str__(self)->str:
         """Return PhraSED-ML string.

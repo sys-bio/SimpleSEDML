@@ -86,6 +86,25 @@ class TestVariableCollection(unittest.TestCase):
         self.assertEqual(len(scope_dct), 5)
         count = len([v for v in scope_dct.values() if scope_str in v[0]])
         self.assertEqual(count, 4)
+        # Case 1a
+        scope_dct = variable_collection.getScopedVariables([scope_str],
+                is_time=True, is_parameters=True, is_display_variables=True).dct
+        self.assertEqual(scope_dct[cn.TIME], [cn.TIME])
+        self.assertEqual(len(scope_dct), 5)
+        count = len([v for v in scope_dct.values() if scope_str in v[0]])
+        self.assertEqual(count, 4)
+        # Case 1b
+        scope_dct = variable_collection.getScopedVariables([],
+                is_time=True, is_parameters=True, is_display_variables=True).dct
+        self.assertEqual(scope_dct[cn.TIME], [cn.TIME])
+        self.assertEqual(len(scope_dct), 5)
+        # Case 1c
+        scope_dct = variable_collection.getScopedVariables(['scope1', 'scope2'],
+                is_time=True, is_parameters=True, is_display_variables=True).dct
+        self.assertEqual(scope_dct[cn.TIME], [cn.TIME])
+        self.assertEqual(len(scope_dct), 5)
+        count = len([v for v in scope_dct.values() if len(v) == 2])
+        self.assertEqual(count, 4)
         # Case 2
         scope_dct = variable_collection.getScopedVariables(scope_str,
                 is_time=False, is_parameters=True, is_display_variables=True).dct
@@ -108,6 +127,14 @@ class TestVariableCollection(unittest.TestCase):
         count = len([v for v in display_name_dct.keys() if scope_str in v])
         self.assertEqual(count, 2)
         self.assertEqual(set(display_name_dct.values()), set([DISPLAY_NAME1, DISPLAY_NAME2]))
+        #
+        display_name2_dct = variable_collection.getDisplayNameDct(scope_str=[scope_str])
+        self.assertEqual(display_name_dct, display_name2_dct)
+        #
+        variable_collection = VariableCollection(self.model, display_variables=DISPLAY_VARIABLES,
+                scope_strs=[scope_str])
+        display_name3_dct = variable_collection.getDisplayNameDct()
+        self.assertEqual(display_name_dct, display_name3_dct)
     
     def testDisplayVariables2(self):
         if IGNORE_TEST:

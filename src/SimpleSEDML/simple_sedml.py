@@ -158,6 +158,8 @@ class SimpleSEDML(object):
             self.getPhraSEDML(is_basename_source=is_basename_source))
         if sedml_str is None:
             raise ValueError(phrasedml.getLastError())
+        # Update the scope information
+        display_name_dct = self.variable_collection.getDisplayNameDct()
         # Handle display names
         for raw_name, display_name in display_name_dct.items():
             search_str = f"name=\"{raw_name}\""
@@ -359,7 +361,8 @@ class SimpleSEDML(object):
             warnings.warn("Reports only generate data for the last task.")
         _ = self.getPhraSEDML()  # Ensure that objects have been created
         display_variable_dct = self.variable_collection.getDisplayNameDct(scope_str)
-        te.executeSEDML(self.getSEDML(display_name_dct=display_variable_dct))
+        sedml_str = self.getSEDML(display_name_dct=display_variable_dct)
+        te.executeSEDML(sedml_str)
         return te.getLastReport()   # type: ignore
     
     def getAllModelInformation(self, model_id:Optional[str]=None)->dict:
