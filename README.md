@@ -126,6 +126,10 @@ which generates the following plot:
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
 
 # Versions
+* 0.0.8
+    * MultipleModelParameterScan
+    * Refactored to create MultipleModelSimpleSEDML, common code for
+      MultipleModelParameterScan and MultipleModelTimeCourse
 
 * 0.0.7 5/30/2025
     * Single model parameter scan, but cannot execute for steadystate.

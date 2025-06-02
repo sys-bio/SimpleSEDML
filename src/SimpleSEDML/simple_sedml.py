@@ -48,6 +48,7 @@ class SimpleSEDML(object):
                     project_dir:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
                     scan_parameters:Optional[List[str]]=None,
+                    is_time:bool=True,
                     ):
         """
         Args:
@@ -56,6 +57,7 @@ class SimpleSEDML(object):
                 Default is current directory.
             display_variables (Optional[List[str]]): List of variables to be displayed in the report and plots.
             scan_parameters (Optional[List[str]]): List of parameters used in parameter scan.
+            is_time (bool): If True, time is considered a variable in the plots and reports.
         """
         # Initializations
         if project_id is None:
@@ -75,20 +77,24 @@ class SimpleSEDML(object):
         self.report_id = 0
         self.plot_idx = 0
         self.time_course_id = 0
+        self._variable_collection:Optional[VariableCollection] = None
+        self.is_time = is_time
 
     @property
     def variable_collection(self)->VariableCollection:
         """Returns list of display variables. If unspecified, use all variables
-        from the first model.
+        from the first model. Delayed creation because so have a model.
 
         Returns:
             Optional[List[str]]: list of display variables
         """
-        if len(self.model_dct) == 0:
-            raise ValueError("No models defined in the script.")
-        model = list(self.model_dct.values())[0]
-        return VariableCollection(model, display_variables=self.initial_display_variables,
-                scan_parameters=self.scan_parameters)
+        if self._variable_collection is None:
+            if len(self.model_dct) == 0:
+                raise ValueError("No models defined in the script.")
+            model = list(self.model_dct.values())[0]
+            self._variable_collection = VariableCollection(model, display_variables=self.initial_display_variables,
+                    scan_parameters=self.scan_parameters, is_time=self.is_time)
+        return self._variable_collection
 
     @property
     def _model_sources(self)->List[str]:
@@ -138,7 +144,8 @@ class SimpleSEDML(object):
         return te.antimonyToSBML(antimony_str)
 
     def getSEDML(self, is_basename_source:bool=False, display_name_dct:Optional[dict]=None)->str:
-        """Converts the script to a SED-ML string
+        """Converts the script to a SED-ML string. Edits the SED-ML string to use
+        display names for variables.
 
         Args:
             is_basename_source: if True, use the basename of the model source files
@@ -281,18 +288,26 @@ class SimpleSEDML(object):
         task = Task(id, model_id, simulation_id)
         self.task_dct[id] = task
 
-    def addRepeatedTask(self, id:str, subtask_id:str, parameter_df:pd.DataFrame, reset:bool=True):
+    def addRepeatedTask(self, id:str, subtask_id:str, parameter_df:pd.DataFrame,
+                reset:bool=True)->str:
         """Adds a repeated task to the script
 
         Args:
-            repeated_task: RepeatedTask object
+            id: ID of the repeated task
+            subtask_id: ID of the subtask (task to be repeated)
+            parameter_df: DataFrame with parameters to be used in the repeated task
+            reset: if True, reset the parameters to their default values before running the repeated task
+        Returns:
+            str: ID of the repeated task
         """
         self._checkDuplicate(id, cn.REPEATED_TASK)
-        task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
-        self.repeated_task_dct[id] = task
+        repeated_task = RepeatedTask(id, subtask_id, parameter_df, reset=reset)
+        self.repeated_task_dct[id] = repeated_task
         # Add the parameters
         if len(parameter_df.columns) > 0:
             self._addParameters(list(parameter_df.columns))
+        #
+        return repeated_task.id
 
 
     def addPlot(self, x_var:str,
@@ -341,7 +356,7 @@ class SimpleSEDML(object):
             self.report_dct[id].title = title
         self.report_dct[id].addVariables(*report_variables)
     
-    def execute(self, scope_str:Optional[str]=None)->pd.DataFrame:
+    def execute(self)->pd.DataFrame:
         """Executes the script and returns the results as a DataFrame
 
         Args:
@@ -360,7 +375,7 @@ class SimpleSEDML(object):
         if len(self.report_dct) > 1:
             warnings.warn("Reports only generate data for the last task.")
         _ = self.getPhraSEDML()  # Ensure that objects have been created
-        display_variable_dct = self.variable_collection.getDisplayNameDct(scope_str)
+        display_variable_dct = self.variable_collection.getDisplayNameDct()
         sedml_str = self.getSEDML(display_name_dct=display_variable_dct)
         te.executeSEDML(sedml_str)
         return te.getLastReport()   # type: ignore

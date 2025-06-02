@@ -27,13 +27,15 @@ class VariableCollection(object):
                 model:Model,
                 display_variables:Optional[List[str]]=None,
                 scan_parameters:Optional[List[str]]=None,
-                scope_strs:Optional[List[str]]=None) -> None:
+                scope_strs:Optional[List[str]]=None,
+                is_time:bool=True) -> None:
         """
         Args:
             model (Model): _description_
             display_variables (Optional[List[str]], optional): _description_. Defaults to None.
             scan_parameters (Optional[List[str]], optional): Parameters for scans. Defaults to None.
             scope_strs (Optional[List[str]], optional): List of scopes for display variables. Defaults to None.
+            is_time (bool, optional): Whether to include time in the display variables. Defaults to True.
         """
         if scan_parameters is None:
             scan_parameters = []
@@ -41,6 +43,7 @@ class VariableCollection(object):
         self.model = model
         self._display_variables = display_variables
         self.scan_parameters:List[str] = scan_parameters
+        self.is_time = is_time
         if scope_strs is None:
             scope_strs = []
         #
@@ -59,7 +62,7 @@ class VariableCollection(object):
             display_variables = list(model_info.floating_species_dct.keys())
         else:
             display_variables = list(self._display_variables)
-        if not cn.TIME in display_variables:
+        if self.is_time and (not cn.TIME in display_variables):
             display_variables.insert(0, cn.TIME)   # type: ignore
         return display_variables
 
@@ -68,11 +71,21 @@ class VariableCollection(object):
 
     def addDisplayVariables(self, variable_names:List[str]) -> None:
         self.display_variables.extend(variable_names)
+    
+    def addScopeStrs(self, scope_strs:List[str]) -> None:
+        """Adds scope strings to the variable collection.
+
+        Args:
+            scope_strs (List[str]): List of scope strings to add
+        """
+        for scope_str in scope_strs:
+            if not scope_str in self.scope_strs:
+                self.scope_strs.append(scope_str)
 
     def getScopedVariables(self, 
             scope_str:Union[str, List[str]],
             is_time:bool=True, 
-            is_parameters:bool=True,
+            is_scan_parameters:bool=True,
             is_display_variables:bool=True) -> ScopedVariableResult:
         """Adds scope to the variables requested
 
@@ -86,7 +99,7 @@ class VariableCollection(object):
             ScopedVariableResult: Named tuple with two elements:
                 dct (Dict[str, str]): Dictionary of scoped variables
                     key: variable name
-                    value: scoped variable name
+                    value: Names of scoped variables
                 list (List[str]): List of scoped variable names
         """
         ##
@@ -114,7 +127,7 @@ class VariableCollection(object):
         scope_strs.extend(self.scope_strs)
         #
         variables = []
-        if is_parameters:
+        if is_scan_parameters:
             variables.extend(self.scan_parameters)
         if is_display_variables:
             variables.extend(self.display_variables)
@@ -127,54 +140,31 @@ class VariableCollection(object):
         return ScopedVariableResult(dct=result_dct, lst=result_list)
     
     def getDisplayNameDct(self,
-            scope_str:Optional[Union[str, List[str]]]=None) -> Dict[str, str]:
-        """Finds the display names in a model.
+            #scope_str:Optional[Union[str, List[str]]]=None,
+            is_time:bool=True) -> Dict[str, str]:
+        """Finds the display names for display variables and scan parameters.
         If an element does not have a display name, its element id is used.
         This dictionary is used in editing SEDML to use display names.
 
         Args:
-            scope_str (str): string or strings used to scope variables
+            is_time (bool): Whether to include time in the display names
 
         Returns:
             Dict[str, str]: Dictionary of display names
-                key: scoped element_id
+                key: unscoped variable name
                 value: display name
         """
-        # Resolve defaults
-        if scope_str is None:
-            scope_strs = []
-        elif isinstance(scope_str, str):
-            scope_strs = [scope_str]
-        else:
-            scope_strs = scope_str
-        scope_strs.extend(self.scope_strs)
-        # Map element ids to display names
         dct = utils.makeDisplayNameDct(self.model.source)
-        # Map variable names to scoped variable names
-        if len(scope_strs) == 0:  # No scoping
-            scope_dct = {k: k for k in dct.keys()}  # No scoping
-        else:
-            scope_dct = self.getScopedVariables(scope_strs, is_time=False, 
-                    is_parameters=False, is_display_variables=True).dct
-            # Use the first scoped variable name for each variable
-            scope_dct = {k: v[0] for k, v in scope_dct.items() if k in dct}
-        # Map scoped variable names to display names
-        result_dct = {}
-        for key, value in dct.items():
-            if not key in self.display_variables:
-                continue
-            if (not isinstance(value, str)) and (len(value) > 1):
-                warnings.warn(f"Multiple display names found for {key}: {value}. Using the first one.")
-            result_dct[scope_dct[key]] = value[0] if isinstance(value, list) else value
-        #
+        result_dct = {k: v for k, v in dct.items()
+                if (k in self.display_variables) or (k in self.scan_parameters)}
         return result_dct
     
-    def addScopeStrs(self, scope_strs:List[str]) -> None:
-        """Adds scope strings to the variable collection.
+    def getScopedTime(self) -> str:
+        """Get the first scoped time variable.
 
-        Args:
-            scope_strs (List[str]): List of scope strings to add
+        Returns:
+            str: first task ID
         """
-        for scope_str in scope_strs:
-            if not scope_str in self.scope_strs:
-                self.scope_strs.append(scope_str)
+        if len(self.scope_strs) == 0:
+            raise ValueError("No scope strings have been added. Call addScopeStrs() first.")
+        return self.scope_strs[0] + cn.SCOPE_INDICATOR + cn.TIME

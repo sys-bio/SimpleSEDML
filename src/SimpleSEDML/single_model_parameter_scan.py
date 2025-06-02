@@ -112,7 +112,7 @@ class SingleModelParameterScan(SimpleSEDML):
         # Make the parameter variables
         # Add the report
         all_variables_without_time = self.variable_collection.getScopedVariables(
-                self.repeatedtask_id, is_time=False, is_parameters=True,
+                self.repeatedtask_id, is_time=False, is_scan_parameters=True,
                 is_display_variables=True).lst
         self.addReport(*all_variables_without_time, id=self.report_id,
                 title=f"Parameter scan for {self.model_id}")
@@ -121,13 +121,13 @@ class SingleModelParameterScan(SimpleSEDML):
         """Adds a plot for the parameter scan"""
         # Add the plot
         scoped_parameters = self.variable_collection.getScopedVariables(
-                self.repeatedtask_id, is_time=False, is_parameters=True,
+                self.repeatedtask_id, is_time=False, is_scan_parameters=True,
                 is_display_variables=False).lst
         if len(scoped_parameters) > 1:
             warnings.warn("Can only plot one parameter on the x-axis. Plotting the first.")
         x_var = scoped_parameters[0]  # The first parameter is the x-axis
         y_vars = self.variable_collection.getScopedVariables(
-                self.repeatedtask_id, is_time=False, is_parameters=False,
+                self.repeatedtask_id, is_time=False, is_scan_parameters=False,
                 is_display_variables=True).lst
         self.addPlot(x_var=x_var, y_var=y_vars,
                 title=f"Parameter scan for {self.model_id}", 

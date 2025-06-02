@@ -61,14 +61,11 @@ OMEX_PROJECT_DIR = os.path.join(cn.TEST_DIR, "project")
 REMOVE_DIRS = [OMEX_DIR, OMEX_PROJECT_DIR]
 DISPLAY_VARIABLES = ["S1", "S2"]
 NUM_POINT = 100
-MODEL_REFS = [MODEL_SBML, MODEL_ANT]
-
-
-#############################
-
-
-def assemble(*args):
-        return "\n".join([str(arg) for arg in args])
+MODEL_REFS = [MODEL_SBML, MODEL2_ANT]
+START = 1
+END = 15
+NUM_POINT = 350
+MODEL_PARAMETER_DCT = {"k1":0.1, "k2":0.3}
 
 
 #############################
@@ -77,17 +74,26 @@ def assemble(*args):
 class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
+        if IGNORE_TEST:
+            return
         self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.model_refs = MODEL_REFS
-        self.mmtc = MultipleModelTimeCourse(self.model_refs, start=0,
-                end=10, num_point=NUM_POINT,
-                model_parameter_dct=dict(k1=1.5),
+        self.mmtc = MultipleModelTimeCourse(self.model_refs,
+                project_id="test_mmtc",
+                project_dir=cn.TEST_DIR,
+                simulation_type=cn.ST_UNIFORM,
+                start=START,
+                end=END,
+                num_point=NUM_POINT,
                 display_variables=DISPLAY_VARIABLES,
-                is_plot=IS_PLOT)
+                is_plot=IS_PLOT,
+                model_parameter_dct=MODEL_PARAMETER_DCT)
         self.num_model = len(self.model_refs)
 
     def tearDown(self):
+        if IGNORE_TEST:
+            return
         # Remove files if they exist
         self.remove_files.extend(self.mmtc._model_sources)
         self.remove()
@@ -105,18 +111,22 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the constructor of MultipleModelTimeCourse"""
         if IGNORE_TEST:
             return
-        self.assertEqual(self.mmtc.start, 0)
-        self.assertEqual(self.mmtc.end, 10)
-        self.assertEqual(self.mmtc.num_point, 100)
+        self.assertTrue(isinstance(self.mmtc, MultipleModelTimeCourse))
+        self.assertEqual(self.mmtc.project_id, "test_mmtc")
+        self.assertEqual(self.mmtc.project_dir, cn.TEST_DIR)
+        self.assertEqual(self.mmtc.simulation_type, cn.ST_UNIFORM)
+        self.assertEqual(self.mmtc.start, START)
+        self.assertEqual(self.mmtc.end, END)
+        self.assertEqual(self.mmtc.num_point, NUM_POINT)
+        self.assertEqual(self.mmtc.model_parameter_dct, MODEL_PARAMETER_DCT)
         model_refs = list(self.mmtc.model_ref_dct.keys())
-        self.assertEqual(model_refs[0], MODEL_SBML)
-        self.assertEqual(model_refs[1], MODEL_ANT)
+        self.assertEqual(model_refs, MODEL_REFS)
 
     def testMakeSimulationObject(self):
         """Test the makeSimulationObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeSimulationObject()
+        self.mmtc.makeSimulationObject()
         simulation = list(self.mmtc.simulation_dct.values())[0]
         self.assertTrue(isinstance(simulation, Simulation))
         self.assertTrue(str(NUM_POINT-1) in simulation.getPhraSEDML())
@@ -125,14 +135,14 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the makeTaskID method"""
         if IGNORE_TEST:
             return
-        task_id = self.mmtc._makeTaskID(MODEL_ID)
+        task_id = self.mmtc._makeTaskID(MODEL_ID, "t")
         self.assertEqual(task_id, "tmodel1")
 
     def testMakeModelObject(self):
         """Test the makeModelObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelObjects()
+        self.mmtc.makeModelObjects()
         self.assertEqual(len(self.mmtc.model_dct), len(MODEL_REFS))
         trues = [m in ["model0", "model1"] for m in self.mmtc.model_dct.keys()]
         self.assertTrue(all(trues))
@@ -141,8 +151,9 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelObjects()
-        self.mmtc._makeTaskObjects()
+        self.mmtc.makeModelObjects()
+        self.mmtc.makeSimulationObject()
+        self.mmtc.makeTaskObjects()
         task = list(self.mmtc.task_dct.values())[0]
         self.assertTrue(isinstance(task, Task))
         self.assertTrue(task.id == "tmodel0")
@@ -151,7 +162,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelObjects()
+        self.mmtc.makeModelObjects()
         if self.mmtc.initial_display_variables is None:
             raise ValueError("Display variables are not set.")
         self.assertEqual(self.mmtc.initial_display_variables[0], "S1")
@@ -159,7 +170,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         #
         mmtc = MultipleModelTimeCourse(self.model_refs, is_plot=IS_PLOT,
                 display_variables=["S1", "S2", "S3"])
-        mmtc._makeModelObjects()
+        mmtc.makeModelObjects()
         self.remove_files.extend(mmtc._model_sources)
         if mmtc.initial_display_variables is None:
             raise ValueError("Display variables are not set.")
@@ -171,9 +182,10 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelObjects()
-        self.mmtc._makeTaskObjects()
-        self.mmtc._makeReportObject()
+        self.mmtc.makeModelObjects()
+        self.mmtc.makeSimulationObject()
+        self.mmtc.makeTaskObjects()
+        self.mmtc.makeReportObject()
         report_directive = list(self.mmtc.report_dct.values())[0]
         self.assertEqual(str(report_directive).count("S1"), 2)
         self.assertEqual(str(report_directive).count("S2"), 2)
@@ -186,7 +198,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
                     cn.ST_ONESTEP: False,
                     cn.ST_STEADYSTATE: False}
         for simulation_type, is_plot in plot_dct.items():
-            mmtc = MultipleModelTimeCourse(self.model_refs,
+            mmtc = MultipleModelTimeCourse(MODEL_REFS,
                     simulation_type=simulation_type,
                     start=0,
                     end=10,
@@ -200,21 +212,20 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         """Test the makeTaskObject method"""
         if IGNORE_TEST:
             return
-        self.mmtc._makeModelObjects()
-        self.mmtc._makeTaskObjects()
-        self.mmtc._makePlotObjects()
+        self.mmtc.makeSimulationObject()
+        self.mmtc.makeModelObjects()
+        self.mmtc.makeTaskObjects()
+        self.mmtc.makePlotObjects()
         # Variable plots may not appear in sequence
         directives = [str(v) for v in self.mmtc.plot_dct.values()]
         for idx in range(len(self.mmtc.plot_dct)):
             variable_name = "S" + str(idx + 1)
             true = any([variable_name in directive for directive in directives])
-            if not true:
-                import pdb; pdb.set_trace()
             self.assertTrue(true)
 
     def testExecute(self):
-        #if IGNORE_TEST:
-        #    return
+        if IGNORE_TEST:
+            return
         self.evaluate(self.mmtc)
         self.evaluate(self.mmtc)  # Ensure works with repeated calls
 

@@ -1,4 +1,4 @@
-'''Provides comparisons between multiple simulations.'''
+'''Provides comparisons between multiple time course simulations.'''
 
 """
 This module provides a class for comparing multiple models with common variables
@@ -15,18 +15,15 @@ can reference other model definitions that occur later on.
 """
 
 import SimpleSEDML.constants as cn # type: ignore
-from SimpleSEDML.simple_sedml import SimpleSEDML  # type:ignore
+from SimpleSEDML.multiple_model_simple_sedml import MultipleModelSimpleSEDML # type:ignore
 
-import pandas as pd # type:ignore
 from typing import Optional, List, Union
 
 SIM_ID = "mmtc_sim1"
-REPORT_ID = "mmtc_report1"
-PLOT_ID = "mmtc_plot1"
+TASK_PREFIX = "t"
 
-
-class MultipleModelTimeCourse(SimpleSEDML):
-    """Provides comparisons between multiple simulations."""
+class MultipleModelTimeCourse(MultipleModelSimpleSEDML):
+    """Provides comparisons between time course multiple simulations."""
 
     def __init__(self,
                     model_refs:List[str],
@@ -67,66 +64,37 @@ class MultipleModelTimeCourse(SimpleSEDML):
             mmtc = MultipleModelTimeCourse(start=0, end=10, num_step=100,
                 model_refs=[model1_file, model2_file])
             sedml_str = mmtc.getSEDMLString()
-
-        Example 2: Compare parameterizations of the same model
-            mmtc = MultipleModelTimeCourse(start=0, end=10, num_step=100,
-                compared_variables=["S1", "S2", "S3"])
-            mmtc.addModel(model1_str, k1=0.1, k2=0.2)
-            mmtc.addModel(model1_str, k1=0.2, k2=0.2)
-            mmtc.addModel(model1_str, k1=0.1, k2=0.4)
-            mmtc.addModel(model1_str, k1=0.2, k2=0.4)
-            sedml_str = mmtc.getSEDMLString()
         """
         #
-        super().__init__(project_dir=project_dir, 
-                project_id=project_id, display_variables=display_variables)
-        #
-        self.simulation_type = simulation_type
         self.start = start
+        self.simulation_type = simulation_type
         self.end = end
         self.num_step = num_step
         self.num_point = num_point
         self.algorithm = algorithm
-        self.task_model_dct:dict = {}  # Model associated with each task
-        self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
-        self.model_parameter_dct = model_parameter_dct
-        self.is_plot = is_plot
-        # Calculated
-        self.task_ids:list = []
+        #
+        self.is_time = True # Time is a variable in the plots and reports
+        super().__init__(
+                    model_refs=model_refs,
+                    project_id=project_id,
+                    project_dir=project_dir,
+                    display_variables=display_variables,
+                    is_plot=is_plot,
+                    model_parameter_dct=model_parameter_dct)
+        
 
-    @property
-    def model_ids(self)->List[Union[str, None]]: 
-        return list(self.model_ref_dct.values())
-
-    def _makeSimulationObject(self):
+    # Methods that override the parent class methods
+    def makeSimulationObject(self):
         if not SIM_ID in self.simulation_dct:
-            # Create the simulation object
+            # Create a simulation object if it does not exist
             self.addSimulation(SIM_ID,
                     simulation_type=self.simulation_type,
                     start=self.start, end=self.end, num_step=self.num_step,
                     num_point=self.num_point, algorithm=self.algorithm)
     
-    @staticmethod
-    def _makeTaskID(model_id:str)->str:
-        """Make a task ID from the model ID and simulation ID.
-
-        Args:
-            model_id (str): model ID
-
-        Returns:
-            str: task ID
-        """
-        return f"t{model_id}"
-    
-    def _makeModelObjects(self):
-        for model_ref, model_id in self.model_ref_dct.items():
-            if model_id is None:
-                model_id = self.addModel(model_ref, is_overwrite=True,
-                        parameter_dct=self.model_parameter_dct)
-                self.model_ref_dct[model_ref] = model_id
-
-    def _makeTaskObjects(self):
+    def makeTaskObjects(self):
         """Make the task objects for the compared variables.
+        Adds the task IDs to the scopes of the variable collection.
 
         Returns:
             str: task ids
@@ -134,103 +102,13 @@ class MultipleModelTimeCourse(SimpleSEDML):
         if len(self.model_ids) == 0:
             raise ValueError("No models have been added to the simulation.")
         #
+        task_ids = []
         for model_id in self.model_ids:
             if model_id is None:
                 continue
-            task_id = self._makeTaskID(model_id)
+            task_id = self._makeTaskID(model_id, TASK_PREFIX)
             self.task_model_dct[task_id] = model_id
             if not task_id in self.task_dct:
-                self.addTask(task_id, model_id, SIM_ID)
-                self.task_ids.append(task_id)
-        self.variable_collection.addScopeStrs(self.task_ids)
-
-    def _getScopedTime(self)->str:
-        """Get the first scoped time variable.
-
-        Returns:
-            str: first task ID
-        """
-        if len(self.task_ids) == 0:
-            raise ValueError("No tasks have been created. Call _makeTaskObjects() first.")
-        return self.task_ids[0] + cn.SCOPE_INDICATOR + cn.TIME
-
-    def _makeReportObject(self):
-        """Make the report objects for the compared variables.
-        """
-        # Calculate the task ids to consider
-        #
-        if REPORT_ID in self.report_dct:
-            return
-        report_variables = self.variable_collection.getScopedVariables(
-                self.task_ids, is_time=False, is_parameters=True,
-                is_display_variables=True).lst
-        report_variables.insert(0, self._getScopedTime())
-        self.addReport(*report_variables, id=REPORT_ID)
-
-    def _makePlotObjects(self):
-        """Make the report objects for the compared variables.
-        There is one plot for each variable that plots comparisons of the models.
-        """
-        display_variables = list(set(self.variable_collection.display_variables) - set([cn.TIME]))
-        for variable in display_variables:
-            plot_id = "_".join([PLOT_ID + "_" + variable + "-" + m for m in self.task_ids])
-            if not plot_id in self.plot_dct:
-                variables = [t + cn.SCOPE_INDICATOR + variable for t in self.task_ids]
-                self.addPlot(x_var=self._getScopedTime(), y_var=variables,
-                    title=variable, id=plot_id, is_plot=self.is_plot)
-
-    def getPhraSEDML(self, is_basename_source:bool=False)->str:
-        """Construct the PhraSED-ML string. This requires:
-            1. Create simulation and task directives
-            2. Changing the model and report
-        
-        Returns:
-            str: Phrased-ML string
-        """
-        # Make the objects if they have not been created yet
-        self._makeModelObjects()
-        self._makeSimulationObject()
-        self._makeTaskObjects()
-        self._makeReportObject()
-        self._makePlotObjects()
-        #
-        return super().getPhraSEDML(is_basename_source=is_basename_source)
-    
-    def getSEDML(self, is_basename_source:bool=False, display_name_dct:Optional[dict]=None)->str:
-        """Converts the script to a SED-ML string. Special case for MMTC since multiple models.
-
-        Args:
-            is_basename_source: if True, use the basename of the model source files
-            display_name_dct: dictionary of display names for the variables
-
-        Returns:
-            str: SED-ML string
-        Raises:
-            ValueError: if the conversion failsk
-        """
-        # Handle defaults
-        if display_name_dct is None:
-            display_name_dct = {}
-        # Do initial replacements
-        sedml_str = super().getSEDML(is_basename_source=is_basename_source)
-        # Make legend lines be the model IDs
-        for task_id, model_id in self.task_model_dct.items():
-            # Handle time
-            search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{cn.TIME}\""
-            replace_str = f"name=\"{cn.TIME}\""
-            sedml_str = sedml_str.replace(search_str, replace_str)
-            # Handle other variables
-            for raw_name in display_name_dct.keys():
-                # Handle legend lines
-                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{raw_name}\""
-                replace_str = f"name=\"{model_id}\""
-                sedml_str = sedml_str.replace(search_str, replace_str)
-        return sedml_str
-    
-    def __str__(self)->str:
-        """Return PhraSED-ML string.
-        
-        Returns:
-            str:
-        """
-        return self.getPhraSEDML()
+                self.addTask(task_id, model_id, self.simulation_id)
+                task_ids.append(task_id)
+        self.variable_collection.addScopeStrs(task_ids)
