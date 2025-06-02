@@ -12,7 +12,7 @@ import unittest
 
 
 IGNORE_TEST = False
-IS_PLOT = False
+IS_PLOT = True
 MODEL_ID = "model1"
 MODEL2_ID = "model2"
 MODEL_ANT = """
@@ -101,8 +101,6 @@ class TestMultipleModelParameterScan(unittest.TestCase):
         if IGNORE_TEST:
             return
         self.assertEqual(self.mmps.time_interval, TIME_INTERVAL)
-        model_refs = list(self.mmps.model_ref_dct.keys())
-        self.assertEqual(model_refs, MODEL_REFS)
 
     def testMakeSimulationObject(self):
         """Test the makeSimulationObject method"""

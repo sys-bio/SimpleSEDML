@@ -74,8 +74,6 @@ MODEL_PARAMETER_DCT = {"k1":0.1, "k2":0.3}
 class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def setUp(self):
-        if IGNORE_TEST:
-            return
         self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.model_refs = MODEL_REFS
@@ -92,8 +90,6 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.num_model = len(self.model_refs)
 
     def tearDown(self):
-        if IGNORE_TEST:
-            return
         # Remove files if they exist
         self.remove_files.extend(self.mmtc._model_sources)
         self.remove()
@@ -119,8 +115,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.assertEqual(self.mmtc.end, END)
         self.assertEqual(self.mmtc.num_point, NUM_POINT)
         self.assertEqual(self.mmtc.model_parameter_dct, MODEL_PARAMETER_DCT)
-        model_refs = list(self.mmtc.model_ref_dct.keys())
-        self.assertEqual(model_refs, MODEL_REFS)
+        self.assertEqual(self.mmtc.model_refs, MODEL_REFS)
 
     def testMakeSimulationObject(self):
         """Test the makeSimulationObject method"""
@@ -140,8 +135,8 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def testMakeModelObject(self):
         """Test the makeModelObject method"""
-        if IGNORE_TEST:
-            return
+        #if IGNORE_TEST:
+        #    return
         self.mmtc.makeModelObjects()
         self.assertEqual(len(self.mmtc.model_dct), len(MODEL_REFS))
         trues = [m in ["model0", "model1"] for m in self.mmtc.model_dct.keys()]

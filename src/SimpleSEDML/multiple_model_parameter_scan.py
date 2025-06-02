@@ -36,6 +36,7 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
                     time_interval:float=cn.D_TIME_INTERVAL,
                     algorithm:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
+                    title:Optional[str]=None,
                     is_plot:bool=True,
                     model_parameter_dct:Optional[dict]=None,
                     ):
@@ -47,6 +48,9 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
         Args:
             project_dir (Optional[str], optional): Directory to save the files. Defaults to None.
             project_id (Optional[str], optional): Project ID. Defaults to None.
+            model_refs (List[str]): List of model references.
+            scan_parameter_df (pd.DataFrame): DataFrame of parameters to scan over multiple values.
+                    Each column is a parameter name, and the values are the values to scan.
             simulation_type: type of the simulation
                     (e.g., "uniform", "uniform_stochastic", "steadystate", "onestep")
             time_interval (float, optional): time interval for the simulation. Defaults to cn.D_TIME_INTERVAL.
@@ -54,6 +58,7 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
             models (Optional[List[str]], optional): List of model references. Defaults to None.
             variables (Optional[List[str]], optional): List of variables to be compared. Defaults to None.
                 if not provided, all variables in the model are used.
+            title (str, optional): Title of the plot. Defaults to "Multiple Model Comparison".
             is_plot (bool, optional): Whether to plot the results. Defaults to True.
             model_parameter_dct (Optional[dict], optional): Dictionary of model parameters whose values are changed
 
@@ -77,6 +82,7 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
                     is_plot=is_plot,
                     model_parameter_dct=model_parameter_dct,
                     scan_parameters=scan_parameters,
+                    title=title,
                     is_time=False)  # Time is not a variable in the plots or reports
     
     def makeTaskObjects(self):

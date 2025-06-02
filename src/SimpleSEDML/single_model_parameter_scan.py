@@ -82,8 +82,7 @@ class SingleModelParameterScan(SimpleSEDML):
         self.scan_parameter_dct = scan_parameter_dct
         # Set the title
         self.is_plot = is_plot
-        if title is None:
-            title = ""
+        self.title = title
         self.addModel(self.model_id, model_ref=model_ref, ref_type=ref_type,
                 is_overwrite=True,
                 parameter_dct=model_parameter_dct)
@@ -129,8 +128,12 @@ class SingleModelParameterScan(SimpleSEDML):
         y_vars = self.variable_collection.getScopedVariables(
                 self.repeatedtask_id, is_time=False, is_scan_parameters=False,
                 is_display_variables=True).lst
+        if self.title is None:
+            title = f"Parameter scan for {self.model_id}"
+        else:
+            title = self.title
         self.addPlot(x_var=x_var, y_var=y_vars,
-                title=f"Parameter scan for {self.model_id}", 
+                title=title,
                 id=self.plot_id, is_plot=self.is_plot)
         
     def execute(self, *args)-> pd.DataFrame:  # type:ignore

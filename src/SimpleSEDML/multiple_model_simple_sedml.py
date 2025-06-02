@@ -37,6 +37,7 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
                     is_plot:bool=True,
                     model_parameter_dct:Optional[dict]=None,
                     scan_parameters:Optional[List[str]]=None,
+                    title:Optional[str]=None,
                     is_time:bool=True,
                     ):
         """Simulates a collection of models with common variables for the same time course.
@@ -52,6 +53,7 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
                 if not provided, all variables in the model are used.
             is_plot (bool, optional): Whether to plot the results. Defaults to True.
             model_parameter_dct (Optional[dict], optional): Dictionary of model parameters whose values are changed
+            title (str, optional): Title of the plot. Defaults to "Multiple Model Comparison".
             is_time (bool, optional): Whether the simulation is time-based. Defaults to True.
         """
         #
@@ -59,14 +61,24 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
                 project_id=project_id, display_variables=display_variables,
                 scan_parameters=scan_parameters, is_time=is_time)
         #
+        self.model_refs = model_refs
         self.task_model_dct:dict = {}  # Model associated with each task or repeated task
-        self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
+        #self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
         self.model_parameter_dct = model_parameter_dct
+        self.title = title
         self.is_plot = is_plot
 
+    """ @property
+    def model_ref_dct(self)->dict:
+        # Relates the model reference to the model ID. Needed for late creation of models.
+        result_dct = {}
+        for model_id, model in self.model_dct.items():
+            result_dct[model.model_ref] = model_id
+        return result_dct """
+
     @property
-    def model_ids(self)->List[Union[str, None]]: 
-        return list(self.model_ref_dct.values())
+    def model_ids(self)->List[str]:
+        return [m.id for m in self.model_dct.values()] 
     
     @property
     def simulation_id(self)->str:
@@ -89,11 +101,9 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
         return f"{prefix}{model_id}"
     
     def makeModelObjects(self):
-        for model_ref, model_id in self.model_ref_dct.items():
-            if model_id is None:
-                model_id = self.addModel(model_ref, is_overwrite=True,
-                        parameter_dct=self.model_parameter_dct)
-                self.model_ref_dct[model_ref] = model_id
+        for model_ref in self.model_refs:
+            _ = self.addModel(model_ref, is_overwrite=True,
+                    parameter_dct=self.model_parameter_dct)
 
     def _makeReportID(self)->str:
         """Make a report ID for the variable."""
@@ -163,9 +173,17 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
         sedml_str = super().getSEDML(is_basename_source=is_basename_source)
         # Make legend lines be the model IDs
         for task_id, model_id in self.task_model_dct.items():
-            # Handle time
-            search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{cn.TIME}\""
-            replace_str = f"name=\"{cn.TIME}\""
+            # Handle x-axis
+            if self.is_time:
+                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{cn.TIME}\""
+                replace_str = f"name=\"{cn.TIME}\""
+            else:
+                x_var = list(self.variable_collection.getScopedVariables([],
+                        is_time=False,
+                        is_scan_parameters=True,
+                        is_display_variables=False).dct.keys())[0]
+                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{x_var}\""
+                replace_str = f"name=\"{x_var}\""
             sedml_str = sedml_str.replace(search_str, replace_str)
             # Handle other variables
             for raw_name in display_name_dct.keys():
@@ -196,9 +214,13 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
             if variable == x_var:
                 continue
             plot_id = self._makePlotID(variable)
+            if self.title is None:
+                title = variable
+            else:
+                title = f"{self.title}: {variable}"
             if not plot_id in self.plot_dct:
                 self.addPlot(x_var=x_var, y_var=scoped_names,
-                    title=variable, id=plot_id, is_plot=self.is_plot)
+                    title=title, id=plot_id, is_plot=self.is_plot)
     
     def __str__(self)->str:
         """Return PhraSED-ML string.
