@@ -4,6 +4,7 @@ build
 coverage
 jupyterlab
 matplotlib
+nbconvert
 nose2
 numpy
 pandas
