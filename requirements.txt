@@ -8,6 +8,7 @@ nbconvert
 nose2
 numpy
 pandas
+pandoc
 phrasedml
 pip
 pylint
