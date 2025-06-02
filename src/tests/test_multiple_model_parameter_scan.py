@@ -12,7 +12,7 @@ import unittest
 
 
 IGNORE_TEST = False
-IS_PLOT = True
+IS_PLOT = False
 MODEL_ID = "model1"
 MODEL2_ID = "model2"
 MODEL_ANT = """

@@ -206,6 +206,8 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
             is_time=False, 
             is_scan_parameters=True,
             is_display_variables=False).lst
+        if len(scoped_scan_parameters) == 1:
+            raise ValueError("Can only plot one parameter on the x-axis. ")
         if self.is_time:
             x_var = self.variable_collection.getScopedTime()
         else:
@@ -214,10 +216,11 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
             if variable == x_var:
                 continue
             plot_id = self._makePlotID(variable)
+            display_name = self.variable_collection.getDisplayNameDct()[variable]
             if self.title is None:
-                title = variable
+                title = display_name
             else:
-                title = f"{self.title}: {variable}"
+                title = f"{self.title}: {display_name}"
             if not plot_id in self.plot_dct:
                 self.addPlot(x_var=x_var, y_var=scoped_names,
                     title=title, id=plot_id, is_plot=self.is_plot)
