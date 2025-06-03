@@ -46,3 +46,14 @@ D_TIME_INTERVAL = 100
 # File extensions
 ANT_EXT = ".ant"
 XML_EXT = ".xml"
+# Prefixes
+MODEL_PREFIX = "md_"
+SIMULATION_PREFIX = "si_"
+TASK_PREFIX = "ta_"
+SUBTASK_PREFIX = "st_"
+REPEATED_TASK_PREFIX = "rt_"
+REPORT_PREFIX = "re_"
+PLOT_PREFIX = "pl_"
+PREFIX_LEN = len(MODEL_PREFIX)  # Length of the model prefix
+# Models
+WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"

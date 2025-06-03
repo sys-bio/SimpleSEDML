@@ -21,5 +21,4 @@ jobs:
     - name: Run notebook
       run: |
         python scripts/convert_notebook_to_script.py
-        ipython examples/usage_examples.py
-        cd examples; jupyter nbconvert --to pdf usage_examples.ipynb
+        ipython examples/vingnette.py

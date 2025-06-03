@@ -71,12 +71,12 @@ class SingleModelParameterScan(SimpleSEDML):
         super().__init__(project_dir=project_dir, project_id=project_id,
                 display_variables=display_variables)
         # Construct the IDs
-        self.model_id = f"m_{self.project_id}"
-        self.sim_id = f"s_{self.project_id}"
-        self.subtask_id = f"st_{self.project_id}" # base task for the repeated task
-        self.repeatedtask_id = f"rt_{self.project_id}" # repeated task
-        self.report_id = f"r_{self.project_id}"   # type: ignore
-        self.plot_id = f"p_{self.project_id}"  # type: ignore
+        self.model_id = f"{cn.MODEL_PREFIX}{self.project_id}"
+        self.sim_id = f"{cn.SIMULATION_PREFIX}{self.project_id}"
+        self.subtask_id = f"{cn.SUBTASK_PREFIX}{self.project_id}" # base task for the repeated task
+        self.repeatedtask_id = f"{cn.REPEATED_TASK}{self.project_id}" # repeated task
+        self.report_id = f"{cn.REPORT_PREFIX}{self.project_id}"   # type: ignore
+        self.plot_id = f"{cn.PLOT_PREFIX}{self.project_id}"  # type: ignore
         self.simulation_type = simulation_type
         # Create the ScopedCollection
         self.scan_parameter_dct = scan_parameter_dct
@@ -105,6 +105,7 @@ class SingleModelParameterScan(SimpleSEDML):
         # Create the repeated task
         self.addRepeatedTask(self.repeatedtask_id, subtask_id=self.subtask_id,
                 parameter_df=parameter_df, reset=True)
+        # Add the repeated task to the variable collection
         
     def _addReport(self):
         """Adds a report for the parameter scan"""

@@ -167,11 +167,23 @@ class SimpleSEDML(object):
             raise ValueError(phrasedml.getLastError())
         # Update the scope information
         display_name_dct = self.variable_collection.getDisplayNameDct()
+        scope_strs = list(self.task_dct.keys()) + list(self.repeated_task_dct.keys())
+        scoped_name_dct = self.variable_collection.getScopedVariables(scope_strs,
+                is_time=True, is_scan_parameters=True, is_display_variables=True).dct
         # Handle display names
-        for raw_name, display_name in display_name_dct.items():
-            search_str = f"name=\"{raw_name}\""
-            replace_str = f"name=\"{display_name}\""
-            sedml_str = sedml_str.replace(search_str, replace_str)
+        for variable, display_name in display_name_dct.items():
+            is_scope = len([v for v in scoped_name_dct[variable] if v[0:3] == cn.REPEATED_TASK_PREFIX]) > 1
+            for scoped_name in scoped_name_dct[variable]:
+                search_str = f"name=\"{scoped_name}\""
+                if is_scope and (not variable in self.variable_collection.scan_parameters):
+                    # Use the name of the model
+                    name = scoped_name.split(cn.SCOPE_INDICATOR)[0]
+                    name = name[cn.PREFIX_LEN:]  # Remove the prefix
+                else:
+                    # Scan parameters always use just the display name
+                    name = display_name
+                replace_str = f"name=\"{name}\""
+                sedml_str = sedml_str.replace(search_str, replace_str)
         #
         return sedml_str
     

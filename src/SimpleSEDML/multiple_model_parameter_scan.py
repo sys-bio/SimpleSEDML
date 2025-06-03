@@ -21,8 +21,7 @@ import pandas as pd # type: ignore
 from typing import Optional, List, Union
 
 SIM_ID = "mmps_sim1"
-TASK_PREFIX = "t"
-REPEATED_TASK_PREFIX = "rt"
+
 
 class MultipleModelParameterScan(MultipleModelSimpleSEDML):
     """Provides comparisons between time course multiple simulations."""
@@ -100,11 +99,11 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
         for model_id in self.model_ids:
             if model_id is None:
                 continue
-            task_id = self._makeTaskID(model_id, TASK_PREFIX)
+            task_id = self._makeTaskID(model_id, cn.TASK_PREFIX)
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id,simulation_id=SIM_ID)
                 self.task_model_dct[task_id] = task_id
-                repeated_task_id = self._makeTaskID(model_id, REPEATED_TASK_PREFIX)
+                repeated_task_id = self._makeTaskID(model_id, cn.REPEATED_TASK_PREFIX)
                 self.addRepeatedTask(repeated_task_id, task_id,
                         self.scan_parameter_df, reset=True)
                 self.task_model_dct[repeated_task_id] = model_id

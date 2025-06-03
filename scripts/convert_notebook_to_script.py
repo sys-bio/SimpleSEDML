@@ -12,7 +12,7 @@ import os
 import nbformat # type: ignore
 from nbconvert import PythonExporter # type: ignore
 
-NOTEBOOK_NAME = "usage_examples"
+NOTEBOOK_NAME = "vingnette"
 NOTEBOOK_PATH = os.path.join(cn.EXAMPLE_DIR, NOTEBOOK_NAME + ".ipynb")
 SCRIPT_PATH = os.path.join(cn.EXAMPLE_DIR, NOTEBOOK_NAME + ".py")
 ENDING_SCRIPT = """

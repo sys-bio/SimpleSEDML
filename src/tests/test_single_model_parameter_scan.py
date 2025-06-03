@@ -80,6 +80,16 @@ class TestSingleModelTimeCourse(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             smps.execute()
 
+    def testBug(self):
+        """Bug with labels"""
+        if IGNORE_TEST:
+            return
+        smps = SingleModelParameterScan(cn.WOLF_URL, simulation_type="onestep",
+                project_id="Wolf", title="Wolf",
+                time_interval=10, display_variables=["at", "na"],
+                scan_parameter_dct=dict(k1=[50, 550, 5000]), is_plot=IS_PLOT)
+        _ = smps.execute()
+
 
 if __name__ == '__main__':
     unittest.main()

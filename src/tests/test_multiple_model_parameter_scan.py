@@ -135,7 +135,7 @@ class TestMultipleModelParameterScan(unittest.TestCase):
         self.mmps.makeTaskObjects()
         repeated_task = list(self.mmps.repeated_task_dct.values())[0]
         self.assertTrue(isinstance(repeated_task, RepeatedTask))
-        self.assertTrue(repeated_task.id == "rtmodel0")
+        self.assertTrue(repeated_task.id == f"{cn.REPEATED_TASK_PREFIX}model0")
 
     def testMakeReportObject(self):
         """Test the makeTaskObject method"""
