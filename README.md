@@ -128,8 +128,16 @@ which generates the following plot:
 
 # Restrictions
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
+2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
+
+# Installation
+
+    pip install SimpleSEDML
 
 # Versions
+* 0.1.1
+    * Updated pip version
+
 * 0.1.0  6/3/2025
     * MultipleModel constructors have model_refs as optional
     * Many bug fixes
