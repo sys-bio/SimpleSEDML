@@ -18,7 +18,8 @@ and (d) output for data reports and plots.
   
 # Example
 
-See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example.
+See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example. It is also available as
+a [pdf file](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/vingnette.pdf).
 
 Consider the model below in the Antimony language.
 
