@@ -32,6 +32,9 @@ Consider the model below in the Antimony language.
         S2 = 0
         k1 = 1
         k2 = 1
+
+        S1 is "species1"
+        S2 is "species2"
     end
     '''
 
@@ -127,6 +130,10 @@ which generates the following plot:
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
 
 # Versions
+* 0.1.0
+    * MultipleModel constructors have model_refs as optional
+    * Many bug fixes
+
 * 0.0.8
     * MultipleModelParameterScan
     * Refactored to create MultipleModelSimpleSEDML, common code for

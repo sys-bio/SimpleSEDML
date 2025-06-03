@@ -73,8 +73,9 @@ class TestMultipleModelParameterScan(unittest.TestCase):
         self.remove_files = list(REMOVE_FILES)
         self.remove()
         self.model_refs = MODEL_REFS
-        self.mmps = MultipleModelParameterScan(self.model_refs,
+        self.mmps = MultipleModelParameterScan(
                 SCAN_PARAMETER_DF,
+                model_refs=self.model_refs,
                 project_id="test_project",
                 time_interval=TIME_INTERVAL,
                 model_parameter_dct=dict(k1=1.5),
@@ -101,6 +102,15 @@ class TestMultipleModelParameterScan(unittest.TestCase):
         if IGNORE_TEST:
             return
         self.assertEqual(self.mmps.time_interval, TIME_INTERVAL)
+
+    def testNullConstructor(self):
+        """Test the constructor of MultipleModelTimeCourse"""
+        if IGNORE_TEST:
+            return
+        mmps = MultipleModelParameterScan(SCAN_PARAMETER_DF, is_plot=IS_PLOT)
+        for model_ref in MODEL_REFS:
+            mmps.addModel(model_ref)
+        mmps.execute()
 
     def testMakeSimulationObject(self):
         """Test the makeSimulationObject method"""

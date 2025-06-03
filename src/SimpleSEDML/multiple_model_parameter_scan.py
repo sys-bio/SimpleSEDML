@@ -27,8 +27,8 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
     """Provides comparisons between time course multiple simulations."""
 
     def __init__(self,
-                    model_refs:List[str],
                     scan_parameter_df:pd.DataFrame,
+                    model_refs:Optional[List[str]]=None,
                     project_id:Optional[str]=None,
                     simulation_type:str=cn.ST_ONESTEP,
                     project_dir:Optional[str]=None,

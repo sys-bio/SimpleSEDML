@@ -30,7 +30,7 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
     """Provides comparisons between multiple simulations."""
 
     def __init__(self,
-                    model_refs:List[str],
+                    model_refs:Optional[List[str]]=None,
                     project_id:Optional[str]=None,
                     project_dir:Optional[str]=None,
                     display_variables:Optional[List[str]]=None,
@@ -61,6 +61,8 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
                 project_id=project_id, display_variables=display_variables,
                 scan_parameters=scan_parameters, is_time=is_time)
         #
+        if model_refs is None:
+            model_refs = []
         self.model_refs = model_refs
         self.task_model_dct:dict = {}  # Model associated with each task or repeated task
         #self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
