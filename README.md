@@ -1,21 +1,23 @@
 [![Build](https://github.com/sys-bio/SimpleSEDML/actions/workflows/github-actions.yml/badge.svg)](https://github.com/sys-bio/SimpleSBML/actions/workflows/github-actions.yml)
 
 # SimpleSEDML
-A simple API for creating directives in the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/) community standard for describing simulation experiments.
+SimpleSEDML is a simple API for creating directives in the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/) community standard for describing simulation experiments.
 
+``SimpleSEDML`` provides task-oriented APIs that greatly simplify the creation of SED-ML, OMEX files, and validating the results. Some specifics are:
+
+* APIs for running time course simulations (for either a single model or multiple model).
+* APIs for doing parameter scans (for either a single model or multiple models).
+* Flexibility for model representation in that a model source can be a file path or URL and may be in the Antimony language as well as SBML.
+  
 The project provides a python interface to generate SED-ML based on the abstractions provided by [phraSED-ML](https://pmc.ncbi.nlm.nih.gov/articles/PMC5313123/pdf/nihms846540.pdf) to describe simulation experiments. These absractions are: (a) models (including changes in values of model parameters);
 (b) simulations (including deterministic, stochastic, and steady state);
 (c) tasks (which specify simulations to run on tasks and repetitions for changes in parameter values);
 and (d) output for data reports and plots.
 
-``SimpleSEDML`` generalizes the capabilities of ``PhraSEDML`` and simplifies its usage by exploiting the Python environment:
+# Installation
 
-* A model source can be a file path or URL and may be in the Antimony language as well as SBML;
-* Repeated tasks are defined more simply by the use of a ``pandas`` ``DataFrame``.
-* Task oriented convenience methods are provided to simplify the API that provides both plots a data (as a ``pandas`` ``DataFrame``).
-    * Running a time course for a single model file
-    * Running a time course for multiple model files, comparing the results
-  
+    pip install SimpleSEDML
+
 # Example
 
 See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example. It is also available as
@@ -129,10 +131,6 @@ which generates the following plot:
 # Restrictions
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
-
-# Installation
-
-    pip install SimpleSEDML
 
 # Versions
 * 0.1.1
