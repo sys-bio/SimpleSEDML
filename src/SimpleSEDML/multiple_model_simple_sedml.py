@@ -65,7 +65,6 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
             model_refs = []
         self.model_refs = model_refs
         self.task_model_dct:dict = {}  # Model associated with each task or repeated task
-        #self.model_ref_dct:dict = {m: None for m in model_refs}  # type:ignore
         self.model_parameter_dct = model_parameter_dct
         self.title = title
         self.is_plot = is_plot
@@ -188,9 +187,9 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
                 replace_str = f"name=\"{x_var}\""
             sedml_str = sedml_str.replace(search_str, replace_str)
             # Handle other variables
-            for raw_name in display_name_dct.keys():
+            for variable in display_name_dct.keys():
                 # Handle legend lines
-                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{raw_name}\""
+                search_str = f"name=\"{task_id}{cn.SCOPE_INDICATOR}{variable}\""
                 replace_str = f"name=\"{model_id}\""
                 sedml_str = sedml_str.replace(search_str, replace_str)
         return sedml_str

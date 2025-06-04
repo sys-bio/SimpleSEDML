@@ -102,7 +102,7 @@ class MultipleModelParameterScan(MultipleModelSimpleSEDML):
             task_id = self._makeTaskID(model_id, cn.TASK_PREFIX)
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id,simulation_id=SIM_ID)
-                self.task_model_dct[task_id] = task_id
+                self.task_model_dct[task_id] = model_id
                 repeated_task_id = self._makeTaskID(model_id, cn.REPEATED_TASK_PREFIX)
                 self.addRepeatedTask(repeated_task_id, task_id,
                         self.scan_parameter_df, reset=True)

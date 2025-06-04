@@ -493,7 +493,8 @@ class SimpleSEDML(object):
             omex_dir = os.getcwd()
             omex_dir = os.path.join(omex_dir, self.project_id + ".omex")
         # Create the SEDML File
-        sedml_str = self.getSEDML(is_basename_source=True)
+        display_variable_dct = self.variable_collection.getDisplayNameDct()
+        sedml_str = self.getSEDML(display_name_dct=display_variable_dct)
         sedml_path = os.path.join(self.project_dir, self.project_id + ".sedml")
         with open(sedml_path, "w") as f:
             f.write(sedml_str)
