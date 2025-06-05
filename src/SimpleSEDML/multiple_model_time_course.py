@@ -20,7 +20,6 @@ from SimpleSEDML.multiple_model_simple_sedml import MultipleModelSimpleSEDML # t
 from typing import Optional, List, Union
 
 SIM_ID = "mmtc_sim1"
-TASK_PREFIX = "t"
 
 class MultipleModelTimeCourse(MultipleModelSimpleSEDML):
     """Provides comparisons between time course multiple simulations."""
@@ -106,7 +105,7 @@ class MultipleModelTimeCourse(MultipleModelSimpleSEDML):
         for model_id in self.model_ids:
             if model_id is None:
                 continue
-            task_id = self._makeTaskID(model_id, TASK_PREFIX)
+            task_id = self._makeTaskID(model_id, cn.TASK_PREFIX)
             self.task_model_dct[task_id] = model_id
             if not task_id in self.task_dct:
                 self.addTask(task_id, model_id, self.simulation_id)

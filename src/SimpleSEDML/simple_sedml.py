@@ -172,13 +172,17 @@ class SimpleSEDML(object):
                 is_time=True, is_scan_parameters=True, is_display_variables=True).dct
         # Handle display names
         for variable, display_name in display_name_dct.items():
-            is_scope = len([v for v in scoped_name_dct[variable] if v[0:3] == cn.REPEATED_TASK_PREFIX]) > 1
+            # Determine of their are multiple models by having multiple scoped names
+            check_fun = lambda v: (v[0:3] == cn.REPEATED_TASK_PREFIX) or \
+                (v[0:3] == cn.TASK_PREFIX)
+            is_scope = len([v for v in scoped_name_dct[variable] if check_fun(v)]) > 0
+            # Replace scoped variables witht he model name
             for scoped_name in scoped_name_dct[variable]:
                 search_str = f"name=\"{scoped_name}\""
                 if is_scope and (not variable in self.variable_collection.scan_parameters):
                     # Use the name of the model
                     name = scoped_name.split(cn.SCOPE_INDICATOR)[0]
-                    name = name[cn.PREFIX_LEN:]  # Remove the prefix
+                    name = name[cn.PREFIX_LEN:]  # Find the model name
                 else:
                     # Scan parameters always use just the display name
                     name = display_name

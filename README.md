@@ -135,6 +135,7 @@ which generates the following plot:
 # Versions
 * 0.1.1
     * Updated pip version
+    * Fixed bug with legend for MultipleModelTimeCourse
 
 * 0.1.0  6/3/2025
     * MultipleModel constructors have model_refs as optional

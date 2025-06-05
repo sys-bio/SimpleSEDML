@@ -144,8 +144,8 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
 
     def testMakeModelObject(self):
         """Test the makeModelObject method"""
-        #if IGNORE_TEST:
-        #    return
+        if IGNORE_TEST:
+            return
         self.mmtc.makeModelObjects()
         self.assertEqual(len(self.mmtc.model_dct), len(MODEL_REFS))
         trues = [m in ["model0", "model1"] for m in self.mmtc.model_dct.keys()]
@@ -160,7 +160,7 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
         self.mmtc.makeTaskObjects()
         task = list(self.mmtc.task_dct.values())[0]
         self.assertTrue(isinstance(task, Task))
-        self.assertTrue(task.id == "tmodel0")
+        self.assertTrue(task.id == cn.TASK_PREFIX + "model0")
 
     def testDisplayVariables(self):
         """Test the makeTaskObject method"""
@@ -232,6 +232,15 @@ class TestMultipleModelTimeCourse(unittest.TestCase):
             return
         self.evaluate(self.mmtc)
         self.evaluate(self.mmtc)  # Ensure works with repeated calls
+
+    def testLegendBug(self):
+        """Test the legend bug with multiple models"""
+        if IGNORE_TEST:
+            return
+        mmtc = MultipleModelTimeCourse([MODEL_ANT, MODEL2_ANT],
+                model_parameter_dct=dict(k1=10), num_point=100, is_plot=IS_PLOT)
+        mmtc.execute()
+        self.evaluate(mmtc)
 
     def evaluate(self, mmtc:MultipleModelTimeCourse):
         """Evaluate the sedml_str and sbml_str
