@@ -133,7 +133,7 @@ which generates the following plot:
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
 # Versions
-* 0.1.1
+* 0.1.2
     * Updated pip version
     * Fixed bug with legend for MultipleModelTimeCourse
 

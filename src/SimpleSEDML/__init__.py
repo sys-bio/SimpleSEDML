@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
 from SimpleSEDML.single_model_time_course import SingleModelTimeCourse # type:ignore
 from SimpleSEDML.multiple_model_time_course import MultipleModelTimeCourse # type:ignore
