@@ -80,6 +80,7 @@ class Simulation:
                 if num_step != num_point - 1:  # type: ignore
                     raise ValueError("num_point must be num_step + 1")
                 self.num_step = num_step
+            self.num_point = self.num_step + 1   # type: ignore
         # Determine the simulation algorithm
         if algorithm is None:
             if simulation_type == cn.ST_UNIFORM:

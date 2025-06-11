@@ -331,7 +331,7 @@ class SimpleSEDML(object):
                 z_var:Optional[str]=None,
                 title:Optional[str]=None,
                 id:Optional[str]=None,
-                is_plot:bool=True)->None:  
+                is_plot:bool=True)->str:  
         """
         Plot class to represent a plot in the script.
         Args:
@@ -341,18 +341,22 @@ class SimpleSEDML(object):
             title (str, optional): title of the plot. Defaults to None.
             id (str, optional): ID of the plot. Defaults to None.
             is_plot (bool, optional): if True, plot the data. Defaults to True.
+
+        Returns:
+            str: ID of the plot
         """
         if not is_plot:
-            return
+            return ""
         #
         if id is None:
             id = str(self.plot_idx)
             self.plot_idx += 1
         plot = Plot(x_var, y_var, z_var=z_var, title=title, is_plot=is_plot)
         self.plot_dct[id] = plot
+        return id
     
     def addReport(self, *report_variables, id:Optional[str]=None,
-            metadata:Optional[dict]=None, title:str=""):
+            metadata:Optional[dict]=None, title:str="")->str:
         """Adds data to the report
 
         Args:
@@ -360,6 +364,9 @@ class SimpleSEDML(object):
             report_variable: variable to be added to the report
             metadata: metadata for the report variable
             title: title for the report variable
+
+        Returns:
+            str: ID of the report
         """
         if id is None:
             id = str(self.report_id)
@@ -371,6 +378,7 @@ class SimpleSEDML(object):
         if len(title) > 0:
             self.report_dct[id].title = title
         self.report_dct[id].addVariables(*report_variables)
+        return id
     
     def execute(self)->pd.DataFrame:
         """Executes the script and returns the results as a DataFrame
