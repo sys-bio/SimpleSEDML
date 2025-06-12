@@ -1,6 +1,7 @@
 import SimpleSEDML.constants as cn # type: ignore
 
 import libsbml # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 import tempfile
 from typing import Union
 
@@ -55,3 +56,8 @@ def makeDisplayNameDct(sbml_path:str)->dict:
             result_dct[element_id] = element_name
     #
     return result_dct
+
+def showPlot(ax):
+    """Displays the plot if the is an Axis"""
+    if ax is not None:
+        plt.show()

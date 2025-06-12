@@ -21,7 +21,8 @@ from SimpleSEDML.simple_sedml import SimpleSEDML  # type:ignore
 from SimpleSEDML.simulation import Simulation  # type:ignore
 
 import pandas as pd # type:ignore
-from typing import Optional, List, Union
+from typing import Optional, List
+import warnings
 
 REPORT_ID = "report"
 PLOT_ID = "plot"
@@ -207,8 +208,8 @@ class MultipleModelSimpleSEDML(SimpleSEDML):
             is_time=False, 
             is_scan_parameters=True,
             is_display_variables=False).lst
-        if len(scoped_scan_parameters) == 1:
-            raise ValueError("Can only plot one parameter on the x-axis. ")
+        if len(scoped_scan_parameters) > 1:
+            warnings.warn("Can only plot one parameter on the x-axis. ")
         if self.is_time:
             x_var = self.variable_collection.getScopedTime()
         else:

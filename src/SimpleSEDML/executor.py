@@ -4,14 +4,17 @@ import SimpleSEDML.constants as cn # type: ignore
 from SimpleSEDML.simple_sedml import SimpleSEDML # type:ignore
 
 import collections # type: ignore
-import matplotlib # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 import numpy as np # type: ignore
-from typing import Optional, List, Union, Any
 import pandas as pd # type: ignore
+from typing import Optional, List, Union, Any
+import warnings # type: ignore
+
+# Handle multiple scan parameters by using color/markers and a legend
 
 
 ScopeResult = collections.namedtuple('ScopeResult', ['task_ids', 'repeated_task_ids'])
+PlotResult = collections.namedtuple('PlotResult', ['ax', 'plot_ids'])
 
 
 class Executor(object):
@@ -19,13 +22,16 @@ class Executor(object):
 
     def __init__(self, simple: SimpleSEDML):
         """Initializes the executor with a SimpleSEDML object.
+        Must have completed all API calls before running executor. Subsequent API calls
+        are ignored.
 
         Args:
             simple (SimpleSEDML): The SimpleSEDML object to execute.
         """
         self.simple = simple
 
-    def executeTask(self, task_id: str, scan_parameter_dct:Optional[dict]=None)->pd.DataFrame:
+    def executeTask(self, task_id:Optional[str]=None,
+            scan_parameter_dct:Optional[dict]=None)->pd.DataFrame:
         """Executes a task by its ID and returns the results as a DataFrame.
         The result is saved in self.result_df.
 
@@ -36,11 +42,20 @@ class Executor(object):
         Returns:
             pd.DataFrame: The results of the task execution.
         """
+        if (len(self.simple.task_dct) == 0) and (len(self.simple.repeated_task_dct) == 0):
+            _ = self.simple.getPhraSEDML()  # Ensure that the object dictionaries are populated
         # Initialization
         if scan_parameter_dct is None:
             parameter_dct:dict = {}
         else:
             parameter_dct = dict(scan_parameter_dct)  # type: ignore
+        #
+        if task_id is None:
+            if len(self.simple.task_dct) == 0:
+                raise ValueError("No task ID provided and no tasks available.")
+            if len(self.simple.task_dct) > 1:
+                raise ValueError("Multiple tasks available, please provide a task ID.")
+            task_id = list(self.simple.task_dct.keys())[0]
         task = self.simple.task_dct.get(task_id, None)
         if not task:
             raise ValueError(f"Task with ID {task_id} not found.")
@@ -58,7 +73,8 @@ class Executor(object):
             roadrunner[parameter] = value
         # Run the simulation
         if simulation.simulation_type == cn.ST_ONESTEP:
-            result_arr = roadrunner.simulate(simulation.start, simulation.end, 1,
+            end = simulation.start + simulation.time_interval
+            result_arr = roadrunner.simulate(simulation.start, end, 2,
                     selections=selections)
         elif simulation.simulation_type == cn.ST_UNIFORM:
             result_arr = roadrunner.simulate(simulation.start, simulation.end,
@@ -67,13 +83,15 @@ class Executor(object):
             result_arr = roadrunner.simulate(simulation.start, simulation.end,
                     simulation.num_point, selections=selections)
         elif simulation.simulation_type == cn.ST_STEADYSTATE:
-            result_arr = roadrunner.steadyState(selections=selections)
+            roadrunner.steadyStateSelections = selections
+            result_arr = roadrunner.getSteadyStateValues()
+            result_arr = np.reshape(result_arr, (1, len(result_arr)))  # Convert to 2D array
         else:
             raise ValueError(f"Unknown simulation type: {simulation.simulation_type}")
         # Convert to a DataFrame
         return pd.DataFrame(result_arr, columns=selections)
 
-    def executeRepeatedTask(self, repeated_task_id: str)-> pd.DataFrame:
+    def executeRepeatedTask(self, repeated_task_id:Optional[str]=None)-> pd.DataFrame:
         """Executes a repeated task by its ID and returns the results as a DataFrame.
 
         Args:
@@ -82,6 +100,16 @@ class Executor(object):
         Returns:
             pd.DataFrame: The results of the repeated task execution.
         """
+        if (len(self.simple.task_dct) == 0) and (len(self.simple.repeated_task_dct) == 0):
+            _ = self.simple.getPhraSEDML()  # Ensure that the object dictionaries are populated
+        # Initialization
+        if repeated_task_id is None:
+            if len(self.simple.repeated_task_dct) == 0:
+                raise ValueError("No repeated task ID provided and no repeated tasks available.")
+            if len(self.simple.repeated_task_dct) > 1:
+                raise ValueError("Multiple repeated tasks available, please provide a repeated task ID.")
+            repeated_task_id = list(self.simple.repeated_task_dct.keys())[0]
+        #
         repeated_task = self.simple.repeated_task_dct.get(repeated_task_id, None)
         if not repeated_task:
             raise ValueError(f"Repeated task with ID {repeated_task_id} not found.")
@@ -117,15 +145,15 @@ class Executor(object):
                     if scope_id in self.simple.task_dct:
                         task_ids.append(scope_id)
                     elif scope_id in self.simple.repeated_task_dct:
-                        repeated_task_ids = self.simple.repeated_task_dct[scope_id]
+                        repeated_task_ids.append(scope_id)
                     else:
                         raise ValueError(f"Scope ID {scope_id} not found in tasks or repeated tasks.")
             task_ids = list(set(task_ids))  # Remove duplicates
             repeated_task_ids = list(set(repeated_task_ids))
             return ScopeResult(task_ids=task_ids, repeated_task_ids=repeated_task_ids)
     
-    def executePlot2d(self, plot_id: str, ax=None, kind:str='line', is_plot:bool=True
-            )->Any:
+    def executePlot2d(self, plot_id:Optional[str]=None,
+            ax=None, kind:str='line', is_plot:bool=True)->PlotResult:
         """Executes a 2D plot
 
         Args:
@@ -134,8 +162,21 @@ class Executor(object):
             kind (str, optional): Type of plot to create. Defaults to 'line'.
 
         Returns:
-            Matplotlib Axes: The axes of the plot.
+            PlotResult:
+                ax (Axes): Matplotlib Axes object with the plot
+                plot_ids (List[str]): List of plot IDs present in the SimpleSEDML object
         """
+        if (len(self.simple.task_dct) == 0) and (len(self.simple.repeated_task_dct) == 0):
+            _ = self.simple.getPhraSEDML()  # Ensure that the object dictionaries are populated
+        # Initialization
+        plot_ids = list(self.simple.plot_dct.keys())
+        if plot_id is None:
+            if len(self.simple.plot_dct) == 0:
+                raise ValueError("No plot ID provided and no plots available.")
+            if len(self.simple.plot_dct) > 1:
+                warnings.warn("Multiple plots available. Plotting the first.")
+            plot_id = plot_ids[0]
+        # Get the plot object
         plot = self.simple.plot_dct.get(plot_id, None)
         if not plot:
             raise ValueError(f"Plot with ID {plot_id} not found.")
@@ -149,9 +190,9 @@ class Executor(object):
             y_vars = plot.y_var
         y_vars = y_vars
         # Run the tasks that produce data
-        variables = [x_var]
-        variables.extend(y_vars)
-        scope_result = self.getScopeResult(variables)
+        scoped_variables = [x_var]
+        scoped_variables.extend(y_vars)
+        scope_result = self.getScopeResult(scoped_variables)
         dfs:list = []
         for task_id in scope_result.task_ids:
             dfs.append(self.executeTask(task_id))
@@ -160,18 +201,25 @@ class Executor(object):
         data_df = pd.concat(dfs, axis=1, ignore_index=True)
         data_df.columns = dfs[0].columns
         # Construct the plot dataframe
-        plot_df = data_df[variables].copy()
-        columns = list(variables)
-        columns.remove(x_var)  # Remove x_var from the columns
-        columns.insert(0, x_var)  # Insert x_var at the beginning
-        display_name_dct = self.simple.variable_collection.getDisplayNameDct()
-        plot_df = plot_df[columns]
-        new_columns = [display_name_dct.get(col, col) for col in columns]
-        plot_df.columns = new_columns
+        scoped_unscoped_dct = self.simple.variable_collection.getInvertedScopeDct()
+        display_dct = self.simple.variable_collection.getDisplayNameDct()
+        columns = [scoped_unscoped_dct[v] for v in scoped_variables]
+        unscoped_x_var = scoped_unscoped_dct[x_var]
+        columns.remove(unscoped_x_var)  # Remove x_var from the columns
+        columns.insert(0, unscoped_x_var)  # Insert x_var at the beginning
+        plot_df = data_df[columns]
+        display_names = [display_dct.get(v, v) for v in columns]
+        plot_df.columns = display_names
         # Do the plot
         if ax is None:
             _, ax = plt.subplots()
-        ax = plot_df.plot(x=columns[0], y=new_columns[1:], kind=kind, ax=ax)  # type: ignore
         if is_plot:
-            plt.show()
-        return ax
+            ax = plot_df.plot(x=columns[0], y=display_names[1:], kind=kind, ax=ax)  # type: ignore
+        if not is_plot:
+            ax.clear()
+            ax = None
+        return PlotResult(ax=ax, plot_ids=plot_ids)
+    
+    def cleanUp(self):
+        """Cleans up the executor by clearing the SimpleSEDML object."""
+        self.simple.cleanUp()

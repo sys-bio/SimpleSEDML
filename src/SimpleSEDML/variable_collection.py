@@ -168,3 +168,50 @@ class VariableCollection(object):
         if len(self.scope_strs) == 0:
             raise ValueError("No scope strings have been added. Call addScopeStrs() first.")
         return self.scope_strs[0] + cn.SCOPE_INDICATOR + cn.TIME
+    
+    def getScopedDisplayDct(self, scoped_variables:Optional[List[str]]=None)->Dict[str, str]:
+        """Dictionary maps scoped variable to its display name.
+
+        Args:
+            scoped_variables (List[str]): List of scoped variables to get display names
+                If None, all display variables are used.
+
+        Returns:
+            Dict[str, str]: Dictionary of scoped display variables
+                key: scoped variable name
+                value: displayname
+        """
+        if scoped_variables is None:
+            scoped_variables = self.display_variables
+        #
+        scoped_display_dct = {}
+        scope_dct = self.getScopedVariables([]).dct
+        display_dct = self.getDisplayNameDct()
+        for scoped_var in scoped_variables:
+            for unscoped_var, scoped_vars in scope_dct.items():
+                if scoped_var in scoped_vars:
+                    scoped_display_dct[scoped_var] = display_dct.get(unscoped_var,
+                            unscoped_var)
+        return scoped_display_dct
+
+    def getInvertedScopeDct(self,  scope_strs:Optional[List[str]]=None) -> Dict[str, str]:
+        """Dictionary maps scoped variable to unscoped variable.
+
+        Args:
+            scope_strs (List[str]): List of scope strings
+
+        Returns:
+            Dict[str, str]: Dictionary of scoped display variables
+                key: scoped variable name
+                value: unscoped variable name 
+        """
+        if scope_strs is None:
+            scope_strs = []
+        scoped_dct = self.getScopedVariables(scope_strs).dct
+        result_dct = {}
+        #
+        for unscoped_var, scoped_vars in scoped_dct.items():
+            for scoped_var in scoped_vars:
+                if not scoped_var in result_dct:
+                    result_dct[scoped_var] = unscoped_var
+        return result_dct
