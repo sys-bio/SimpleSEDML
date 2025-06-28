@@ -57,14 +57,15 @@ class SingleModelTimeCourse(SimpleSEDML):
         self.addModel(model_id, model_ref=model_ref, ref_type=ref_type, is_overwrite=True,
                 parameter_dct=model_parameter_dct)
         self.model = self.model_dct[model_id]
-        if display_variables is None:
-            model_information = ModelInformation.getFromModel(self.model)
-            display_variables = list(model_information.floating_species_dct.keys())
-            display_variables.insert(0, "time")   # type: ignore
         self.addSimulation(sim_id, simulation_type=simulation_type,
                 start=start, end=end, num_step=num_step, num_point=num_point,
                 algorithm=algorithm)
         self.addTask(task_id, model_id, sim_id)
+        if display_variables is None:
+            model_information = ModelInformation.getFromModel(self.model)
+            display_variables = list(model_information.floating_species_dct.keys())
+            display_variables = [task_id + cn.SCOPE_INDICATOR + var for var in display_variables]
+            display_variables.insert(0, "time")   # type: ignore
         self.addReport(*display_variables, title=title)
         x1_var = display_variables[0]
         y_vars = display_variables[1:]

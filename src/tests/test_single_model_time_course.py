@@ -10,13 +10,15 @@ import tellurium as te # type: ignore
 
 
 IGNORE_TEST = False
-IS_PLOT = False
+IS_PLOT = True
 MODEL_NAME = "model1"
 MODEL_ANT = """
 model %s
     S1 -> S2; k1*S1
     S2 -> S3; k2*S2
     S3 -> S4; k3*S3
+
+    S1 is "Species 1"
 
     k1 = 0.1
     k2 = 0.2
