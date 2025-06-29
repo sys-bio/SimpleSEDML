@@ -20,7 +20,7 @@ jobs:
     - name: Run tests
       run: |
         #cd src; nose2 --with-coverage tests
-        cd src; python src/tests/test_single_model_time_course.py
+        cd src; python tests/test_single_model_time_course.py
     - name: Run notebook
       run: |
         python scripts/convert_notebook_to_script.py
