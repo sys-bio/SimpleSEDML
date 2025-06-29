@@ -20,6 +20,7 @@ jobs:
     - name: Run tests
       run: |
         #cd src; nose2 --with-coverage tests
+        echo $PYTHONPATH
         cd src; python tests/test_single_model_time_course.py
     - name: Run notebook
       run: |
