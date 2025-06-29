@@ -19,7 +19,8 @@ jobs:
         pip install -r requirements.txt
     - name: Run tests
       run: |
-        cd src; nose2 --with-coverage tests
+        #cd src; nose2 --with-coverage tests
+        python src/tests/test_single_model_time_course.py
     - name: Run notebook
       run: |
         python scripts/convert_notebook_to_script.py

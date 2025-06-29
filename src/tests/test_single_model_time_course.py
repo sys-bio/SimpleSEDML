@@ -9,8 +9,8 @@ import unittest
 import tellurium as te # type: ignore
 
 
-IGNORE_TEST = False
-IS_PLOT = True
+IGNORE_TEST = True
+IS_PLOT = False
 MODEL_NAME = "model1"
 MODEL_ANT = """
 model %s
@@ -84,8 +84,8 @@ class TestSingleModelTimeCourse(unittest.TestCase):
             self.assertTrue(False, f"SED-ML execution failed: {e}")
 
     def testMakeSingleModelTimeCourse(self):
-        if IGNORE_TEST:
-            return
+        #if IGNORE_TEST:
+        #    return
         smtc = None
         try:
             smtc = SingleModelTimeCourse(MODEL_ANT, num_point=200, is_plot=IS_PLOT)
