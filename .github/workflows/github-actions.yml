@@ -2,7 +2,7 @@ name: Continous integration
 on: [push]
 jobs:
   Run-tests:
-    runs-on: windows-latest # Changed from ubuntu-latest to windows-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.9
@@ -10,11 +10,15 @@ jobs:
       with:
           python-version: '3.9'
       env:
-          AGENT_TOOLSDIRECTORY: C:\hostedtoolcache\ # Updated path for Windows
+          AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
     - name: Install
       run: |
         pip install --upgrade pip
-        pip install SimpleSEDML
+        pip install -r requirements.txt
     - name: Run tests
       run: |
-        python scripts/bug.py
+        cd src; nose2 --with-coverage tests
+    - name: Run notebook
+      run: |
+        python scripts/convert_notebook_to_script.py
+        ipython examples/vingnette.py
