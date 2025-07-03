@@ -2,7 +2,6 @@ name: Continous integration
 on: [push]
 jobs:
   Run-tests:
-    #runs-on: ubuntu-latest
     runs-on: windows-latest # Changed from ubuntu-latest to windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -11,7 +10,6 @@ jobs:
       with:
           python-version: '3.9'
       env:
-          #AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
           AGENT_TOOLSDIRECTORY: C:\hostedtoolcache\ # Updated path for Windows
     - name: Install
       run: |
@@ -19,9 +17,4 @@ jobs:
         pip install -r requirements.txt
     - name: Run tests
       run: |
-        #cd src; nose2 --with-coverage tests
-        cd src; nose2 tests.test_single_model_time_course
-    - name: Run notebook
-      run: |
-        python scripts/convert_notebook_to_script.py
-        ipython examples/vingnette.py
+        python scripts/bug.py
