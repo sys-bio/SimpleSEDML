@@ -122,7 +122,7 @@ The PhraSED-ML to generate the above SED-ML is displayed below (obtained using `
 
 Executing this SED-ML is done by
 
-    smtc.executeSEDML()
+    smtc.execute()
 
 which generates the following plot:
 
