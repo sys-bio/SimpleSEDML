@@ -1,6 +1,6 @@
 [project]
 name = "SimpleSEDML"
-version = "0.1.10"
+version = "0.2.0"
 description = "Python Subnet Discovery for Systems Biology"
 authors = [{ name = "Joseph Hellerstein", email = "joseph.hellerstein@gmail.com" }, {name = "Herbert S Sauro", email = "hsauro@uw.edu"}]
 license = { file = "LICENSE" }
