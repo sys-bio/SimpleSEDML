@@ -15,7 +15,7 @@ pylint
 python-libsbml
 requests
 tabulate
-tellurium
+tellurium>=2.2.11.2
 toml
 twine
 urllib3

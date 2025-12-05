@@ -133,6 +133,9 @@ which generates the following plot:
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
 # Versions
+* 0.2.00 12/5/2025
+    * Change in requirements for Windows
+    * Updated README for missing .png
 * 0.1.10 6/12/2025
     * Implemented Executor for non-SEDML execution
 
