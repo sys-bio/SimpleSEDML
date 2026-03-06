@@ -1,6 +1,5 @@
-[![Build](https://github.com/sys-bio/SimpleSEDML/actions/workflows/github-actions.yml/badge.svg)](https://github.com/sys-bio/SimpleSBML/actions/workflows/github-actions.yml)
-
 # SimpleSEDML
+
 SimpleSEDML is a simple API for creating directives in the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/) community standard for describing simulation experiments.
 
 ``SimpleSEDML`` provides task-oriented APIs that greatly simplify the creation of SED-ML, OMEX files, and validating the results. Some specifics are:
@@ -8,17 +7,17 @@ SimpleSEDML is a simple API for creating directives in the [Simulation Experimen
 * APIs for running time course simulations (for either a single model or multiple model).
 * APIs for doing parameter scans (for either a single model or multiple models).
 * Flexibility for model representation in that a model source can be a file path or URL and may be in the Antimony language as well as SBML.
-  
+
 The project provides a python interface to generate SED-ML based on the abstractions provided by [phraSED-ML](https://pmc.ncbi.nlm.nih.gov/articles/PMC5313123/pdf/nihms846540.pdf) to describe simulation experiments. These absractions are: (a) models (including changes in values of model parameters);
 (b) simulations (including deterministic, stochastic, and steady state);
 (c) tasks (which specify simulations to run on tasks and repetitions for changes in parameter values);
 and (d) output for data reports and plots.
 
-# Installation
+## Installation
 
     pip install SimpleSEDML
 
-# Example
+## Example
 
 See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example. It is also available as
 a [pdf file](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/vingnette.pdf).
@@ -39,7 +38,6 @@ Consider the model below in the Antimony language.
         S2 is "species2"
     end
     '''
-
 
 We want to simulate this model and do a time course plot of all floating species in the model.
 
@@ -128,42 +126,45 @@ which generates the following plot:
 
 <img src="examples/simple_sedml_plot.png" style="width:300px;height:300px;">
 
-# Restrictions
+## Restrictions
+
 1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
-# Versions
+## Versions
+
 * 0.2.00 12/5/2025
-    * Change in requirements for Windows
-    * Updated README for missing .png
+  * Change in requirements for Windows
+  * Updated README for missing .png
+
 * 0.1.10 6/12/2025
-    * Implemented Executor for non-SEDML execution
+  * Implemented Executor for non-SEDML execution
 
 * 0.1.2 6/8/2025
-    * Updated pip version
-    * Fixed bug with legend for MultipleModelTimeCourse
+  * Updated pip version
+  * Fixed bug with legend for MultipleModelTimeCourse
 
 * 0.1.0  6/3/2025
-    * MultipleModel constructors have model_refs as optional
-    * Many bug fixes
+  * MultipleModel constructors have model_refs as optional
+  * Many bug fixes
 
 * 0.0.8
-    * MultipleModelParameterScan
-    * Refactored to create MultipleModelSimpleSEDML, common code for
-      MultipleModelParameterScan and MultipleModelTimeCourse
+  * MultipleModelParameterScan
+  * Refactored to create MultipleModelSimpleSEDML, common code for
+    MultipleModelParameterScan and MultipleModelTimeCourse
 
 * 0.0.7 5/30/2025
-    * Single model parameter scan, but cannot execute for steadystate.
-    * Display variables are used on plots.
+  * Single model parameter scan, but cannot execute for steadystate.
+  * Display variables are used on plots.
 
 * 0.0.6  5/27/2025
-    * Time courses simulate onestep, stochastic, steadystate
-    * Refactored API.
+  * Time courses simulate onestep, stochastic, steadystate
+  * Refactored API.
 
 * 0.0.5 5/24/2025
-    * Added ".xml" to SBML files
-    * Model files are created in a target directory
-    * Files created during tests are eliminated
-    * Create separate test module for testing SingleModelTimeCourse
-    * \_\_init\_\_ exposes ``makeSingleModelTimeCourse``, ``makeMultipleModelTimeCourse``, ``getModelInformtation``, ``SimpleSEDML``.
-    * Create an OMEX file and validate it
+  * Added ".xml" to SBML files
+  * Model files are created in a target directory
+  * Files created during tests are eliminated
+  * Create separate test module for testing SingleModelTimeCourse
+  * \_\_init\_\_ exposes ``makeSingleModelTimeCourse``, ``makeMultipleModelTimeCourse``, ``getModelInformtation``, ``SimpleSEDML``.
+  * Create an OMEX file and validate it

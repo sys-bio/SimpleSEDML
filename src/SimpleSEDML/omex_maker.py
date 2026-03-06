@@ -17,8 +17,7 @@ MANIFEST_FILE = "manifest.xml"
 SEDML_FILE_PAT = "%s.sedml"
 METADATA_FILE = "metadata.rdf"
 
-METADATA_STR = """
-<?xml version="1.0" encoding="UTF-8"?> 
+METADATA_STR = """<?xml version="1.0" encoding="UTF-8"?> 
         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
             xmlns:dcterms="http://purl.org/dc/terms/" 
             xmlns:vCard="http://www.w3.org/2006/vcard/ns#" 
