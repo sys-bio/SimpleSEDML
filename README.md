@@ -124,7 +124,7 @@ Executing this SED-ML is done by
 
 which generates the following plot:
 
-<img src="examples/simple_sedml_plot.png" style="width:300px;height:300px;">
+<img src="examples/simple_sedml_plot.png" alt="Time course simulation plot" style="width:300px;height:300px;">
 
 ## Restrictions
 
@@ -132,6 +132,11 @@ which generates the following plot:
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
 ## Versions
+
+* 0.2.10 3/6/2026
+  * Eliminated blank line at top of metadata.rdf
+  * Fixed errors in markdown in README.md
+  * Added alt-text to .png in README.md
 
 * 0.2.00 12/5/2025
   * Change in requirements for Windows

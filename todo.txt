@@ -1,3 +1,4 @@
 1. SimpleSEDML should know scopes so that lower level routines can
    perform their functions, especially processing display names (e.g.,
    getSEDML())
+2. redo package since have changed dependencies

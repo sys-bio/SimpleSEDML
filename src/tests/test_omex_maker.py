@@ -90,6 +90,7 @@ class TestMakeOmex(unittest.TestCase):
         self.remove()
 
     def remove(self):
+        return
         # Remove files if they exist
         for file in self.remove_files:
             if os.path.exists(file):

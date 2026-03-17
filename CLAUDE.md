@@ -9,6 +9,7 @@ SimpleSEDML is a Python library that provides a simplified API for creating [SED
 ## Commands
 
 ### Install
+
 ```bash
 pip install -e .
 # or install all dependencies:
@@ -16,6 +17,7 @@ pip install -r requirements.txt
 ```
 
 ### Run tests
+
 ```bash
 # Run all tests
 python -m pytest src/tests/
@@ -33,6 +35,7 @@ python -m nose2 -s src/tests
 **Note:** Many test files have `IGNORE_TEST = True` at the top with individual tests decorated with `@unittest.skipIf(IGNORE_TEST, "...")`. Set `IS_PLOT = False` in test files to suppress plot windows during testing.
 
 ### Build and distribute
+
 ```bash
 python3 -m build --verbose
 python3 -m twine upload dist/*
@@ -45,7 +48,7 @@ python3 -m twine upload dist/*
 
 The library is organized around a core `SimpleSEDML` class that maps directly to phraSED-ML concepts:
 
-```
+```text
 SimpleSEDML (simple_sedml.py)        ← Core class, manages dicts of SED-ML components
 ├── SingleModelTimeCourse             ← Single model time course (convenience wrapper)
 ├── MultipleModelSimpleSEDML          ← Abstract base for multi-model tasks
@@ -59,6 +62,7 @@ Executor (executor.py)                ← Non-SEDML execution using roadrunner d
 ### SED-ML Component Modules
 
 Each SED-ML construct has its own module:
+
 - `model.py` — `Model`: resolves model refs (Antimony string/file, SBML string/file/URL) to SBML files in `project_dir`
 - `simulation.py` — `Simulation`: uniform, stochastic, steadystate, onestep
 - `task.py` — `Task`, `RepeatedTask`: tasks and parameter sweeps
@@ -75,7 +79,7 @@ Each SED-ML construct has its own module:
 3. `getSEDML()` calls `phrasedml.convertString()` to produce SED-ML XML, then patches display names
 4. `execute()` calls `tellurium.executeSEDML()` on the resulting SED-ML
 
-**Alternative path:** `Executor` bypasses SED-ML/phraSED-ML entirely, using roadrunner directly via `model.roadrunner` for `executeTask()` and `executeRepeatedTask()`.
+**Alternative path:** `Executor(simple)` wraps an existing `SimpleSEDML` instance and bypasses SED-ML/phraSED-ML entirely, using roadrunner directly. It provides `executeTask()`, `executeRepeatedTask()`, and `executePlot2d()`. Component dictionaries are auto-populated (by calling `getPhraSEDML()`) if they are empty when an execute method is called.
 
 ### Variable Scoping
 
@@ -99,6 +103,20 @@ Each `SimpleSEDML` instance writes model SBML files to a `project_dir` (default:
 ID prefixes used internally: `md_` (model), `si_` (simulation), `ta_` (task), `rt_` (repeated task), `st_` (subtask), `re_` (report), `pl_` (plot). All prefixes have `PREFIX_LEN = 3` characters.
 
 Simulation types: `"uniform"` (CVODE), `"uniform_stochastic"` (Gillespie), `"steadystate"`, `"onestep"`.
+
+Default simulation values: `D_START=0.0`, `D_END=5.0`, `D_NUM_STEP=10` (so `D_NUM_POINT=11`).
+
+### Public API (`__init__.py`)
+
+All `make*` functions are aliases for the corresponding class constructors and return objects with `getSEDML()`, `getPhraSEDML()`, `execute()`, and `makeOMEXFile()` methods:
+
+- `makeSingleModelTimeCourse` → `SingleModelTimeCourse`
+- `makeMultipleModelTimeCourse` → `MultipleModelTimeCourse`
+- `makeSingleModelParameterScan` → `SingleModelParameterScan`
+- `makeMultipleModelParameterScan` → `MultipleModelParameterScan`
+- `makeExecutor` → `Executor`
+- `getModelInformation` → `ModelInformation.get`
+- `cn` — the `constants` module, imported as `SimpleSEDML.constants`
 
 ## Known Restrictions
 

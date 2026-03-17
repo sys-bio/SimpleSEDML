@@ -1,7 +1,9 @@
 biomodels_qc
 biosimulators_utils
 build
+brotli
 coverage
+gmpy2
 jupyterlab
 matplotlib
 nbconvert
@@ -14,8 +16,11 @@ pip
 pylint
 python-libsbml
 requests
+setuptools==81.0.0
+setuptools
+sbmlxdf
 tabulate
-tellurium>=2.2.11.2
+tellurium
 toml
 twine
 urllib3
