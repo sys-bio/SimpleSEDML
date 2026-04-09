@@ -32,7 +32,7 @@ ANT_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID + ".ant")
 WOLF_ID = "Wolf2000_Glycolytic_Oscillations"
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations" + ".xml"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_ID, ANT_FILE_PATH]
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
+WOLF_URL = "https://www.biomodels.org/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests

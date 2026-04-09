@@ -27,7 +27,7 @@ model %s
     S4 = 0
 end
 """ % MODEL_ID
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
+WOLF_URL = "https://www.biomodels.org/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
