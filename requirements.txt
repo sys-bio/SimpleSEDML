@@ -20,7 +20,7 @@ setuptools==81.0.0
 setuptools
 sbmlxdf
 tabulate
-tellurium
+tellurium>=2.2.12
 toml
 twine
 urllib3
