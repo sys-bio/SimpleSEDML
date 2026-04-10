@@ -9,8 +9,6 @@ jobs:
       uses: actions/setup-python@main
       with:
           python-version: '3.13'
-      env:
-          AGENT_TOOLSDIRECTORY: C:\hostedtoolcache\ # Updated path for Windows
     - name: Install
       run: |
         pip install --upgrade pip
