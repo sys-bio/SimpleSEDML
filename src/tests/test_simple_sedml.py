@@ -52,7 +52,7 @@ SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
 SIMPLE_PROJECT_DIR = os.path.join(cn.TEST_DIR, "project")
 REMOVE_DIRS = [SIMPLE_PROJECT_DIR]
-WOLF_URL = "https://www.biomodels.org/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
+WOLF_URL = "https://raw.githubusercontent.com/sys-bio/temp-biomodels/refs/heads/main/final/BIOMD0000000206/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
