@@ -2,19 +2,31 @@ name: Continous integration
 on: [push]
 jobs:
   Run-tests:
-    runs-on: windows-latest # Changed from ubuntu-latest to windows-latest
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@main
+    - name: Set up Python
+      uses: actions/setup-python@main
       with:
-          python-version: '3.9'
+          python-version: '3.13'
       env:
           AGENT_TOOLSDIRECTORY: C:\hostedtoolcache\ # Updated path for Windows
     - name: Install
       run: |
         pip install --upgrade pip
-        pip install SimpleSEDML
+        pip install -r requirements.txt
     - name: Run tests
       run: |
-        python scripts/bug.py
+        python -m pytest
+    - name: Run notebook
+      run: |
+        python scripts/convert_notebook_to_script.py
+        ipython examples/vingnette.py
+    - name: Create wheel
+      run: |
+        python -m build --wheel
+    - name: Upload wheel
+      uses: actions/upload-artifact@main
+      with:
+        name: SimpleSEDML-python-wheel
+        path: dist/*whl
