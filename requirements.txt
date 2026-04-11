@@ -1,5 +1,6 @@
 biomodels_qc
 biosimulators_utils
+setuptools
 brotli
 gmpy2
 matplotlib
