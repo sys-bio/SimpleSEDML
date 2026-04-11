@@ -31,7 +31,6 @@ model {MODEL_ID}
     S4 = 0
 end
 """
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -131,7 +130,7 @@ class TestVariableCollection(unittest.TestCase):
     def testDisplayVariables2(self):
         if IGNORE_TEST:
             return
-        smtc = SingleModelTimeCourse(WOLF_URL, num_point=200, is_plot=IS_PLOT)
+        smtc = SingleModelTimeCourse(cn.WOLF_URL, num_point=200, is_plot=IS_PLOT)
         display_variables = smtc.variable_collection.display_variables
         self.assertIn(cn.TIME, display_variables)
         display_name_dct = smtc.variable_collection.getDisplayNameDct()

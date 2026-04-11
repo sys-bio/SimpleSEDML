@@ -1,6 +1,7 @@
 '''Tests the API'''
 
 import SimpleSEDML as ss  # type: ignore
+import SimpleSEDML.constants as cn  # type: ignore
 
 import numpy as np # type: ignore
 import os
@@ -48,9 +49,9 @@ model %s
 end
 """ % MODEL2_NAME
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
+MODEL2_SBML = te.antimonyToSBML(MODEL2_ANT)
 SBML_FILE_PATH = os.path.join(ss.cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -90,8 +91,8 @@ class TestSimpleSEDML(unittest.TestCase):
         self.assertTrue(model_information.model_name == MODEL_NAME)
 
     def testMakeSingleModelTimeCourse(self):
-        if IGNORE_TEST:
-            return
+        #if IGNORE_TEST:
+        #    return
         smtc = None
         try:
             smtc = ss.makeSingleModelTimeCourse(MODEL_ANT)
@@ -107,11 +108,11 @@ class TestSimpleSEDML(unittest.TestCase):
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = ss.makeSingleModelTimeCourse(WOLF_URL, title="Wolf2000")
+            smtc = ss.makeSingleModelTimeCourse(cn.WOLF_URL, title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = ss.makeSingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000")
+            smtc = ss.makeSingleModelTimeCourse(cn.WOLF_URL, ref_type="sbml_url", title="Wolf2000")
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         if smtc is not None:

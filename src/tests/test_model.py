@@ -32,7 +32,6 @@ ANT_FILE_PATH = os.path.join(cn.SRC_DIR, MODEL_ID + ".ant")
 WOLF_ID = "Wolf2000_Glycolytic_Oscillations"
 WOLF_FILE = "Wolf2000_Glycolytic_Oscillations" + ".xml"
 REMOVE_FILES = [SBML_FILE_PATH, WOLF_ID, ANT_FILE_PATH]
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -130,7 +129,7 @@ class TestModel(unittest.TestCase):
         if IGNORE_TEST:
             return
         model_id = "Wolf2000_Glycolytic_Oscillations"
-        model = Model(model_id, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)
+        model = Model(model_id, cn.WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)
         self.remove_files.append(model.source)
         phrasedml_str = model.getPhraSEDML()
         self.evaluate(phrasedml_str)
@@ -156,7 +155,7 @@ class TestModel(unittest.TestCase):
             ref_type = Model._findReferenceType(model_ref, model_ids=model_ids, ref_type=ref_type)
             self.assertEqual(ref_type, expected_ref_type, f"Expected {expected_ref_type}, got {ref_type}")
         #
-        model = Model(WOLF_ID, WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)  # Create file
+        model = Model(WOLF_ID, cn.WOLF_URL, ref_type=cn.SBML_URL, is_overwrite=True)  # Create file
         test(model.source, cn.SBML_FILE)
         with open(ANT_FILE_PATH, "w") as f:
             f.write(MODEL_ANT)
@@ -164,7 +163,7 @@ class TestModel(unittest.TestCase):
         test(MODEL_ID, cn.ANT_STR, ref_type=cn.ANT_STR)
         test(MODEL_ANT, cn.ANT_STR)
         test(MODEL_SBML, cn.SBML_STR)
-        test(WOLF_URL, cn.SBML_URL)
+        test(cn.WOLF_URL, cn.SBML_URL)
 
     def evaluate(self, phrasedml_str:str):
         """Evaluate the sedml_str and sbml_str

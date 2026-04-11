@@ -51,7 +51,6 @@ end
 MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 SBML_FILE_PATH = os.path.join(cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
-WOLF_URL = "https://www.ebi.ac.uk/biomodels/services/download/get-files/MODEL3352181362/3/BIOMD0000000206_url.xml"
 
 #############################
 # Tests
@@ -102,11 +101,11 @@ class TestSingleModelTimeCourse(unittest.TestCase):
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SingleModelTimeCourse(WOLF_URL, title="Wolf2000", is_plot=IS_PLOT)
+            smtc = SingleModelTimeCourse(cn.WOLF_URL, title="Wolf2000", is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")
         try:
-            smtc = SingleModelTimeCourse(WOLF_URL, ref_type="sbml_url", title="Wolf2000",
+            smtc = SingleModelTimeCourse(cn.WOLF_URL, ref_type="sbml_url", title="Wolf2000",
                     num_point=200, is_plot=IS_PLOT)
         except Exception as e:
             self.assertTrue(False, f"SED-ML execution failed: {e}")

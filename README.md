@@ -17,6 +17,48 @@ and (d) output for data reports and plots.
 
     pip install SimpleSEDML
 
+## Public API
+
+All `make*` functions return objects with `getSEDML()`, `getPhraSEDML()`, `execute()`, and `makeOMEXFile()` methods.
+
+| Function | Description |
+| --- | --- |
+| `makeSingleModelTimeCourse` | Time course simulation for a single model |
+| `makeMultipleModelTimeCourse` | Compare multiple models on the same time axis |
+| `makeSingleModelParameterScan` | Scan a parameter over a range of values for one model |
+| `makeMultipleModelParameterScan` | Scan a parameter across multiple models |
+| `makeExecutor` | Run simulations directly via roadrunner, bypassing SED-ML generation |
+| `getModelInformation` | Introspect an SBML or Antimony model for its species and parameters |
+
+### Key arguments for `makeSingleModelTimeCourse`
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model_ref` | str | *(required)* | Model source — Antimony/SBML string, file path, or URL |
+| `ref_type` | str | auto-detected | Model reference type (see [Model reference types](#model-reference-types)) |
+| `start` | float | `0.0` | Simulation start time |
+| `end` | float | `5.0` | Simulation end time |
+| `num_point` | int | `11` | Number of output time points |
+| `num_step` | int | `None` | Number of integration steps (alternative to `num_point`) |
+| `display_variables` | list[str] | all species | Variables to plot and include in the report |
+| `simulation_type` | str | `"uniform"` | Simulation algorithm type — `"uniform"` (CVODE), `"uniform_stochastic"` (Gillespie), `"steadystate"`, `"onestep"` |
+| `model_parameter_dct` | dict | `None` | Override model parameter values, e.g. `{"k1": 0.5}` |
+| `title` | str | `""` | Plot title |
+| `is_plot` | bool | `True` | Whether to display a plot when `execute()` is called |
+
+### Model reference types
+
+The `ref_type` argument controls how `model_ref` is interpreted. If omitted, SimpleSEDML attempts to auto-detect the type.
+
+| `ref_type` value | Meaning |
+| --- | --- |
+| `"ant_str"` | Antimony model string (default when a string looks like Antimony) |
+| `"sbml_str"` | SBML XML string |
+| `"sbml_file"` | Path to a local SBML `.xml` file |
+| `"ant_file"` | Path to a local Antimony file |
+| `"sbml_url"` | URL pointing to an SBML file |
+| `"model_id"` | ID of a previously defined model (for parameter variants) |
+
 ## Example
 
 See this [Jupyter notebook](https://github.com/sys-bio/SimpleSEDML/blob/main/examples/usage_examples.ipynb) for a detailed example. It is also available as
@@ -128,22 +170,24 @@ which generates the following plot:
 
 ## Restrictions
 
-1. If there are multiple task directives and/or there is a repeated task directive AND there is a report directive, SimpleSEDML.execute only returns the results of the last simulation. You can circumvent this by iterating in python to obtain the desired reports.
+1. When multiple tasks or repeated tasks are used alongside a report directive, `execute()` returns only the last simulation's results. Work around this by running simulations individually in Python.
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
 ## Versions
+
+* 0.3.0 4/10/2026
+  * Fixed problem with OMEX files
+  * Updated README.md
+  * Fixed bugs related to the URL for WOLF
 
 * 0.2.10 3/6/2026
   * Eliminated blank line at top of metadata.rdf
   * Fixed errors in markdown in README.md
   * Added alt-text to .png in README.md
 
-* 0.2.00 12/5/2025
+* 0.2.0 12/5/2025
   * Change in requirements for Windows
   * Updated README for missing .png
-
-* 0.1.10 6/12/2025
-  * Implemented Executor for non-SEDML execution
 
 * 0.1.2 6/8/2025
   * Updated pip version
@@ -171,5 +215,5 @@ which generates the following plot:
   * Model files are created in a target directory
   * Files created during tests are eliminated
   * Create separate test module for testing SingleModelTimeCourse
-  * \_\_init\_\_ exposes ``makeSingleModelTimeCourse``, ``makeMultipleModelTimeCourse``, ``getModelInformtation``, ``SimpleSEDML``.
+  * \_\_init\_\_ exposes ``makeSingleModelTimeCourse``, ``makeMultipleModelTimeCourse``, ``getModelInformation``, ``SimpleSEDML``.
   * Create an OMEX file and validate it

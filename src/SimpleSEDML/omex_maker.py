@@ -16,29 +16,29 @@ import zipfile
 MANIFEST_FILE = "manifest.xml"
 SEDML_FILE_PAT = "%s.sedml"
 METADATA_FILE = "metadata.rdf"
-
 METADATA_STR = """<?xml version="1.0" encoding="UTF-8"?> 
-        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
-            xmlns:dcterms="http://purl.org/dc/terms/" 
-            xmlns:vCard="http://www.w3.org/2006/vcard/ns#" 
-            xmlns:bqmodel="http://biomodels.net/model-qualifiers/"> 
-        <rdf:Description rdf:about="."> 
-        <dcterms:description> 
-        %DESCRIPTION% </dcterms:description> 
-        <dcterms:creator rdf:parseType="Resource"> 
-        <vCard:hasName rdf:parseType="Resource"> 
-        <vCard:family-name> %SURNAME% </vCard:family-name> 
-        <vCard:given-name> %FIRSTNAME% </vCard:given-name> 
-        </vCard:hasName> 
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:vCard="http://www.w3.org/2006/vcard/ns#"
+    xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+    <rdf:Description rdf:about="http://omex-library.org/MyArchive.omex">
+        <dc:title>My Model Title</dc:title>
+        <dcterms:description>%DESCRIPTION%</dcterms:description>
+        <dcterms:creator rdf:parseType="Resource">
+            <vCard:hasName rdf:parseType="Resource">
+                <vCard:family-name>%SURNAME%</vCard:family-name>
+                <vCard:given-name>%FIRSTNAME%</vCard:given-name>
+            </vCard:hasName>
         <vCard:hasEmail rdf:resource=%EMAIL% />  
         <vCard:organization-name> %ORGANIZATION% </vCard:organization-name>  
         <vCard:hasURL rdf:resource=%URL%/>   
-        </dcterms:creator>  
-        <dcterms:created rdf:parseType="Resource">   
+        </dcterms:creator>
+        <dcterms:created rdf:parseType="Resource">
         <dcterms:W3CDTF> %DATE% </dcterms:W3CDTF>   
-        </dcterms:created>   
-        </rdf:Description>   
-        </rdf:RDF>
+        </dcterms:created>
+    </rdf:Description>
+</rdf:RDF>
 """
 
 class ValidationResult:

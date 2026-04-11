@@ -5,6 +5,7 @@ from SimpleSEDML.omex_maker import OMEXMaker, ValidationResult # type:ignore
 import pandas as pd; # type: ignore
 import os
 import shutil  # type: ignore
+import tempfile
 import tellurium as te # type: ignore
 import unittest
 import zipfile
@@ -142,6 +143,49 @@ class TestMakeOmex(unittest.TestCase):
         self.assertTrue(os.path.exists(str(temp_dir)))
         self.maker.cleanUp()
         self.assertFalse(os.path.exists(str(temp_dir)))
+
+
+class TestMakeOmexTempDir(unittest.TestCase):
+
+    def setUp(self):
+        self.omex_path = os.path.join(cn.TEST_DIR, "project.omex")
+        self.temp_dir_obj = tempfile.TemporaryDirectory()
+        self.temp_dir = self.temp_dir_obj.name
+        self.sedml_path = os.path.join(self.temp_dir, "project.sedml")
+        self.mmtc = MultipleModelTimeCourse(MODEL_REFS, start=0,
+                end=10, num_point=NUM_POINT,
+                model_parameter_dct=dict(k1=1.5),
+                display_variables=DISPLAY_VARIABLES,
+                project_dir=self.temp_dir,
+                is_plot=False)
+        sedml_str = self.mmtc.getSEDML(is_basename_source=True)
+        with open(self.sedml_path, "w") as f:
+            f.write(sedml_str)
+        self.maker = OMEXMaker(project_id="project", project_path=self.temp_dir,
+                omex_path=self.omex_path)
+
+    def tearDown(self):
+        self.temp_dir_obj.cleanup()
+
+    def testMake(self):
+        if IGNORE_TEST:
+            return
+        self.maker.make()
+        with zipfile.ZipFile(self.omex_path, 'r') as zipf:
+            ffiles = zipf.namelist()
+        self.assertIn("metadata.rdf", ffiles)
+        self.assertIn("manifest.xml", ffiles)
+        self.assertIn("project.sedml", ffiles)
+        self.assertIn("model0.xml", ffiles)
+        self.assertIn("model1.xml", ffiles)
+
+    def testValidateOmex(self):
+        if IGNORE_TEST:
+            return
+        self.maker.make()
+        result = self.maker.validateOMEXFile()
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result)
 
 
 if __name__ == '__main__':
