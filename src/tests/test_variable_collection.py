@@ -31,6 +31,10 @@ model {MODEL_ID}
     S4 = 0
 end
 """
+<<<<<<< HEAD
+=======
+WOLF_URL = "https://raw.githubusercontent.com/sys-bio/temp-biomodels/refs/heads/main/final/BIOMD0000000206/BIOMD0000000206_url.xml"
+>>>>>>> c4f596bbf93a2f61fd3c061c2ea9d6c44f7520a1
 
 #############################
 # Tests
