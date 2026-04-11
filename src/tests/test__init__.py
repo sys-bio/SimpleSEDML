@@ -52,10 +52,6 @@ MODEL_SBML = te.antimonyToSBML(MODEL_ANT)
 MODEL2_SBML = te.antimonyToSBML(MODEL2_ANT)
 SBML_FILE_PATH = os.path.join(ss.cn.PROJECT_DIR, MODEL_NAME)
 REMOVE_FILES = [SBML_FILE_PATH]
-<<<<<<< HEAD
-=======
-WOLF_URL = "https://raw.githubusercontent.com/sys-bio/temp-biomodels/refs/heads/main/final/BIOMD0000000206/BIOMD0000000206_url.xml"
->>>>>>> c4f596bbf93a2f61fd3c061c2ea9d6c44f7520a1
 
 #############################
 # Tests
