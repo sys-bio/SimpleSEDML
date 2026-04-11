@@ -1,15 +1,17 @@
 [project]
 name = "SimpleSEDML"
-version = "0.3.0"
-description = "Python Subnet Discovery for Systems Biology"
+version = "0.3.1"
+description = "Simplified API for creating SED-ML simulation experiment descriptions"
 authors = [{ name = "Joseph Hellerstein", email = "joseph.hellerstein@gmail.com" }, {name = "Herbert S Sauro", email = "hsauro@uw.edu"}]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 
 dependencies = [
+"brotli",
 "biomodels_qc",
 "biosimulators_utils",
+"gmpy2",
 "numpy",
 "build",
 "coverage",
@@ -20,18 +22,25 @@ dependencies = [
 "phrasedml",
 "pip",
 "python-libsbml",
-"requests",
 "tabulate",
+"sbmlxdf",
 "tellurium",
-"twine",
 "urllib3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "coverage",
+    "jupyterlab",
+    "nose2",
+    "pip",
+    "toml",
+    "twine",
 ]
 
 [project.urls]
 Homepage = 'https://github.com/sys-bio/SimpleSEDML'
-
-[options.package_data]
-data = "*.txt, *.csv, *.ant, *.xml"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
