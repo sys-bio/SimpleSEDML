@@ -15,7 +15,7 @@ jobs:
         pip install -r requirements.txt
     - name: Install package and run tests
       run: |
-        python -m pytest
+        cd src; python -m pytest tests
     - name: Run notebook
       run: |
         pip install -r requirements_dev.txt
