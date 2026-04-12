@@ -42,11 +42,85 @@ All `make*` functions return objects with `getSEDML()`, `getPhraSEDML()`, `execu
 | `end` | float | `5.0` | Simulation end time |
 | `num_point` | int | `11` | Number of output time points |
 | `num_step` | int | `None` | Number of integration steps (alternative to `num_point`) |
-| `display_variables` | list[str] | all species | Variables to plot and include in the report |
-| `simulation_type` | str | `"uniform"` | Simulation algorithm type — `"uniform"` (CVODE), `"uniform_stochastic"` (Gillespie), `"steadystate"`, `"onestep"` |
+| `display_variables` | list[str] | all floating species | Variables to plot and include in the report |
+| `simulation_type` | str | `"uniform"` | Simulation algorithm — `"uniform"` (CVODE), `"uniform_stochastic"` (Gillespie), `"steadystate"`, `"onestep"` |
 | `model_parameter_dct` | dict | `None` | Override model parameter values, e.g. `{"k1": 0.5}` |
+| `algorithm` | str | `None` | KISAO algorithm ID (overrides `simulation_type` algorithm selection) |
 | `title` | str | `""` | Plot title |
 | `is_plot` | bool | `True` | Whether to display a plot when `execute()` is called |
+| `project_dir` | str | `"project/"` | Directory where model SBML files are written |
+
+### Key arguments for `makeMultipleModelTimeCourse`
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model_refs` | list[str] | `None` | List of model sources — Antimony/SBML strings, file paths, or URLs |
+| `start` | float | `0.0` | Simulation start time |
+| `end` | float | `5.0` | Simulation end time |
+| `num_point` | int | `11` | Number of output time points |
+| `num_step` | int | `None` | Number of integration steps (alternative to `num_point`) |
+| `display_variables` | list[str] | all floating species | Variables to compare across models |
+| `simulation_type` | str | `"uniform"` | Simulation algorithm — `"uniform"`, `"uniform_stochastic"`, `"steadystate"`, `"onestep"` |
+| `model_parameter_dct` | dict | `None` | Override parameter values applied to all models, e.g. `{"k1": 0.5}` |
+| `algorithm` | str | `None` | KISAO algorithm ID |
+| `is_plot` | bool | `True` | Whether to display plots when `execute()` is called |
+| `project_dir` | str | `"project/"` | Directory where model SBML files are written |
+
+### Key arguments for `makeSingleModelParameterScan`
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model_ref` | str | *(required)* | Model source — Antimony/SBML string, file path, or URL |
+| `scan_parameter_dct` | dict | *(required)* | Parameters to scan; each key is a parameter name and the value is a list of values, e.g. `{"k1": [0.1, 0.5, 1.0]}` |
+| `ref_type` | str | auto-detected | Model reference type (see [Model reference types](#model-reference-types)) |
+| `simulation_type` | str | `"steadystate"` | Simulation type for each scan point — `"steadystate"` or `"onestep"` |
+| `time_interval` | float | `0.5` | Integration interval used when `simulation_type="onestep"` |
+| `display_variables` | list[str] | all floating species | Variables to plot on the y-axis |
+| `model_parameter_dct` | dict | `None` | Baseline parameter overrides applied before the scan |
+| `algorithm` | str | `None` | KISAO algorithm ID |
+| `title` | str | `None` | Plot title |
+| `is_plot` | bool | `True` | Whether to display a plot when `execute()` is called |
+| `project_dir` | str | `"project/"` | Directory where model SBML files are written |
+
+### Key arguments for `makeMultipleModelParameterScan`
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `scan_parameter_df` | pd.DataFrame | *(required)* | DataFrame of parameter values to scan; each column is a parameter name and each row is one scan point |
+| `model_refs` | list[str] | `None` | List of model sources — Antimony/SBML strings, file paths, or URLs |
+| `simulation_type` | str | `"onestep"` | Simulation type for each scan point — `"onestep"` or `"steadystate"` |
+| `time_interval` | float | `100` | Integration interval used when `simulation_type="onestep"` |
+| `display_variables` | list[str] | all floating species | Variables to compare across models |
+| `model_parameter_dct` | dict | `None` | Baseline parameter overrides applied before the scan |
+| `algorithm` | str | `None` | KISAO algorithm ID |
+| `title` | str | `None` | Plot title |
+| `is_plot` | bool | `True` | Whether to display plots when `execute()` is called |
+| `project_dir` | str | `"project/"` | Directory where model SBML files are written |
+
+### Key arguments for `makeExecutor`
+
+`makeExecutor` wraps an existing `SimpleSEDML` object and runs simulations directly via roadrunner, bypassing SED-ML/phraSED-ML generation.
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `simple` | SimpleSEDML | *(required)* | A constructed `SimpleSEDML` (or subclass) instance |
+
+Once created, the executor exposes three methods:
+
+| Method | Description |
+| --- | --- |
+| `executeTask(task_id=None, scan_parameter_dct=None)` | Run a single task; returns a `pd.DataFrame`. `scan_parameter_dct` overrides parameter values for this run. |
+| `executeRepeatedTask(repeated_task_id=None)` | Run a repeated task (parameter sweep); returns a `pd.DataFrame`. |
+| `executePlot2d(plot_id=None, ax=None, kind='line', is_plot=True)` | Execute the simulation(s) required for a 2D plot and render it; returns a `PlotResult(ax, plot_ids)`. |
+
+### Key arguments for `getModelInformation`
+
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model_ref` | str | *(required)* | Model source — Antimony/SBML string, file path, or URL |
+| `ref_type` | str | auto-detected | Model reference type (see [Model reference types](#model-reference-types)) |
+
+Returns a `ModelInformation` object with attributes: `model_name`, `floating_species_dct`, `boundary_species_dct`, `parameter_dct`, `num_reaction`, `num_species`.
 
 ### Model reference types
 
