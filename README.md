@@ -1,4 +1,4 @@
-# SimpleSEDML
+# SimpleSEDML 
 
 SimpleSEDML is a simple API for creating directives in the [Simulation Experiment Description Markup Language (SED-ML)](https://sed-ml.org/) community standard for describing simulation experiments.
 
