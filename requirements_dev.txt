@@ -16,7 +16,7 @@ pip
 pylint
 python-libsbml
 requests
-setuptools
+setuptools==75.8.2  # Avoid pkg_resources bug
 sbmlxdf
 tabulate
 tellurium>=2.2.13

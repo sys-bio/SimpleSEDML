@@ -11,7 +11,7 @@ phrasedml
 pylint
 python-libsbml
 sbmlxdf
-setuptools
+setuptools==75.8.2  # Avoid pkg_resources bug
 tellurium>=2.2.13
 toml
 urllib3

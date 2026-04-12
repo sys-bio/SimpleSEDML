@@ -1,6 +1,6 @@
 [project]
 name = "SimpleSEDML"
-version = "0.3.1"
+version = "0.3.2"
 description = "Simplified API for creating SED-ML simulation experiment descriptions"
 authors = [{ name = "Joseph Hellerstein", email = "joseph.hellerstein@gmail.com" }, {name = "Herbert S Sauro", email = "hsauro@uw.edu"}]
 license = { file = "LICENSE" }
@@ -11,7 +11,7 @@ dependencies = [
 "brotli",
 "biomodels_qc",
 "biosimulators_utils",
-"setuptools",
+"setuptools=75.8.2",
 "gmpy2",
 "numpy",
 "build",

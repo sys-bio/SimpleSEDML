@@ -251,6 +251,9 @@ which generates the following plot:
 
 ## Versions
 
+* 0.3.2 4/12/2026
+  * Fix bug related to import of pkg_resources is kisao by using setuptools 75.8.2
+
 * 0.3.1 4/12/2026
   * Update README
   * Fix package bugs
