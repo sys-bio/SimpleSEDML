@@ -15,6 +15,8 @@ and (d) output for data reports and plots.
 
 ## Installation
 
+``SimpleSEDML`` has been tested on python 3.10, 3.11.
+
     pip install SimpleSEDML
 
 ## Public API
@@ -174,6 +176,10 @@ which generates the following plot:
 2. Steadystate simulations don't execute correctly (likely a ``PhraSEDML`` issue), but they do generate valid SED-ML.
 
 ## Versions
+
+* 0.3.1 4/12/2026
+  * Update README
+  * Fix package bugs
 
 * 0.3.0 4/10/2026
   * Fixed problem with OMEX files
