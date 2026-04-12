@@ -11,7 +11,7 @@ dependencies = [
 "brotli",
 "biomodels_qc",
 "biosimulators_utils",
-"setuptools=75.8.2",
+"setuptools==75.8.2",
 "gmpy2",
 "numpy",
 "build",
