@@ -16,7 +16,7 @@ jobs:
         pip install -e .
     - name: Run tests
       run: |
-        python -m pytest src/tests/ -v
+        cd src; nose2 tests
     - name: Run notebook
       run: |
         pip install -r requirements_dev.txt
